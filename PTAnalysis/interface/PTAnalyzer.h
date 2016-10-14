@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    PTAnalyzer/PTAnalyzer
+// Package:    PrecisionTiming/PTAnalyzer
 // Class:      PTAnalyzer
 // 
-/**\class PTAnalyzer PTAnalyzer.cc PTAnalyzer/PTAnalyzer/plugins/PTAnalyzer.cc
+/**\class PTAnalyzer PTAnalyzer.cc PrecisionTiming/PTAnalyzer/plugins/PTAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -64,10 +64,7 @@ using namespace reco;
 
 struct eventInfo
 {
-  int nvtx;
-  int nvtx4D;
   int npu;
-  int nTracks;
   vector<float> tkEta;
   vector<float> tkPhi;
   vector<float> tkPt;
@@ -78,10 +75,13 @@ struct eventInfo
   vector<float> tkOuterZ;
 
   vector<float> vtx_z;
-  vector<float> vtx_nTks;
+  vector<int> vtx_nTks;
+  vector<float> vtx1D_z;
+  vector<int> vtx1D_nTks;
   vector<float> vtx4D_z;
+  vector<int> vtx4D_nTks;
   vector<float> vtx4D_t;
-  vector<float> vtx4D_nTks;
+
 };
 
 
@@ -105,6 +105,7 @@ private:
   //---inputs  
   EDGetTokenT<vector<PileupSummaryInfo> > PileUpToken_;
   EDGetTokenT<View<reco::Vertex> > vertexToken_;
+  EDGetTokenT<View<reco::Vertex> > vertex1DToken_;
   EDGetTokenT<View<reco::Vertex> > vertex4DToken_;
   EDGetTokenT<View<reco::Track> > tracksToken_;
   EDGetTokenT<ValueMap<float> > trackTimeToken_;

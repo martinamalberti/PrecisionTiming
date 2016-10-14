@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    PTAnalyzer/PTAnalyzer
+// Package:    PrecisionTiming/PTAnalyzer
 // Class:      PTAnalyzer
 // 
-/**\class PTAnalyzer PTAnalyzer.cc PTAnalysis/PTAnalysis/plugins/PTAnalyzer.cc
+/**\class PTAnalyzer PTAnalyzer.cc PrecisionTiming/PTAnalysis/plugins/PTAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -29,7 +29,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "PTAnalysis/PTAnalysis/interface/PTAnalyzer.h"
+#include "PrecisionTiming/PTAnalysis/interface/PTAnalyzer.h"
 
 
 //
@@ -48,6 +48,7 @@
 PTAnalyzer::PTAnalyzer(const edm::ParameterSet& iConfig):
   PileUpToken_( consumes<vector<PileupSummaryInfo> >( iConfig.getParameter<InputTag> ( "PileUpTag" ) ) ),
   vertexToken_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag" ) ) ),
+  vertex1DToken_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "Vertex1DTag" ) ) ),
   vertex4DToken_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "Vertex4DTag" ) ) ),
   tracksToken_( consumes<View<reco::Track> >( iConfig.getParameter<InputTag>( "TracksTag" ) ) ),
   trackTimeToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeValueMapTag" ) ) )
@@ -79,6 +80,11 @@ PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   Handle<View<reco::Vertex> > VertexCollectionH;
   iEvent.getByToken( vertexToken_, VertexCollectionH );
   const edm::View<reco::Vertex>& vertices = *VertexCollectionH;
+
+  // -- get the 3D vertex collection with same pT cut (0.7 GeV) as 4D
+  Handle<View<reco::Vertex> > Vertex1DCollectionH;
+  iEvent.getByToken( vertex1DToken_, Vertex1DCollectionH );
+  const edm::View<reco::Vertex>& vertices1D = *Vertex1DCollectionH;
 
   // -- get the 4D vertex collection
   Handle<View<reco::Vertex> > Vertex4DCollectionH;
@@ -130,14 +136,18 @@ PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   // -- number of reco vertices
-  evInfo.nvtx   = vertices.size() ;
   for(unsigned int ivtx=0; ivtx < vertices.size(); ivtx++ ){
     const reco::Vertex& vtx = vertices[ivtx];
     evInfo.vtx_z.push_back(vtx.z());
     evInfo.vtx_nTks.push_back(vtx.tracksSize());
   }
 
-  evInfo.nvtx4D   = vertices4D.size() ;
+  for(unsigned int ivtx=0; ivtx < vertices1D.size(); ivtx++ ){
+    const reco::Vertex& vtx = vertices1D[ivtx];
+    evInfo.vtx1D_z.push_back(vtx.z());
+    evInfo.vtx1D_nTks.push_back(vtx.tracksSize());
+  }
+
   for(unsigned int ivtx=0; ivtx < vertices4D.size(); ivtx++ ){
     const reco::Vertex& vtx = vertices4D[ivtx];
     evInfo.vtx4D_z.push_back(vtx.z());
@@ -146,7 +156,6 @@ PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   // -- tracks
-  evInfo.nTracks = tracks.size();
   for(unsigned int itk =0; itk < tracks.size(); itk++ ){
     const reco::Track& tk = tracks[itk];
     const auto tkRef = TrackCollectionH->refAt(itk);
@@ -193,23 +202,22 @@ void
 PTAnalyzer::beginJob()
 {
 
-  eventTree->Branch( "npu",     &evInfo.npu);
-  eventTree->Branch( "nvtx",    &evInfo.nvtx);
-  eventTree->Branch( "nvtx4D",  &evInfo.nvtx4D);
-  eventTree->Branch( "nTracks", &evInfo.nTracks);
-  eventTree->Branch( "tkPt",    &evInfo.tkPt);
-  eventTree->Branch( "tkEta",   &evInfo.tkEta);
-  eventTree->Branch( "tkPhi",   &evInfo.tkPhi);
-  eventTree->Branch( "tkTime",  &evInfo.tkTime);
-  eventTree->Branch( "tkOuterR",&evInfo.tkOuterR);
-  eventTree->Branch( "tkOuterX",&evInfo.tkOuterX);
-  eventTree->Branch( "tkOuterY",&evInfo.tkOuterY);
-  eventTree->Branch( "tkOuterZ",&evInfo.tkOuterZ);
-  eventTree->Branch( "vtx_z",   &evInfo.vtx_z);
+  eventTree->Branch( "npu",        &evInfo.npu);
+  eventTree->Branch( "tkPt",       &evInfo.tkPt);
+  eventTree->Branch( "tkEta",      &evInfo.tkEta);
+  eventTree->Branch( "tkPhi",      &evInfo.tkPhi);
+  eventTree->Branch( "tkTime",     &evInfo.tkTime);
+  eventTree->Branch( "tkOuterR",   &evInfo.tkOuterR);
+  eventTree->Branch( "tkOuterX",   &evInfo.tkOuterX);
+  eventTree->Branch( "tkOuterY",   &evInfo.tkOuterY);
+  eventTree->Branch( "tkOuterZ",   &evInfo.tkOuterZ);
+  eventTree->Branch( "vtx_z",      &evInfo.vtx_z);
   eventTree->Branch( "vtx_nTks",   &evInfo.vtx_nTks);
-  eventTree->Branch( "vtx4D_z", &evInfo.vtx4D_z);
-  eventTree->Branch( "vtx4D_nTks",   &evInfo.vtx4D_nTks);
-  eventTree->Branch( "vtx4D_t", &evInfo.vtx4D_t);
+  eventTree->Branch( "vtx1D_z",    &evInfo.vtx1D_z);
+  eventTree->Branch( "vtx1D_nTks", &evInfo.vtx1D_nTks);
+  eventTree->Branch( "vtx4D_z",    &evInfo.vtx4D_z);
+  eventTree->Branch( "vtx4D_nTks", &evInfo.vtx4D_nTks);
+  eventTree->Branch( "vtx4D_t",    &evInfo.vtx4D_t);
 
 }
 
@@ -236,9 +244,6 @@ PTAnalyzer::initEventStructure()
 {
   // per-event tree:
   evInfo.npu = -1;
-  evInfo.nvtx = -1;
-  evInfo.nvtx4D = -1;
-  evInfo.nTracks = -1;
   evInfo.tkPt.clear();
   evInfo.tkEta.clear();
   evInfo.tkPhi.clear();
@@ -249,9 +254,11 @@ PTAnalyzer::initEventStructure()
   evInfo.tkOuterZ.clear();
   evInfo.vtx_z.clear();
   evInfo.vtx_nTks.clear();
+  evInfo.vtx1D_z.clear();
+  evInfo.vtx1D_nTks.clear();
   evInfo.vtx4D_z.clear();
-  evInfo.vtx4D_t.clear();
   evInfo.vtx4D_nTks.clear();
+  evInfo.vtx4D_t.clear();
 
 
 }

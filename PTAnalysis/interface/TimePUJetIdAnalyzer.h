@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    TimePUJetIdAnalyzer/TimePUJetIdAnalyzer
+// Package:    PrecisionTiming/PTAnalysis
 // Class:      TimePUJetIdAnalyzer
 // 
-/**\class TimePUJetIdAnalyzer TimePUJetIdAnalyzer.cc TimePUJetIdAnalyzer/TimePUJetIdAnalyzer/plugins/TimePUJetIdAnalyzer.cc
+/**\class TimePUJetIdAnalyzer TimePUJetIdAnalyzer.cc PrecisionTiming/PTAnalysis/plugins/TimePUJetIdAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -69,19 +69,21 @@ using namespace reco;
 struct eventInfo
 {
 
-  int nvtx;
-  int nvtx4D;
   int npu;
-  float vtxT;
-  float vtxZ;
+  float vtx4D_t;
+  float vtx4D_z;
+  float vtx_z;
+  float genvtx_z;
 
   float jetPt;
   float jetEta;
   float jetPhi;
-  bool jetIsMatchedToGen;
+  bool  jetIsMatchedToGen;
 
   vector<float> chTime;
-
+  vector<float> chPt;
+  vector<float> chEta;
+  vector<float> chPhi;
 
 };
 

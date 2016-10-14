@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    TimePUJetIdAnalyzer/TimePUJetIdAnalyzer
+// Package:    PrecisionTiming/PTAnalysis 
 // Class:      TimePUJetIdAnalyzer
 // 
-/**\class TimePUJetIdAnalyzer TimePUJetIdAnalyzer.cc PTAnalysis/PTAnalysis/plugins/TimePUJetIdAnalyzer.cc
+/**\class TimePUJetIdAnalyzer TimePUJetIdAnalyzer.cc PrecisionTiming/PTAnalysis/plugins/TimePUJetIdAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -31,7 +31,7 @@
 
 #include "DataFormats/Math/interface/deltaR.h"
 
-#include "PTAnalysis/PTAnalysis/interface/TimePUJetIdAnalyzer.h"
+#include "PrecisionTiming/PTAnalysis/interface/TimePUJetIdAnalyzer.h"
 
 
 //
@@ -115,28 +115,25 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   iEvent.getByToken(genparticlesToken_, GenParticlesCollectionH);
   const edm::View<reco::GenParticle>& genparticles = *GenParticlesCollectionH;
   
-   // -- initialize output tree
-  initEventStructure();  
+  //   // -- initialize output tree
+  ///initEventStructure();  
   
   // -- number of pileup events
+  float pu = 0;
   if( ! iEvent.isRealData() ) {
     std::vector<PileupSummaryInfo>::const_iterator PVI;
     for(PVI = PileupInfos->begin(); PVI != PileupInfos->end(); ++PVI){
       Int_t pu_bunchcrossing = PVI->getBunchCrossing();
       if( pu_bunchcrossing == 0 ) {
-	evInfo.npu = PVI->getPU_NumInteractions();
+	pu = PVI->getPU_NumInteractions();
       }
     }
   }
-
-  // -- number of reco vertices
-  evInfo.nvtx   = vertices.size() ;
-  evInfo.nvtx4D   = vertices4D.size() ;
-  
   // -- vertex
-  const reco::Vertex& vtx = vertices4D[0];
-  evInfo.vtxZ = vtx.z();
-  evInfo.vtxT = vtx.t();
+  const reco::Vertex& vtx4D = vertices4D[0];
+  
+
+  const reco::Vertex& vtx = vertices[0];
 
   // -- gen vertex
   float genVtxZ = -999;
@@ -148,12 +145,20 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     }
   }
   
-  cout << "gen vtx z = " << genVtxZ <<  " " << vtx.z() <<endl;
 
   // -- CHS jets
   for(unsigned int ijet =0; ijet < chsjets.size(); ijet++ ){
     const reco::PFJet& jet = chsjets[ijet];
     
+    // -- initialize output tree
+    initEventStructure();
+
+    evInfo.npu = pu;
+    evInfo.vtx4D_z = vtx4D.z();
+    evInfo.vtx4D_t = vtx4D.t();
+    evInfo.vtx_z = vtx.z();
+    evInfo.genvtx_z = genVtxZ;
+
     // --- check gen matching
     float mindr = 999999;
     bool genMatched = false;
@@ -163,6 +168,7 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       if (dr<0.4 && dr<mindr) {
         mindr = dr;
         genMatched = true;
+	break;
       }
     }
 
@@ -175,6 +181,9 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       reco::TrackRef tkRef = jet.getTrackRefs().at(ii);
       if ((*tkRef).pt() > 0.7 ){ 
 	evInfo.chTime.push_back( (*trackTimeValueMap)[tkRef] );
+	evInfo.chPt.push_back( tkRef->pt() );
+	evInfo.chEta.push_back( tkRef->eta() );	
+	evInfo.chPhi.push_back( tkRef->phi() );
       }
     }
 
@@ -199,16 +208,18 @@ TimePUJetIdAnalyzer::beginJob()
 {
 
   eventTree->Branch( "npu",     &evInfo.npu);
-  eventTree->Branch( "nvtx",    &evInfo.nvtx);
-  eventTree->Branch( "nvtx4D",  &evInfo.nvtx4D);
-  eventTree->Branch( "jetPt",    &evInfo.jetPt);
-  eventTree->Branch( "jetEta",   &evInfo.jetEta);
-  eventTree->Branch( "jetPhi",   &evInfo.jetPhi);
+  eventTree->Branch( "jetPt",   &evInfo.jetPt);
+  eventTree->Branch( "jetEta",  &evInfo.jetEta);
+  eventTree->Branch( "jetPhi",  &evInfo.jetPhi);
   eventTree->Branch( "jetIsMatchedToGen",   &evInfo.jetIsMatchedToGen);
   eventTree->Branch( "chTime",  &evInfo.chTime);
-  eventTree->Branch( "vtxZ",   &evInfo.vtxZ);
-  eventTree->Branch( "vtxT",   &evInfo.vtxT);
-
+  eventTree->Branch( "chPt",    &evInfo.chPt);
+  eventTree->Branch( "chEta",   &evInfo.chEta);
+  eventTree->Branch( "chPhi",   &evInfo.chPhi);
+  eventTree->Branch( "vtx4D_z", &evInfo.vtx4D_z);
+  eventTree->Branch( "vtx4D_t", &evInfo.vtx4D_t);
+  eventTree->Branch( "vtx_z",   &evInfo.vtx_z);
+  eventTree->Branch( "genvtx_z",&evInfo.genvtx_z);
 
 }
 
@@ -235,15 +246,18 @@ TimePUJetIdAnalyzer::initEventStructure()
 {
   // per-event tree:
   evInfo.npu = -1;
-  evInfo.nvtx = -1;
-  evInfo.nvtx4D = -1;
-  evInfo.vtxT   = -99;
-  evInfo.vtxZ   = -99;
-  evInfo.jetPt = -99.;
-  evInfo.jetEta = -99.;
-  evInfo.jetPhi = -99.;
+  evInfo.vtx4D_t   = -999;
+  evInfo.vtx4D_z   = -999;
+  evInfo.vtx_z   = -999;
+  evInfo.genvtx_z   = -999;
+  evInfo.jetPt = -999.;
+  evInfo.jetEta = -999.;
+  evInfo.jetPhi = -999.;
   evInfo.jetIsMatchedToGen = false;
   evInfo.chTime.clear();
+  evInfo.chPt.clear();
+  evInfo.chEta.clear();
+  evInfo.chPhi.clear();
 
 
 

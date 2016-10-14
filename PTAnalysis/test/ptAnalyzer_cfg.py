@@ -5,6 +5,7 @@ process = cms.Process("Analysis")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 10 )
 
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
@@ -21,11 +22,12 @@ process.source = cms.Source("PoolSource",
 
 process.analysis = cms.EDAnalyzer(
     'PTAnalyzer',
-    VertexTag  = cms.InputTag("offlinePrimaryVertices"),
+    VertexTag    = cms.InputTag("offlinePrimaryVertices"),
+    Vertex1DTag  = cms.InputTag("offlinePrimaryVertices1D"),
     Vertex4DTag  = cms.InputTag("offlinePrimaryVertices4D"),
-    PileUpTag  = cms.InputTag("addPileupInfo"), 
+    PileUpTag    = cms.InputTag("addPileupInfo"), 
     #SimHitsTag = cms.InputTag("g4SimHits","FastTimerHits","SIM")
-    TracksTag   = cms.InputTag("generalTracks"),
+    TracksTag    = cms.InputTag("generalTracks"),
     TrackTimeValueMapTag = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModel")
 )
 
