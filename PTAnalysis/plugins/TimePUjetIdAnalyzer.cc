@@ -33,6 +33,12 @@
 
 #include "PrecisionTiming/PTAnalysis/interface/TimePUJetIdAnalyzer.h"
 
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateEGammaExtra.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockFwd.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlock.h"
+#include "DataFormats/ParticleFlowReco/interface/PFCluster.h"
+
+#include "TRandom.h"
 
 //
 // class declaration
@@ -115,9 +121,6 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   iEvent.getByToken(genparticlesToken_, GenParticlesCollectionH);
   const edm::View<reco::GenParticle>& genparticles = *GenParticlesCollectionH;
   
-  //   // -- initialize output tree
-  ///initEventStructure();  
-  
   // -- number of pileup events
   float pu = 0;
   if( ! iEvent.isRealData() ) {
@@ -129,10 +132,10 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       }
     }
   }
-  // -- vertex
-  const reco::Vertex& vtx4D = vertices4D[0];
-  
 
+
+  // -- vertex
+  const reco::Vertex& vtx4D = vertices4D[0];  
   const reco::Vertex& vtx = vertices[0];
 
   // -- gen vertex
@@ -144,15 +147,29 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       break;
     }
   }
-  
 
   // -- CHS jets
   for(unsigned int ijet =0; ijet < chsjets.size(); ijet++ ){
     const reco::PFJet& jet = chsjets[ijet];
     
+    if ( jet.pt() < 15. ) continue;
+
+    // -- initialize variables to compute pu jet id
+    float dr2    = 0.;
+    float dt2    = 0.;
+    float dt2c   = 0.;
+    float dt2n   = 0.;
+    float sumpt2 = 0.;
+    float sumpt2c = 0.;
+    float sumpt2n = 0.;
+
+    float dr2cleaned = 0.;
+    float sumpt2cleaned = 0.;
+
     // -- initialize output tree
     initEventStructure();
 
+    evInfo.evId = iEvent.id().event();
     evInfo.npu = pu;
     evInfo.vtx4D_z = vtx4D.z();
     evInfo.vtx4D_t = vtx4D.t();
@@ -162,21 +179,33 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     // --- check gen matching
     float mindr = 999999;
     bool genMatched = false;
+    float genpt = -999.;
+    float geneta = -999.;
+    float genphi = -999.;
+    float gendr = -999.;
     for (unsigned int ig =0; ig < genjets.size(); ig++ ){
       const reco::GenJet& genjet = genjets[ig];
       float dr = deltaR(jet, genjet);
-      if (dr<0.4 && dr<mindr) {
+      if (dr<0.25 && dr<mindr && genjet.pt() > 10.) {
         mindr = dr;
         genMatched = true;
+	genpt = genjet.pt() ;
+	geneta = genjet.eta() ;
+	genphi = genjet.phi() ;
+	gendr = dr;
 	break;
       }
     }
+
+
 
     // --- remove overlap with muons 
     // ... to be added ...
 
     // --- loop over charged jet constituents
+    /*    cout << "************** "<<endl;
     reco::TrackRefVector tkRefs = jet.getTrackRefs() ;
+    cout << "************** "<< tkRefs.size()<<endl;
     for (unsigned int ii = 0; ii < jet.getTrackRefs().size() ; ii ++) {
       reco::TrackRef tkRef = jet.getTrackRefs().at(ii);
       if ((*tkRef).pt() > 0.7 ){ 
@@ -185,13 +214,93 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	evInfo.chEta.push_back( tkRef->eta() );	
 	evInfo.chPhi.push_back( tkRef->phi() );
       }
-    }
+      }*/
+
+    // --- loop over jet constituents
+    std::vector<reco::PFCandidatePtr> constituents = jet.getPFConstituents();
+    for(std::vector<reco::PFCandidatePtr>::const_iterator it=constituents.begin(); it!=constituents.end(); ++it){
+      //reco::PFCandidatePtr & icand = *it;
+      const edm::Ptr<reco::PFCandidate>& icand = (*it);
+
+      float dtvtx0 = 0;
+      float dr = deltaR(jet.eta(), jet.phi(), icand->eta(), icand->phi());
+      dr2+=dr*dr;
+      sumpt2+= icand->pt() * icand->pt();
+
+      // charged const.
+      reco::TrackRef tkRef = icand->trackRef();
+      if(tkRef.isNonnull() && tkRef->pt() > 0.7){
+	evInfo.chTime.push_back( (*trackTimeValueMap)[tkRef] );
+        evInfo.chPt.push_back( tkRef->pt() );
+        evInfo.chEta.push_back( tkRef->eta() );
+        evInfo.chPhi.push_back( tkRef->phi() );
+	dt2c+= ( (*trackTimeValueMap)[tkRef]  - vtx4D.t() )*( (*trackTimeValueMap)[tkRef]  - vtx4D.t() );
+	sumpt2c+= tkRef->pt()*tkRef->pt();
+	dtvtx0 = (*trackTimeValueMap)[tkRef] - vtx4D.t();
+      }
+      
+      if (fabs(dtvtx0) < 0.1){
+	dr2cleaned+=dr*dr;
+	sumpt2cleaned+= icand->pt() * icand->pt();      
+      }
+
+      cout << "Loop over PF blocks" <<endl;
+      // PF clust.
+      int maxElement=(*it)->elementsInBlocks().size();
+      //cout << "maxElement : " <<maxElement <<endl;
+      for(int e=0; e<maxElement; ++e){
+	// Get elements from block
+	reco::PFBlockRef blockRef = (*it)->elementsInBlocks()[e].first;
+	const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
+	//cout<<"  elements.size():"<<elements.size()<<endl;
+	for(unsigned iEle=0; iEle<elements.size(); iEle++) {
+	  if(elements[iEle].index() == (*it)->elementsInBlocks()[e].second){
+	    if(elements[iEle].type() == reco::PFBlockElement::ECAL || elements[iEle].type() == reco::PFBlockElement::HGCAL ){ //
+	      reco::PFClusterRef clusterref = elements[iEle].clusterRef();
+	      const reco::PFCluster &cluster = *clusterref;
+	      //cout << iEle << "  " << cluster.pt() << "  " << cluster.time()<< "  " << elements[iEle].type() << endl;
+	      float tsmeared = cluster.time() + gRandom->Gaus(0.,0.030); // add 30 ps smearing
+	      if (cluster.pt() > 1.){
+		evInfo.clusTime.push_back( tsmeared );
+		evInfo.clusPt.push_back( cluster.pt() );
+		evInfo.clusEta.push_back( cluster.eta() );
+		evInfo.clusPhi.push_back( cluster.phi() );
+		float dtsmeared = tsmeared - vtx4D.t();
+		dt2n+= dtsmeared*dtsmeared ;
+		sumpt2n+= cluster.pt()*cluster.pt();
+		cout << maxElement << " " << elements.size() <<"  " <<cluster.pt()<<endl;
+		break; // use only the leading et cluster
+	      }
+	    }
+	  }
+	}
+      } // end loop over element in block
+
+    } // end loop over constituents
+
+    //cout << endl;
+
+    dr2  = dr2/sumpt2;
+    dr2cleaned  = dr2cleaned/sumpt2cleaned;
+    dt2  = (dt2n+dt2c)/(sumpt2n+sumpt2c);
+    dt2n = dt2n/sumpt2n; 
+    dt2c = dt2c/sumpt2c; 
 
     // -- tree variables
     evInfo.jetPt = jet.pt();
     evInfo.jetEta = jet.eta();
     evInfo.jetPhi = jet.phi();
     evInfo.jetIsMatchedToGen = genMatched;
+    evInfo.jetGenPt  = genpt;
+    evInfo.jetGenEta = geneta;
+    evInfo.jetGenPhi = genphi;
+    evInfo.jetDrToGen = gendr;
+    evInfo.jetDR2cleaned  = dr2cleaned;
+    evInfo.jetDR2  = dr2;
+    evInfo.jetDT2  = dt2;
+    evInfo.jetDT2n = dt2n;
+    evInfo.jetDT2c = dt2c;
+
     
     // --- fill the tree
     eventTree->Fill();
@@ -207,15 +316,31 @@ void
 TimePUJetIdAnalyzer::beginJob()
 {
 
+  eventTree->Branch( "evId",    &evInfo.evId);
   eventTree->Branch( "npu",     &evInfo.npu);
   eventTree->Branch( "jetPt",   &evInfo.jetPt);
   eventTree->Branch( "jetEta",  &evInfo.jetEta);
   eventTree->Branch( "jetPhi",  &evInfo.jetPhi);
+
+  eventTree->Branch( "jetDR2",  &evInfo.jetDR2);
+  eventTree->Branch( "jetDR2cleaned",  &evInfo.jetDR2cleaned);
+  eventTree->Branch( "jetDT2",  &evInfo.jetDT2);
+  eventTree->Branch( "jetDT2n", &evInfo.jetDT2n);
+  eventTree->Branch( "jetDT2c", &evInfo.jetDT2c);
+
+  eventTree->Branch( "jetGenPt",&evInfo.jetGenPt);
+  eventTree->Branch( "jetGenEta",&evInfo.jetGenEta);
+  eventTree->Branch( "jetGenPhi",&evInfo.jetGenPhi);
+  eventTree->Branch( "jetDrToGen",&evInfo.jetDrToGen);
   eventTree->Branch( "jetIsMatchedToGen",   &evInfo.jetIsMatchedToGen);
   eventTree->Branch( "chTime",  &evInfo.chTime);
   eventTree->Branch( "chPt",    &evInfo.chPt);
   eventTree->Branch( "chEta",   &evInfo.chEta);
   eventTree->Branch( "chPhi",   &evInfo.chPhi);
+  eventTree->Branch( "clusTime",&evInfo.clusTime);
+  eventTree->Branch( "clusPt",  &evInfo.clusPt);
+  eventTree->Branch( "clusEta", &evInfo.clusEta);
+  eventTree->Branch( "clusPhi", &evInfo.clusPhi);
   eventTree->Branch( "vtx4D_z", &evInfo.vtx4D_z);
   eventTree->Branch( "vtx4D_t", &evInfo.vtx4D_t);
   eventTree->Branch( "vtx_z",   &evInfo.vtx_z);
@@ -245,6 +370,7 @@ void
 TimePUJetIdAnalyzer::initEventStructure()
 {
   // per-event tree:
+  evInfo.evId = -1;
   evInfo.npu = -1;
   evInfo.vtx4D_t   = -999;
   evInfo.vtx4D_z   = -999;
@@ -252,12 +378,26 @@ TimePUJetIdAnalyzer::initEventStructure()
   evInfo.genvtx_z   = -999;
   evInfo.jetPt = -999.;
   evInfo.jetEta = -999.;
-  evInfo.jetPhi = -999.;
+
+  evInfo.jetDR2 = -999.;
+  evInfo.jetDR2cleaned = -999.;
+  evInfo.jetDT2 = -999.;
+  evInfo.jetDT2n = -999.;
+  evInfo.jetDT2c = -999.;
+
+  evInfo.jetGenPt = -999.;
+  evInfo.jetGenEta = -999.;
+  evInfo.jetGenPhi = -999.;
+  evInfo.jetDrToGen = -999.;
   evInfo.jetIsMatchedToGen = false;
   evInfo.chTime.clear();
   evInfo.chPt.clear();
   evInfo.chEta.clear();
   evInfo.chPhi.clear();
+  evInfo.clusTime.clear();
+  evInfo.clusPt.clear();
+  evInfo.clusEta.clear();
+  evInfo.clusPhi.clear();
 
 
 

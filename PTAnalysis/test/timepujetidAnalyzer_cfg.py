@@ -26,6 +26,7 @@ process.analysis = cms.EDAnalyzer(
     Vertex4DTag = cms.InputTag("offlinePrimaryVertices4D"),
     PileUpTag   = cms.InputTag("addPileupInfo"), 
     ChsJetsTag  = cms.InputTag("ak4PFJetsCHS"),
+    #ChsJetsTag  = cms.InputTag("ak4PFJetsPuppi"),
     GenJetsTag  = cms.InputTag("ak4GenJets"),
     MuonsTag  = cms.InputTag("muons"),
     GenParticlesTag  = cms.InputTag("genParticles"),
@@ -34,6 +35,7 @@ process.analysis = cms.EDAnalyzer(
 
 # Output TFile
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("test_timepujetid.root"))
+                                   fileName = cms.string("test_timepujetid_chs.root"))
+                                   #fileName = cms.string("test_timepujetid_puppi.root"))
 
 process.p = cms.Path(process.analysis)

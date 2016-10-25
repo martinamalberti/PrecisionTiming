@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    PrecisionTiming/PTAnalyzer
-// Class:      PTAnalyzer
+// Package:    PrecisionTiming/PTAnalysis
+// Class:      OccupancyAnalyzer
 // 
-/**\class PTAnalyzer PTAnalyzer.cc PrecisionTiming/PTAnalysis/plugins/PTAnalyzer.cc
+/**\class OccupancyAnalyzer OccupancyAnalyzer.cc PrecisionTiming/PTAnalysis/plugins/OccupancyAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -31,7 +31,7 @@
 
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 
-#include "PrecisionTiming/PTAnalysis/interface/PTAnalyzer.h"
+#include "PrecisionTiming/PTAnalysis/interface/OccupancyAnalyzer.h"
 
 #include <TMath.h>
 //
@@ -47,13 +47,13 @@
 //
 // constructors and destructor
 //
-PTAnalyzer::PTAnalyzer(const edm::ParameterSet& iConfig):
+OccupancyAnalyzer::OccupancyAnalyzer(const edm::ParameterSet& iConfig):
   PileUpToken_( consumes<vector<PileupSummaryInfo> >( iConfig.getParameter<InputTag> ( "PileUpTag" ) ) ),
   vertexToken_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag" ) ) ),
-  vertex1DToken_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "Vertex1DTag" ) ) ),
-  vertex4DToken_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "Vertex4DTag" ) ) ),
+  //vertex1DToken_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "Vertex1DTag" ) ) ),
+  //vertex4DToken_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "Vertex4DTag" ) ) ),
   tracksToken_( consumes<View<reco::Track> >( iConfig.getParameter<InputTag>( "TracksTag" ) ) ),
-  trackTimeToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeValueMapTag" ) ) ),
+  //trackTimeToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeValueMapTag" ) ) ),
   pfCandToken_( consumes<View<reco::PFCandidate> >( iConfig.getParameter<InputTag>( "PFCandidateTag" ) ) )
 {
    //Now do what ever initialization is needed
@@ -61,7 +61,7 @@ PTAnalyzer::PTAnalyzer(const edm::ParameterSet& iConfig):
 }
 
 
-PTAnalyzer::~PTAnalyzer()
+OccupancyAnalyzer::~OccupancyAnalyzer()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -76,7 +76,7 @@ PTAnalyzer::~PTAnalyzer()
 
 // ------------ method called for each event  ------------
 void
-PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+OccupancyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   
   // -- get the 3D vertex collection
@@ -84,15 +84,15 @@ PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken( vertexToken_, VertexCollectionH );
   const edm::View<reco::Vertex>& vertices = *VertexCollectionH;
 
-  // -- get the 3D vertex collection with same pT cut (0.7 GeV) as 4D
-  Handle<View<reco::Vertex> > Vertex1DCollectionH;
-  iEvent.getByToken( vertex1DToken_, Vertex1DCollectionH );
-  const edm::View<reco::Vertex>& vertices1D = *Vertex1DCollectionH;
+  //// -- get the 3D vertex collection with same pT cut (0.7 GeV) as 4D
+  //Handle<View<reco::Vertex> > Vertex1DCollectionH;
+  //iEvent.getByToken( vertex1DToken_, Vertex1DCollectionH );
+  //const edm::View<reco::Vertex>& vertices1D = *Vertex1DCollectionH;
 
   // -- get the 4D vertex collection
-  Handle<View<reco::Vertex> > Vertex4DCollectionH;
-  iEvent.getByToken( vertex4DToken_, Vertex4DCollectionH );
-  const edm::View<reco::Vertex>& vertices4D = *Vertex4DCollectionH;
+  //Handle<View<reco::Vertex> > Vertex4DCollectionH;
+  //iEvent.getByToken( vertex4DToken_, Vertex4DCollectionH );
+  //const edm::View<reco::Vertex>& vertices4D = *Vertex4DCollectionH;
 
   // -- get the PU 
   Handle<vector<PileupSummaryInfo> > PileupInfos;
@@ -105,25 +105,15 @@ PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken(tracksToken_, TrackCollectionH);
   const edm::View<reco::Track>& tracks = *TrackCollectionH;
 
-  // -- get the trackTimeValueMap
-  Handle<ValueMap<float> > trackTimeValueMap;
-  iEvent.getByToken( trackTimeToken_, trackTimeValueMap );
+  //// -- get the trackTimeValueMap
+  //Handle<ValueMap<float> > trackTimeValueMap;
+  //iEvent.getByToken( trackTimeToken_, trackTimeValueMap );
 
   // -- get the PFCandidate collection
   Handle<View<reco::PFCandidate> > PFCandidateCollectionH;
   iEvent.getByToken(pfCandToken_, PFCandidateCollectionH);
   const edm::View<reco::PFCandidate>& pfCandidates = *PFCandidateCollectionH;
 
-  /*
-  // -- get the SimHits collection
-  Handle<PSimHitContainer> ftHits;
-  iEvent.getByToken(SimHitsToken_,ftHits);
-  if (!ftHits.isValid()) {
-    edm::LogWarning("PTAnalyzer  ") << "Error! can't get FastTimerHits product!";
-    return ;
-  }
-  const edm::PSimHitContainer * ftHit = ftHits.product () ;
-  */
   
 
    // -- initialize output tree
@@ -148,7 +138,7 @@ PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     evInfo.vtx_nTks.push_back(vtx.tracksSize());
   }
 
-  for(unsigned int ivtx=0; ivtx < vertices1D.size(); ivtx++ ){
+  /*  for(unsigned int ivtx=0; ivtx < vertices1D.size(); ivtx++ ){
     const reco::Vertex& vtx = vertices1D[ivtx];
     evInfo.vtx1D_z.push_back(vtx.z());
     evInfo.vtx1D_nTks.push_back(vtx.tracksSize());
@@ -160,6 +150,7 @@ PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     evInfo.vtx4D_t.push_back(vtx.t());
     evInfo.vtx4D_nTks.push_back(vtx.tracksSize());
   }
+  */
 
   // -- tracks
   for(unsigned int itk =0; itk < tracks.size(); itk++ ){
@@ -174,7 +165,7 @@ PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     evInfo.tkOuterX.push_back(tk.outerX());
     evInfo.tkOuterY.push_back(tk.outerY());
     evInfo.tkOuterZ.push_back(tk.outerZ());
-    evInfo.tkTime.push_back( (*trackTimeValueMap)[tkRef] );
+    //    evInfo.tkTime.push_back( (*trackTimeValueMap)[tkRef] );
 
   }
 
@@ -194,25 +185,6 @@ PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 		   //    if (cand.pt()>0.7)    cout << cand.particleId()<< "  " << cand.pt()<< "   "<<cand.eta()<<"  " << cand.positionAtECALEntrance().x()<< "  " << cand.positionAtECALEntrance().z() <<endl;
   }
-
-  // -- loop over simhits
-  /* evInfo.nftHits = ftHit->size();
-  
-  for (vector<PSimHit>::const_iterator ftItr = ftHit->begin(); ftItr != ftHit->end(); ++ftItr) {
-    FastTimeDetId id(ftItr->detUnitId());
-    cout << " FT hit momentum    = " << ftItr->pabs() << endl;
-    cout << " FT hit TOF         = " << ftItr->timeOfFlight() << endl;
-    cout << " FT hit energy loss = " << ftItr->energyLoss() << endl;
-    cout << " FT hit detUnitId() = " << ftItr->detUnitId()  << endl;
-    cout << " FT hit id.ix, iy   = " << id.ix() << "," << id.iy()  << endl;
-    cout << " FT isFastTime      = " << id.isFastTime()<<endl;
-    cout << endl;
-    
-    evInfo.ftHitEnergyLoss.push_back(ftItr->energyLoss());
-    evInfo.ftHitIx.push_back(id.ix());
-    evInfo.ftHitIy.push_back(id.iy());
-  }
-  */
   
   // --- fill the tree
   eventTree->Fill();
@@ -221,25 +193,25 @@ PTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-PTAnalyzer::beginJob()
+OccupancyAnalyzer::beginJob()
 {
 
   eventTree->Branch( "npu",        &evInfo.npu);
   eventTree->Branch( "tkPt",       &evInfo.tkPt);
   eventTree->Branch( "tkEta",      &evInfo.tkEta);
   eventTree->Branch( "tkPhi",      &evInfo.tkPhi);
-  eventTree->Branch( "tkTime",     &evInfo.tkTime);
+  //eventTree->Branch( "tkTime",     &evInfo.tkTime);
   eventTree->Branch( "tkOuterR",   &evInfo.tkOuterR);
   eventTree->Branch( "tkOuterX",   &evInfo.tkOuterX);
   eventTree->Branch( "tkOuterY",   &evInfo.tkOuterY);
   eventTree->Branch( "tkOuterZ",   &evInfo.tkOuterZ);
   eventTree->Branch( "vtx_z",      &evInfo.vtx_z);
   eventTree->Branch( "vtx_nTks",   &evInfo.vtx_nTks);
-  eventTree->Branch( "vtx1D_z",    &evInfo.vtx1D_z);
-  eventTree->Branch( "vtx1D_nTks", &evInfo.vtx1D_nTks);
-  eventTree->Branch( "vtx4D_z",    &evInfo.vtx4D_z);
-  eventTree->Branch( "vtx4D_nTks", &evInfo.vtx4D_nTks);
-  eventTree->Branch( "vtx4D_t",    &evInfo.vtx4D_t);
+  //eventTree->Branch( "vtx1D_z",    &evInfo.vtx1D_z);
+  //eventTree->Branch( "vtx1D_nTks", &evInfo.vtx1D_nTks);
+  //eventTree->Branch( "vtx4D_z",    &evInfo.vtx4D_z);
+  //eventTree->Branch( "vtx4D_nTks", &evInfo.vtx4D_nTks);
+  //eventTree->Branch( "vtx4D_t",    &evInfo.vtx4D_t);
   eventTree->Branch( "pfPt",       &evInfo.pfPt);
   eventTree->Branch( "pfEta",      &evInfo.pfEta);
   eventTree->Branch( "pfPhi",      &evInfo.pfPhi);
@@ -249,13 +221,13 @@ PTAnalyzer::beginJob()
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-PTAnalyzer::endJob() 
+OccupancyAnalyzer::endJob() 
 {
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-PTAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+OccupancyAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -266,25 +238,25 @@ PTAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 
 // ------------ method initialize tree structure ------------
 void
-PTAnalyzer::initEventStructure()
+OccupancyAnalyzer::initEventStructure()
 {
   // per-event tree:
   evInfo.npu = -1;
   evInfo.tkPt.clear();
   evInfo.tkEta.clear();
   evInfo.tkPhi.clear();
-  evInfo.tkTime.clear();
+  // evInfo.tkTime.clear();
   evInfo.tkOuterR.clear();
   evInfo.tkOuterX.clear();
   evInfo.tkOuterY.clear();
   evInfo.tkOuterZ.clear();
   evInfo.vtx_z.clear();
   evInfo.vtx_nTks.clear();
-  evInfo.vtx1D_z.clear();
-  evInfo.vtx1D_nTks.clear();
-  evInfo.vtx4D_z.clear();
-  evInfo.vtx4D_nTks.clear();
-  evInfo.vtx4D_t.clear();
+  //evInfo.vtx1D_z.clear();
+  //evInfo.vtx1D_nTks.clear();
+  //evInfo.vtx4D_z.clear();
+  //evInfo.vtx4D_nTks.clear();
+  //evInfo.vtx4D_t.clear();
   evInfo.pfPt.clear();
   evInfo.pfEta.clear();
   evInfo.pfPhi.clear();
@@ -294,4 +266,4 @@ PTAnalyzer::initEventStructure()
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(PTAnalyzer);
+DEFINE_FWK_MODULE(OccupancyAnalyzer);

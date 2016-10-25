@@ -28,7 +28,8 @@ process.analysis = cms.EDAnalyzer(
     PileUpTag    = cms.InputTag("addPileupInfo"), 
     #SimHitsTag = cms.InputTag("g4SimHits","FastTimerHits","SIM")
     TracksTag    = cms.InputTag("generalTracks"),
-    TrackTimeValueMapTag = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModel")
+    TrackTimeValueMapTag = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModel"),
+    PFCandidateTag = cms.InputTag("particleFlow")
 )
 
 # Output TFile

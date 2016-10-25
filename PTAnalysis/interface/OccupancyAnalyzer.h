@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    PrecisionTiming/PTAnalysis
-// Class:      TimePUJetIdAnalyzer
+// Package:    PrecisionTiming/OccupancyAnalyzer
+// Class:      OccupancyAnalyzer
 // 
-/**\class TimePUJetIdAnalyzer TimePUJetIdAnalyzer.cc PrecisionTiming/PTAnalysis/plugins/TimePUJetIdAnalyzer.cc
+/**\class OccupancyAnalyzer OccupancyAnalyzer.cc PrecisionTiming/PTAnalysis/plugins/OccupancyAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -38,14 +38,8 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
-#include "DataFormats/JetReco/interface/PFJet.h"
-#include "DataFormats/JetReco/interface/GenJet.h"
-#include "DataFormats/MuonReco/interface/Muon.h"
-#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
-#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 
-////
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 
@@ -71,46 +65,38 @@ using namespace reco;
 
 struct eventInfo
 {
-
-  int evId;
   int npu;
-  float vtx4D_t;
-  float vtx4D_z;
-  float vtx_z;
-  float genvtx_z;
+  vector<float> tkEta;
+  vector<float> tkPhi;
+  vector<float> tkPt;
+  //vector<float> tkTime;
+  vector<float> tkOuterR;
+  vector<float> tkOuterX;
+  vector<float> tkOuterY;
+  vector<float> tkOuterZ;
 
-  float jetPt;
-  float jetEta;
-  float jetPhi;
-  float jetDR2;
-  float jetDR2cleaned;
-  float jetDT2n;
-  float jetDT2c;
-  float jetDT2;
-  bool  jetIsMatchedToGen;
-  float jetGenPt;
-  float jetGenEta;
-  float jetGenPhi;
-  float jetDrToGen;
+  vector<float> vtx_z;
+  vector<int> vtx_nTks;
+  //vector<float> vtx1D_z;
+  //vector<int> vtx1D_nTks;
+  //vector<float> vtx4D_z;
+  //vector<int> vtx4D_nTks;
+  //vector<float> vtx4D_t;
 
-  vector<float> chTime;
-  vector<float> chPt;
-  vector<float> chEta;
-  vector<float> chPhi;
 
-  vector<float> clusTime;
-  vector<float> clusPt;
-  vector<float> clusEta;
-  vector<float> clusPhi;
+  vector<float> pfEta;
+  vector<float> pfPhi;
+  vector<float> pfPt;
+  vector<float> pfType;
 
 };
 
 
-class TimePUJetIdAnalyzer : public edm::EDAnalyzer  
+class OccupancyAnalyzer : public edm::EDAnalyzer  
 {
 public:
-  explicit TimePUJetIdAnalyzer(const edm::ParameterSet&);
-  ~TimePUJetIdAnalyzer();
+  explicit OccupancyAnalyzer(const edm::ParameterSet&);
+  ~OccupancyAnalyzer();
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -126,14 +112,11 @@ private:
   //---inputs  
   EDGetTokenT<vector<PileupSummaryInfo> > PileUpToken_;
   EDGetTokenT<View<reco::Vertex> > vertexToken_;
-  EDGetTokenT<View<reco::Vertex> > vertex4DToken_;
-  EDGetTokenT<View<reco::PFJet> > chsjetsToken_;
-  EDGetTokenT<View<reco::GenJet> > genjetsToken_;
-  EDGetTokenT<View<reco::Muon> > muonsToken_;
-  EDGetTokenT<View<reco::GenParticle> > genparticlesToken_;
-  EDGetTokenT<ValueMap<float> > trackTimeToken_;
-
-  
+  //EDGetTokenT<View<reco::Vertex> > vertex1DToken_;
+  //EDGetTokenT<View<reco::Vertex> > vertex4DToken_;
+  EDGetTokenT<View<reco::Track> > tracksToken_;
+  // EDGetTokenT<ValueMap<float> > trackTimeToken_;
+  EDGetTokenT<View<reco::PFCandidate> > pfCandToken_;
 
   //--- outputs
   edm::Service<TFileService> fs_;

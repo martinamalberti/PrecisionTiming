@@ -38,6 +38,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/ValueMap.h"
@@ -82,6 +83,12 @@ struct eventInfo
   vector<int> vtx4D_nTks;
   vector<float> vtx4D_t;
 
+
+  vector<float> pfEta;
+  vector<float> pfPhi;
+  vector<float> pfPt;
+  vector<float> pfType;
+
 };
 
 
@@ -109,6 +116,7 @@ private:
   EDGetTokenT<View<reco::Vertex> > vertex4DToken_;
   EDGetTokenT<View<reco::Track> > tracksToken_;
   EDGetTokenT<ValueMap<float> > trackTimeToken_;
+  EDGetTokenT<View<reco::PFCandidate> > pfCandToken_;
 
   //--- outputs
   edm::Service<TFileService> fs_;
