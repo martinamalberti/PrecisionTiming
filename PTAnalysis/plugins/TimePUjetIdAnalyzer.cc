@@ -197,24 +197,9 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       }
     }
 
-
-
     // --- remove overlap with muons 
     // ... to be added ...
 
-    // --- loop over charged jet constituents
-    /*    cout << "************** "<<endl;
-    reco::TrackRefVector tkRefs = jet.getTrackRefs() ;
-    cout << "************** "<< tkRefs.size()<<endl;
-    for (unsigned int ii = 0; ii < jet.getTrackRefs().size() ; ii ++) {
-      reco::TrackRef tkRef = jet.getTrackRefs().at(ii);
-      if ((*tkRef).pt() > 0.7 ){ 
-	evInfo.chTime.push_back( (*trackTimeValueMap)[tkRef] );
-	evInfo.chPt.push_back( tkRef->pt() );
-	evInfo.chEta.push_back( tkRef->eta() );	
-	evInfo.chPhi.push_back( tkRef->phi() );
-      }
-      }*/
 
     // --- loop over jet constituents
     std::vector<reco::PFCandidatePtr> constituents = jet.getPFConstituents();
@@ -244,37 +229,52 @@ TimePUJetIdAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	sumpt2cleaned+= icand->pt() * icand->pt();      
       }
 
-      cout << "Loop over PF blocks" <<endl;
-      // PF clust.
-      int maxElement=(*it)->elementsInBlocks().size();
-      //cout << "maxElement : " <<maxElement <<endl;
-      for(int e=0; e<maxElement; ++e){
-	// Get elements from block
-	reco::PFBlockRef blockRef = (*it)->elementsInBlocks()[e].first;
-	const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
-	//cout<<"  elements.size():"<<elements.size()<<endl;
-	for(unsigned iEle=0; iEle<elements.size(); iEle++) {
-	  if(elements[iEle].index() == (*it)->elementsInBlocks()[e].second){
-	    if(elements[iEle].type() == reco::PFBlockElement::ECAL || elements[iEle].type() == reco::PFBlockElement::HGCAL ){ //
-	      reco::PFClusterRef clusterref = elements[iEle].clusterRef();
-	      const reco::PFCluster &cluster = *clusterref;
-	      //cout << iEle << "  " << cluster.pt() << "  " << cluster.time()<< "  " << elements[iEle].type() << endl;
-	      float tsmeared = cluster.time() + gRandom->Gaus(0.,0.030); // add 30 ps smearing
-	      if (cluster.pt() > 1.){
-		evInfo.clusTime.push_back( tsmeared );
-		evInfo.clusPt.push_back( cluster.pt() );
-		evInfo.clusEta.push_back( cluster.eta() );
-		evInfo.clusPhi.push_back( cluster.phi() );
-		float dtsmeared = tsmeared - vtx4D.t();
-		dt2n+= dtsmeared*dtsmeared ;
-		sumpt2n+= cluster.pt()*cluster.pt();
-		cout << maxElement << " " << elements.size() <<"  " <<cluster.pt()<<endl;
-		break; // use only the leading et cluster
+      // -- find max pT PF cluster for this consituent (only for pf constituents that are not charged particles)
+      if ((*it)->particleId()>=4){
+	//float maxpt = -9999.;
+	//reco::PFClusterRef maxclusterref;
+	int maxElement=(*it)->elementsInBlocks().size();
+	for(int e=0; e<maxElement; ++e){
+	  // Get elements from block
+	  reco::PFBlockRef blockRef = (*it)->elementsInBlocks()[e].first;
+	  const edm::OwnVector<reco::PFBlockElement>& elements = blockRef->elements();
+	  for(unsigned iEle=0; iEle<elements.size(); iEle++) {
+	    if(elements[iEle].index() == (*it)->elementsInBlocks()[e].second){
+	      if(elements[iEle].type() == reco::PFBlockElement::ECAL || elements[iEle].type() == reco::PFBlockElement::HGCAL ){ //
+		reco::PFClusterRef clusterref = elements[iEle].clusterRef();
+		const reco::PFCluster &cluster = *clusterref;
+		//if ( cluster.pt() > maxpt && cluster.pt() > 1. ){
+		  //maxpt = cluster.pt();
+		  //maxclusterref = clusterref;
+		//}
+		if ( cluster.pt() > 1. ){
+		  float tsmeared = cluster.time() + gRandom->Gaus(0.,0.030); // add 30 ps smearing
+		  evInfo.clusTime.push_back( tsmeared );
+		  evInfo.clusPt.push_back( cluster.pt() );
+		  evInfo.clusEta.push_back( cluster.eta() );
+		  evInfo.clusPhi.push_back( cluster.phi() );
+		  float dtsmeared = tsmeared - vtx4D.t();
+		  dt2n+= dtsmeared*dtsmeared ;
+		  sumpt2n+= cluster.pt()*cluster.pt();
+		}
 	      }
 	    }
 	  }
-	}
-      } // end loop over element in block
+	} // end loop over element in block
+
+	/*if (maxclusterref.isNonnull()){
+	  const reco::PFCluster &maxcluster = *maxclusterref;
+	  //if (maxcluster.time()>50.)	cout << maxcluster.pt() << "  " << maxcluster.eta() << "  " << maxcluster.time() <<endl;
+	  float tsmeared = maxcluster.time() + gRandom->Gaus(0.,0.030); // add 30 ps smearing
+	  evInfo.clusTime.push_back( tsmeared );
+	  evInfo.clusPt.push_back( maxcluster.pt() );
+	  evInfo.clusEta.push_back( maxcluster.eta() );
+	  evInfo.clusPhi.push_back( maxcluster.phi() );
+	  float dtsmeared = tsmeared - vtx4D.t();
+	  dt2n+= dtsmeared*dtsmeared ;
+	  sumpt2n+= maxcluster.pt()*maxcluster.pt();
+	}*/
+      }
 
     } // end loop over constituents
 
