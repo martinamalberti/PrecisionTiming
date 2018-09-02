@@ -27,11 +27,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-
-#include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Framework/interface/Event.h"
 
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
@@ -39,12 +36,15 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "SimDataFormats/Vertex/interface/SimVertex.h"
 
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 
 #include <vector>
-
 #include "TTree.h"
 
 //
@@ -75,8 +75,13 @@ struct eventInfo
   vector<float> tkOuterY;
   vector<float> tkOuterZ;
 
+  int index_closestToGen;
   vector<float> vtx_z;
   vector<int> vtx_nTks;
+  vector<int> vtx_nTks_pt09_B;
+  vector<int> vtx_nTks_p09_E;
+  vector<int> vtx_nTks_pt2_E;
+
   vector<float> vtx1D_z;
   vector<int> vtx1D_nTks;
   vector<float> vtx4D_z;
@@ -102,13 +107,16 @@ public:
 
 
 private:
-  virtual void beginJob() override;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-  virtual void endJob() override;
+  //virtual void beginJob() override;
+  //virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+  //virtual void endJob() override;
+  virtual void beginJob() ;
+  virtual void analyze(const edm::Event&, const edm::EventSetup&) ;
+  virtual void endJob() ;
     
   void initEventStructure();
 
-      
+
   //---inputs  
   EDGetTokenT<vector<PileupSummaryInfo> > PileUpToken_;
   EDGetTokenT<View<reco::Vertex> > vertexToken_;
@@ -117,10 +125,19 @@ private:
   EDGetTokenT<View<reco::Track> > tracksToken_;
   EDGetTokenT<ValueMap<float> > trackTimeToken_;
   EDGetTokenT<View<reco::PFCandidate> > pfCandToken_;
+  EDGetTokenT<View<reco::GenParticle> > genPartToken_;
+  EDGetTokenT<vector<SimVertex> >  genVertexToken_;
 
   //--- outputs
   edm::Service<TFileService> fs_;
   TTree *eventTree;
   eventInfo evInfo;
 
+  //--- options
+  bool keepMuons_; 
+  double BTLEfficiency_;
+  double ETLEfficiency_;
 };
+
+
+bool isMuonTrack(const reco::Track & track, const edm::View<reco::GenParticle>& genParticles);
