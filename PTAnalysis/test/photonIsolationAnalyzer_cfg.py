@@ -4,15 +4,14 @@ process = cms.Process("Analysis")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 10 )
 
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
 #        'file:/tmp/malberti/step3.root'
-        'file:/tmp/malberti/00D62D92-62AA-E711-994A-5065F38142E1.root'
-
+        '/store/mc/PhaseIITDRFall17DR/GluGluHToGG_M125_14TeV_amcatnloFXFX_pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2-v1/30000/FEC7F72A-2BBC-E711-972D-A0369F83630C.root'
     ),
 #    inputCommands=cms.untracked.vstring(
 #        'keep *',
@@ -23,19 +22,17 @@ process.source = cms.Source("PoolSource",
 )
 
 process.analysis = cms.EDAnalyzer(
-    'PTAnalyzer',
+    'PhotonIsolationAnalyzer',
     VertexTag    = cms.InputTag("offlinePrimaryVertices"),
-    #Vertex1DTag  = cms.InputTag("offlinePrimaryVertices1D"),
-    Vertex1DTag  = cms.InputTag("offlinePrimaryVertices"),
-    Vertex4DTag  = cms.InputTag("offlinePrimaryVertices4D"),
     PileUpTag    = cms.InputTag("addPileupInfo"), 
+    photonsTag   = cms.untracked.InputTag("gedPhotons"),
     TracksTag    = cms.InputTag("generalTracks"),
     TrackTimeValueMapTag = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModel"),
-    PFCandidateTag = cms.InputTag("particleFlow"),
-    muonsTag = cms.untracked.InputTag("muons", "", "RECO"),
     genPartTag = cms.untracked.InputTag("genParticles", "", "HLT"),
     genVtxTag = cms.untracked.InputTag("g4SimHits", "", "SIM"),
-    keepMuons = cms.untracked.bool(False),
+    timeResolutions = cms.untracked.vdouble(0.030, 0.050, 0.070),
+    isoConeDR = cms.untracked.vdouble(0.2, 0.3, 0.4, 0.5),
+    saveTracks = cms.untracked.bool(True),
     #BTLEfficiency = cms.untracked.double(0.90),
     #ETLEfficiency = cms.untracked.double(0.95),
     BTLEfficiency = cms.untracked.double(1.0),
@@ -44,6 +41,6 @@ process.analysis = cms.EDAnalyzer(
 
 # Output TFile
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("test_pt.root"))
+                                   fileName = cms.string("photonIsolation.root"))
 
 process.p = cms.Path(process.analysis)

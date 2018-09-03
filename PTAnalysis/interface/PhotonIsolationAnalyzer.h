@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    PrecisionTiming/PTAnalyzer
-// Class:      PTAnalyzer
+// Package:    PrecisionTiming/PhotonIsolationAnalyzer
+// Class:      PhotonIsolationAnalyzer
 // 
-/**\class PTAnalyzer PTAnalyzer.cc PrecisionTiming/PTAnalyzer/plugins/PTAnalyzer.cc
+/**\class PhotonIsolationAnalyzer PhotonIsolationAnalyzer.cc PrecisionTiming/PhotonIsolationAnalyzer/plugins/PhotonIsolationAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -40,6 +40,7 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
 
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/ValueMap.h"
@@ -70,38 +71,30 @@ struct eventInfo
   vector<float> tkPhi;
   vector<float> tkPt;
   vector<float> tkTime;
-  vector<float> tkOuterR;
+  /*vector<float> tkOuterR;
   vector<float> tkOuterX;
   vector<float> tkOuterY;
   vector<float> tkOuterZ;
-
-  int index_closestToGen;
-  vector<float> vtx_z;
-  vector<int> vtx_nTks;
-  vector<int> vtx_nTks_pt09_B;
-  vector<int> vtx_nTks_p09_E;
-  vector<int> vtx_nTks_pt2_E;
-
-  vector<float> vtx1D_z;
-  vector<int> vtx1D_nTks;
-  vector<float> vtx4D_z;
-  vector<int> vtx4D_nTks;
-  vector<float> vtx4D_t;
-
-
-  vector<float> pfEta;
-  vector<float> pfPhi;
-  vector<float> pfPt;
-  vector<float> pfType;
-
+  */
+  
+  //int index_closestToGen;
+  float vtx_t;
+  float vtx_z;
+  float vtx_nTracks;
+  float vtx_nTracks_dT;
+  vector<float> photon_pt;
+  vector<float> photon_eta;
+  vector<float> photon_phi;
+  vector<float> photon_chIso[4];
+  vector<float> photon_chIso_dT[4][3];
 };
 
 
-class PTAnalyzer : public edm::EDAnalyzer  
+class PhotonIsolationAnalyzer : public edm::EDAnalyzer  
 {
 public:
-  explicit PTAnalyzer(const edm::ParameterSet&);
-  ~PTAnalyzer();
+  explicit PhotonIsolationAnalyzer(const edm::ParameterSet&);
+  ~PhotonIsolationAnalyzer();
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -120,24 +113,22 @@ private:
   //---inputs  
   EDGetTokenT<vector<PileupSummaryInfo> > PileUpToken_;
   EDGetTokenT<View<reco::Vertex> > vertexToken_;
-  EDGetTokenT<View<reco::Vertex> > vertex1DToken_;
-  EDGetTokenT<View<reco::Vertex> > vertex4DToken_;
   EDGetTokenT<View<reco::Track> > tracksToken_;
   EDGetTokenT<ValueMap<float> > trackTimeToken_;
-  EDGetTokenT<View<reco::PFCandidate> > pfCandToken_;
   EDGetTokenT<View<reco::GenParticle> > genPartToken_;
   EDGetTokenT<vector<SimVertex> >  genVertexToken_;
-
+  EDGetTokenT<View<reco::Photon> > photonsToken_; 
+  
   //--- outputs
   edm::Service<TFileService> fs_;
-  TTree *eventTree;
-  eventInfo evInfo;
+  TTree *eventTree[3];
+  eventInfo evInfo[4];
 
   //--- options
-  bool keepMuons_; 
+  vector<double> timeResolutions_;
+  vector<double> isoConeDR_;
+  bool saveTracks_;
   double BTLEfficiency_;
   double ETLEfficiency_;
 };
 
-
-bool isMuonTrack(const reco::Track & track, const edm::View<reco::GenParticle>& genParticles);
