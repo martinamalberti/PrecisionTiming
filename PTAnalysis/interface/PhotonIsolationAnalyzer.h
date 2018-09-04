@@ -85,8 +85,9 @@ struct eventInfo
   vector<float> photon_pt;
   vector<float> photon_eta;
   vector<float> photon_phi;
-  vector<float> photon_chIso[4];
-  vector<float> photon_chIso_dT[4][3];
+  vector<float> photon_isPrompt;
+  vector<float> photon_chIso[10];
+  vector<float> photon_chIso_dT[10][10];
 };
 
 
@@ -115,20 +116,20 @@ private:
   EDGetTokenT<View<reco::Vertex> > vertexToken_;
   EDGetTokenT<View<reco::Track> > tracksToken_;
   EDGetTokenT<ValueMap<float> > trackTimeToken_;
+  EDGetTokenT<edm::View<reco::PFCandidate> >      pfcandToken_;
   EDGetTokenT<View<reco::GenParticle> > genPartToken_;
   EDGetTokenT<vector<SimVertex> >  genVertexToken_;
   EDGetTokenT<View<reco::Photon> > photonsToken_; 
   
   //--- outputs
   edm::Service<TFileService> fs_;
-  TTree *eventTree[3];
-  eventInfo evInfo[4];
+  TTree *eventTree[10];
+  eventInfo evInfo[10];
 
   //--- options
   vector<double> timeResolutions_;
   vector<double> isoConeDR_;
   bool saveTracks_;
-  double BTLEfficiency_;
-  double ETLEfficiency_;
 };
 
+bool isPromptPhoton(const reco::Photon &photon, const edm::View<reco::GenParticle>& genParticles);
