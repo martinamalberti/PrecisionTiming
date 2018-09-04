@@ -62,6 +62,7 @@
 using namespace std;
 using namespace edm;
 using namespace reco;
+using namespace math;
 
 
 struct eventInfo
@@ -78,10 +79,10 @@ struct eventInfo
   */
   
   //int index_closestToGen;
-  float vtx_t;
+  float vtxGen_z;
+  float vtx3D_z;
   float vtx_z;
-  float vtx_nTracks;
-  float vtx_nTracks_dT;
+  float vtx_t;
   vector<float> photon_pt;
   vector<float> photon_eta;
   vector<float> photon_phi;
@@ -113,7 +114,8 @@ private:
 
   //---inputs  
   EDGetTokenT<vector<PileupSummaryInfo> > PileUpToken_;
-  EDGetTokenT<View<reco::Vertex> > vertexToken_;
+  EDGetTokenT<View<reco::Vertex> > vertexToken3D_;
+  EDGetTokenT<View<reco::Vertex> > vertexToken4D_;
   EDGetTokenT<View<reco::Track> > tracksToken_;
   EDGetTokenT<ValueMap<float> > trackTimeToken_;
   EDGetTokenT<edm::View<reco::PFCandidate> >      pfcandToken_;
@@ -133,3 +135,4 @@ private:
 };
 
 bool isPromptPhoton(const reco::Photon &photon, const edm::View<reco::GenParticle>& genParticles);
+math::XYZTLorentzVector correctP4(const reco::Photon &photon, const reco::Vertex& vtx);

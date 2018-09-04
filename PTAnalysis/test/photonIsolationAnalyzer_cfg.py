@@ -24,8 +24,8 @@ process.source = cms.Source("PoolSource",
 
 process.analysis = cms.EDAnalyzer(
     'PhotonIsolationAnalyzer',
-    #VertexTag    = cms.InputTag("offlinePrimaryVertices"),
-    VertexTag    = cms.InputTag("offlinePrimaryVertices4D"),
+    VertexTag3D  = cms.InputTag("offlinePrimaryVertices"),
+    VertexTag4D  = cms.InputTag("offlinePrimaryVertices4D"),
     PileUpTag    = cms.InputTag("addPileupInfo"), 
     photonsTag   = cms.untracked.InputTag("gedPhotons"),
     TracksTag    = cms.InputTag("generalTracks"),

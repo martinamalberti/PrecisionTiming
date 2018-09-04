@@ -50,7 +50,8 @@
 //
 PhotonIsolationAnalyzer::PhotonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   PileUpToken_( consumes<vector<PileupSummaryInfo> >( iConfig.getParameter<InputTag> ( "PileUpTag" ) ) ),
-  vertexToken_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag" ) ) ),
+  vertexToken3D_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag3D" ) ) ),
+  vertexToken4D_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag4D" ) ) ),
   tracksToken_( consumes<View<reco::Track> >( iConfig.getParameter<InputTag>( "TracksTag" ) ) ),
   trackTimeToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeValueMapTag" ) ) ),
   pfcandToken_( consumes<View<reco::PFCandidate> >( iConfig.getParameter<InputTag>( "PFCandidateTag" ) ) ),
@@ -89,10 +90,15 @@ void
 PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   
-  // -- get the vertex collection
-  Handle<View<reco::Vertex> > VertexCollectionH;
-  iEvent.getByToken( vertexToken_, VertexCollectionH );
-  const edm::View<reco::Vertex>& vertices = *VertexCollectionH;
+  // -- get the vertex 3D collection
+  Handle<View<reco::Vertex> > Vertex3DCollectionH;
+  iEvent.getByToken( vertexToken3D_, Vertex3DCollectionH );
+  const edm::View<reco::Vertex>& vertices3D = *Vertex3DCollectionH;
+
+  // -- get the vertex 4D collection
+  Handle<View<reco::Vertex> > Vertex4DCollectionH;
+  iEvent.getByToken( vertexToken4D_, Vertex4DCollectionH );
+  const edm::View<reco::Vertex>& vertices4D = *Vertex4DCollectionH;
 
   // -- get the PU 
   Handle<vector<PileupSummaryInfo> > PileupInfos;
@@ -148,25 +154,40 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
   //---get truth PV
   SimVertex genPV = genVertices.at(0);
   double mindz = 999999.;
-  int pv_index = 0;
+  int pv_index_3D = 0;
+  int pv_index_4D = 0;
 
   TRandom *gRandom = new TRandom();
 
-
-  // -- find the reco vertex closest to the gen vertex
-  for(unsigned int ivtx=0; ivtx < vertices.size(); ivtx++ ){
-    const reco::Vertex& vtx = vertices[ivtx];
+  // -- find the reco vertex closest to the gen vertex (3D)
+  for(unsigned int ivtx=0; ivtx < vertices3D.size(); ivtx++ ){
+    const reco::Vertex& vtx = vertices3D[ivtx];
     const float dz = std::abs(vtx.z() - genPV.position().z());
     if( dz < mindz )
       {
 	mindz = dz;
-	pv_index = ivtx;
+	pv_index_3D = ivtx;
       }
   }
 
+  
+  // -- find the reco vertex closest to the gen vertex (4D)
+  mindz = 999999.;
+  for(unsigned int ivtx=0; ivtx < vertices4D.size(); ivtx++ ){
+    const reco::Vertex& vtx = vertices4D[ivtx];
+    const float dz = std::abs(vtx.z() - genPV.position().z());
+    if( dz < mindz )
+      {
+	mindz = dz;
+	pv_index_4D = ivtx;
+      }
+  }
+
+
   // -- get isolation around a candidate photon 
   // --- using only vtx closest to gen vtx
-  const reco::Vertex& vtx = vertices[pv_index];
+  const reco::Vertex& vtx   = vertices4D[pv_index_4D];
+  const reco::Vertex& vtx3D = vertices3D[pv_index_3D];
 
   for(unsigned int ipho=0; ipho < photons.size(); ipho++ ){
 
@@ -179,16 +200,13 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
     bool isPromptPho = isPromptPhoton(photon,genParticles);
   
     // -- recompute p4 wrt to the chosen vertex (taken from flashgg)
-    math::XYZVector vtx_Pos( vtx.x(), vtx.y(), vtx.z() );
-    math::XYZVector sc_Pos( photon.superCluster()->x(), photon.superCluster()->y(), photon.superCluster()->z());
-    math::XYZVector direction = sc_Pos - vtx_Pos;
-    math::XYZVector p = ( direction.Unit() ) * ( photon.energy() );
-    math::XYZTLorentzVector pho_p4( p.x(), p.y(), p.z(), photon.energy() );
+    math::XYZTLorentzVector pho_p4 = correctP4(photon, vtx);
+    math::XYZTLorentzVector pho_p4_3Dvtx = correctP4(photon, vtx3D);
 
-    // -- compute charged isolations                                                                                                                                                                                       
+    // -- compute charged isolations
     const int nCones = isoConeDR_.size();
     const int nResol = timeResolutions_.size();
-    float chIso[nCones] = {0.};                                                                                                                                                                                           
+    float chIso[nCones] = {0.};
     float chIso_dT[nCones][nResol] = {{0.}} ;
     float time[nCones][nResol] = {{0.}}; 
     
@@ -206,26 +224,29 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       // -- skip tracks if dz(track, vertex) > dzCut 
       float dz = std::abs(pfcand.vz() - vtx.z());
       if (dz  > 1.0) continue;
-      /*      
-      float dz = std::abs(trackRef->dz(vtx.position()));
-      float dxy = std::abs(trackRef->dxy(vtx.position()));
-      if (dz  > 1.0) continue;
-      if (dxy > 0.02) continue;
-      */
+      //if (dxy > 0.02) continue;
+     
 
-      float dr  = deltaR(pho_p4.eta(), pho_p4.phi(), pfcand.eta(), pfcand.phi());     
+      // --- no timing 
+      float dr  = deltaR(pho_p4_3Dvtx.eta(), pho_p4_3Dvtx.phi(), pfcand.eta(), pfcand.phi());
+      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+        if (dr < isoConeDR_[iCone]){
+          chIso[iCone]+= pfcand.pt();
+	}
+      }
+
+
+      // --- with timing
+      dr  = deltaR(pho_p4.eta(), pho_p4.phi(), pfcand.eta(), pfcand.phi());     
       double dt = 0;
       
-      // -- loop over cone sizes                                                                                                                                                
-      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){                                                                                                        
-                                                                                                                                                                                
+      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
         if (dr < isoConeDR_[iCone]){ 	  
-          chIso[iCone]+= pfcand.pt();                                                                                                                                         
-          for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
-            double time_resol = timeResolutions_[iRes];
+	  for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
+	    double time_resol = timeResolutions_[iRes];
 	    double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);                                                                                                      
 	    if ( pfcand.isTimeValid() ) {
-	      time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);                                                                                                                          
+	      time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
 	      dt = std::abs(time[iCone][iRes] - vtx.t());
 	    }
 	    else{
@@ -268,9 +289,10 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
   // fill info per event
   for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
     evInfo[iRes].npu = nPU;
-    evInfo[iRes].vtx_z = vtx.z();
     evInfo[iRes].vtx_t = vtx.t();
-    evInfo[iRes].vtx_nTracks = vtx.nTracks();
+    evInfo[iRes].vtx_z = vtx.z();
+    evInfo[iRes].vtx3D_z = vtx3D.z();
+    evInfo[iRes].vtxGen_z = genPV.position().z();
   }
   
   
@@ -290,10 +312,10 @@ PhotonIsolationAnalyzer::beginJob()
   for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
   
     eventTree[iRes]->Branch( "npu",               &evInfo[iRes].npu);
+    eventTree[iRes]->Branch( "vtxGen_z",          &evInfo[iRes].vtxGen_z);
+    eventTree[iRes]->Branch( "vtx3D_z",           &evInfo[iRes].vtx3D_z);
     eventTree[iRes]->Branch( "vtx_z",             &evInfo[iRes].vtx_z);
     eventTree[iRes]->Branch( "vtx_t",             &evInfo[iRes].vtx_t);
-    eventTree[iRes]->Branch( "vtx_nTracks",       &evInfo[iRes].vtx_nTracks);
-    eventTree[iRes]->Branch( "vtx_nTracks_dT",    &evInfo[iRes].vtx_nTracks_dT);
     eventTree[iRes]->Branch( "photon_pt",         &evInfo[iRes].photon_pt);  
     eventTree[iRes]->Branch( "photon_eta",        &evInfo[iRes].photon_eta);  
     eventTree[iRes]->Branch( "photon_phi",        &evInfo[iRes].photon_phi);  
@@ -339,10 +361,10 @@ PhotonIsolationAnalyzer::initEventStructure()
   // per-event trees:
   for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
     evInfo[iRes].npu = -1;
+    evInfo[iRes].vtxGen_z = -999;
+    evInfo[iRes].vtx3D_z = -999;
     evInfo[iRes].vtx_z = -999;
     evInfo[iRes].vtx_t = -999;
-    evInfo[iRes].vtx_nTracks = -999.;
-    evInfo[iRes].vtx_nTracks_dT = -999.;
 
     evInfo[iRes].photon_pt.clear();
     evInfo[iRes].photon_eta.clear();
@@ -388,6 +410,20 @@ bool isPromptPhoton(const reco::Photon& photon, const edm::View<reco::GenParticl
   return isPrompt;
 }
 
+
+
+
+
+XYZTLorentzVector correctP4(const reco::Photon &photon, const reco::Vertex& vtx){
+  // -- recompute p4 wrt to the chosen vertex (taken from flashgg)                                                                                                                                      
+  math::XYZVector vtx_Pos( vtx.x(), vtx.y(), vtx.z() );
+  math::XYZVector sc_Pos( photon.superCluster()->x(), photon.superCluster()->y(), photon.superCluster()->z());
+  math::XYZVector direction = sc_Pos - vtx_Pos;
+  math::XYZVector p = ( direction.Unit() ) * ( photon.energy() );
+  math::XYZTLorentzVector corr_p4( p.x(), p.y(), p.z(), photon.energy() );
+  
+  return corr_p4;
+}
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(PhotonIsolationAnalyzer);
