@@ -62,6 +62,8 @@ PhotonIsolationAnalyzer::PhotonIsolationAnalyzer(const edm::ParameterSet& iConfi
   timeResolutions_ = iConfig.getUntrackedParameter<vector<double> >("timeResolutions");
   isoConeDR_       = iConfig.getUntrackedParameter<vector<double> >("isoConeDR");
   saveTracks_      = iConfig.getUntrackedParameter<bool>("saveTracks");
+  maxDz_           = iConfig.getUntrackedParameter<double>("maxDz");
+  minDr_           = iConfig.getUntrackedParameter<double>("minDr");
 
    //Now do what ever initialization is needed
   for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
@@ -223,15 +225,18 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
       // -- skip tracks if dz(track, vertex) > dzCut 
       float dz = std::abs(pfcand.vz() - vtx.z());
-      if (dz  > 1.0) continue;
-      //if (dxy > 0.02) continue;
-     
+      if (dz  > maxDz_) continue; // 1 mm
 
+      float dxy = sqrt( pow(pfcand.vx() - vtx.x(),2) + pow(pfcand.vy() - vtx.y(), 2)); 
+      if (dxy > 0.02) continue;
+     
       // --- no timing 
       float dr  = deltaR(pho_p4_3Dvtx.eta(), pho_p4_3Dvtx.phi(), pfcand.eta(), pfcand.phi());
       for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-        if (dr < isoConeDR_[iCone]){
-          chIso[iCone]+= pfcand.pt();
+	//if (dr<0.05) cout << dr << "  "<< pfcand.eta() << "  " <<pfcand.pt() <<"  " << pho_p4_3Dvtx.eta() << "  " <<pho_p4_3Dvtx.pt()<< 
+	//	"  hasConversionTracks = " << photon.hasConversionTracks()<< "  sigmaietieta = "<< photon.sigmaIetaIeta()<< "  r9 = "<< photon.r9() <<endl;
+        if (dr > minDr_ && dr < isoConeDR_[iCone]){
+	  chIso[iCone]+= pfcand.pt();
 	}
       }
 
@@ -241,7 +246,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       double dt = 0;
       
       for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-        if (dr < isoConeDR_[iCone]){ 	  
+        if (dr > minDr_ && dr < isoConeDR_[iCone]){ 	  
 	  for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
 	    double time_resol = timeResolutions_[iRes];
 	    double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);                                                                                                      
@@ -276,6 +281,10 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       evInfo[iRes].photon_eta.push_back(pho_p4.eta());  
       evInfo[iRes].photon_phi.push_back(pho_p4.phi()); 
       evInfo[iRes].photon_isPrompt.push_back(isPromptPho);
+      evInfo[iRes].photon_hasConversionTracks.push_back(photon.hasConversionTracks());
+      evInfo[iRes].photon_sigmaIetaIeta.push_back(photon.sigmaIetaIeta());
+      evInfo[iRes].photon_r9.push_back(photon.r9());
+      
       for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
 	//cout<< "chIso = " << chIso[iCone] << " chIso_dT = " <<chIso_dT[iCone][iRes] << endl;
 	(evInfo[iRes].photon_chIso[iCone]).push_back(chIso[iCone]);  
@@ -320,6 +329,9 @@ PhotonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "photon_eta",        &evInfo[iRes].photon_eta);  
     eventTree[iRes]->Branch( "photon_phi",        &evInfo[iRes].photon_phi);  
     eventTree[iRes]->Branch( "photon_isPrompt",   &evInfo[iRes].photon_isPrompt);  
+    eventTree[iRes]->Branch( "photon_hasConversionTracks",   &evInfo[iRes].photon_hasConversionTracks);  
+    eventTree[iRes]->Branch( "photon_sigmaIetaIeta",   &evInfo[iRes].photon_sigmaIetaIeta);  
+    eventTree[iRes]->Branch( "photon_r9",   &evInfo[iRes].photon_r9);  
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
       eventTree[iRes]->Branch( Form("photon_chIso%.2d",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].photon_chIso[iCone]);  
@@ -370,6 +382,9 @@ PhotonIsolationAnalyzer::initEventStructure()
     evInfo[iRes].photon_eta.clear();
     evInfo[iRes].photon_phi.clear();
     evInfo[iRes].photon_isPrompt.clear();
+    evInfo[iRes].photon_hasConversionTracks.clear();
+    evInfo[iRes].photon_sigmaIetaIeta.clear();
+    evInfo[iRes].photon_r9.clear();
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
       evInfo[iRes].photon_chIso[iCone].clear();

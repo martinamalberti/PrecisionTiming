@@ -87,6 +87,9 @@ struct eventInfo
   vector<float> photon_eta;
   vector<float> photon_phi;
   vector<float> photon_isPrompt;
+  vector<float> photon_hasConversionTracks;
+  vector<float> photon_sigmaIetaIeta;
+  vector<float> photon_r9;
   vector<float> photon_chIso[10];
   vector<float> photon_chIso_dT[10][10];
 };
@@ -132,6 +135,8 @@ private:
   vector<double> timeResolutions_;
   vector<double> isoConeDR_;
   bool saveTracks_;
+  float maxDz_;
+  float minDr_;
 };
 
 bool isPromptPhoton(const reco::Photon &photon, const edm::View<reco::GenParticle>& genParticles);
