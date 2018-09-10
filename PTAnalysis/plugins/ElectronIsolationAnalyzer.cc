@@ -1,9 +1,9 @@
 // -*- C++ -*-%
 //
-// Package:    PrecisionTiming/PhotonIsolationAnalyzer
-// Class:      PhotonIsolationAnalyzer
+// Package:    PrecisionTiming/ElectronIsolationAnalyzer
+// Class:      ElectronIsolationAnalyzer
 // 
-/**\class PhotonIsolationAnalyzer PhotonIsolationAnalyzer.cc PrecisionTiming/PTAnalysis/plugins/PhotonIsolationAnalyzer.cc
+/**\class ElectronIsolationAnalyzer ElectronIsolationAnalyzer.cc PrecisionTiming/PTAnalysis/plugins/ElectronIsolationAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -29,7 +29,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "PrecisionTiming/PTAnalysis/interface/PhotonIsolationAnalyzer.h"
+#include "PrecisionTiming/PTAnalysis/interface/ElectronIsolationAnalyzer.h"
 
 #include <TMath.h>
 #include <TRandom.h>
@@ -48,7 +48,7 @@
 //
 // constructors and destructor
 //
-PhotonIsolationAnalyzer::PhotonIsolationAnalyzer(const edm::ParameterSet& iConfig):
+ElectronIsolationAnalyzer::ElectronIsolationAnalyzer(const edm::ParameterSet& iConfig):
   PileUpToken_( consumes<vector<PileupSummaryInfo> >( iConfig.getParameter<InputTag> ( "PileUpTag" ) ) ),
   vertexToken3D_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag3D" ) ) ),
   vertexToken4D_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag4D" ) ) ),
@@ -57,7 +57,7 @@ PhotonIsolationAnalyzer::PhotonIsolationAnalyzer(const edm::ParameterSet& iConfi
   pfcandToken_( consumes<View<reco::PFCandidate> >( iConfig.getParameter<InputTag>( "PFCandidateTag" ) ) ),
   genPartToken_(consumes<View<reco::GenParticle> >(iConfig.getUntrackedParameter<InputTag>("genPartTag"))),
   genVertexToken_(consumes<vector<SimVertex> >(iConfig.getUntrackedParameter<InputTag>("genVtxTag"))),
-  photonsToken_(consumes<View<reco::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("photonsTag")))
+  electronsToken_(consumes<View<reco::GsfElectron> >(iConfig.getUntrackedParameter<edm::InputTag>("electronsTag")))
 {
   timeResolutions_ = iConfig.getUntrackedParameter<vector<double> >("timeResolutions");
   isoConeDR_       = iConfig.getUntrackedParameter<vector<double> >("isoConeDR");
@@ -74,7 +74,7 @@ PhotonIsolationAnalyzer::PhotonIsolationAnalyzer(const edm::ParameterSet& iConfi
 }
 
 
-PhotonIsolationAnalyzer::~PhotonIsolationAnalyzer()
+ElectronIsolationAnalyzer::~ElectronIsolationAnalyzer()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -89,7 +89,7 @@ PhotonIsolationAnalyzer::~PhotonIsolationAnalyzer()
 
 // ------------ method called for each event  ------------
 void
-PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   
   // -- get the vertex 3D collection
@@ -108,10 +108,10 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
     iEvent.getByToken( PileUpToken_, PileupInfos );
    } else return;
 
-  // -- get the photons
-  Handle<View<reco::Photon> > PhotonCollectionH;
-  iEvent.getByToken(photonsToken_, PhotonCollectionH);
-  const edm::View<reco::Photon>& photons = *PhotonCollectionH;
+  // -- get the electrons
+  Handle<View<reco::GsfElectron> > ElectronCollectionH;
+  iEvent.getByToken(electronsToken_, ElectronCollectionH);
+  const edm::View<reco::GsfElectron>& electrons = *ElectronCollectionH;
 
   // -- get the track collection
   Handle<View<reco::Track> > TrackCollectionH;
@@ -186,24 +186,21 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
   }
 
 
-  // -- get isolation around a candidate photon 
+  // -- get isolation around a candidate electron
   // --- using only vtx closest to gen vtx
   const reco::Vertex& vtx   = vertices4D[pv_index_4D];
   const reco::Vertex& vtx3D = vertices3D[pv_index_3D];
 
-  for(unsigned int ipho=0; ipho < photons.size(); ipho++ ){
+  for(unsigned int iele=0; iele < electrons.size(); iele++ ){
 
-    const reco::Photon& photon = photons[ipho];
+    const reco::GsfElectron& electron = electrons[iele];
 
     // -- minimal checks
-    if(photon.pt() < 15.) continue;
+    if(electron.pt() < 15.) continue;
   
-    // -- check if prompt or fake photon
-    bool isPromptPho = isPromptPhoton(photon,genParticles);
+    // -- check if prompt or fake electron
+    bool isMatched = isMatchedToGen(electron,genParticles);
   
-    // -- recompute p4 wrt to the chosen vertex (taken from flashgg)
-    math::XYZTLorentzVector pho_p4 = correctP4(photon, vtx);
-    math::XYZTLorentzVector pho_p4_3Dvtx = correctP4(photon, vtx3D);
 
     // -- compute charged isolations
     const int nCones = isoConeDR_.size();
@@ -218,12 +215,6 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       if (pfcand.charge() == 0 ) continue;
       float trkTime = pfcand.time();
 
-      //auto pfcandRef = pfcands.refAt(icand);
-      //reco::TrackRef trackRef = pfcandRef->trackRef();
-      //if (trackRef.isNull()) continue;
-      //cout << trackRef -> pt() << "  " << trackRef -> eta() <<endl;
-      //cout << pfcand.pt() << "  " << pfcand.eta() <<endl;  
-
       // -- skip tracks if dz(track, vertex) > dzCut 
       float dz = std::abs(pfcand.vz() - vtx.z());
       if (dz  > maxDz_) continue; // 1 mm
@@ -232,7 +223,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       if (dxy > 0.02) continue;
      
       // --- no timing 
-      float dr  = deltaR(pho_p4_3Dvtx.eta(), pho_p4_3Dvtx.phi(), pfcand.eta(), pfcand.phi());
+      float dr  = deltaR(electron.eta(), electron.phi(), pfcand.eta(), pfcand.phi());
       for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
         if (dr > minDr_ && dr < isoConeDR_[iCone]){
 	  chIso[iCone]+= pfcand.pt();
@@ -241,7 +232,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
 
       // --- with timing
-      dr  = deltaR(pho_p4.eta(), pho_p4.phi(), pfcand.eta(), pfcand.phi());     
+      dr  = deltaR(electron.eta(), electron.phi(), pfcand.eta(), pfcand.phi());     
       double dt = 0;
       
       for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
@@ -263,49 +254,36 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	
 	  // save info for tracks in the isolation cone
 	  if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
-	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                      
-	      evInfo[iRes].track_t.push_back(time[iCone][iRes]);                                                                                                                               
+	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+	      evInfo[iRes].track_t.push_back(time[iCone][iRes]); 
 	      evInfo[iRes].track_dz.push_back(dz);                                                                                                                               
-	      evInfo[iRes].track_pt.push_back(pfcand.pt());
-	      evInfo[iRes].track_eta.push_back(pfcand.eta());                                                                                                                           
-	      evInfo[iRes].track_phi.push_back(pfcand.phi());                                                                                                                           
-	    }                                                                                                                                                                       
+	      evInfo[iRes].track_pt.push_back(pfcand.pt());                                      
+	      evInfo[iRes].track_eta.push_back(pfcand.eta()); 
+	      evInfo[iRes].track_phi.push_back(pfcand.phi());
+	    }
 	  }
 	}                                                                                                                                                                      
       }// end loop over cone sizes                                                                                                                                              
-                                                                                                                                                                                
-      //if (saveTracks_){                                                                                                                                                         
-      //  for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                      
-      //    evInfo[iRes].track_t.push_back(trkTime);                                                                                                                               
-      //    evInfo[iRes].track_pt.push_back(pfcand.pt());                                                                                                                             
-      //    evInfo[iRes].track_eta.push_back(pfcand.eta());                                                                                                                           
-      //    evInfo[iRes].track_phi.push_back(pfcand.phi());                                                                                                                           
-      //  }                                                                                                                                                                       
-      //}   
+    
     }// end loop over tracks
 
     
-    // fill photon info
+    // fill electron info
     for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
-      evInfo[iRes].photon_pt.push_back(pho_p4.pt());  
-      evInfo[iRes].photon_eta.push_back(pho_p4.eta());  
-      evInfo[iRes].photon_phi.push_back(pho_p4.phi()); 
-      evInfo[iRes].photon_isPrompt.push_back(isPromptPho);
-      evInfo[iRes].photon_hasConversionTracks.push_back(photon.hasConversionTracks());
-      evInfo[iRes].photon_sigmaIetaIeta.push_back(photon.sigmaIetaIeta());
-      evInfo[iRes].photon_r9.push_back(photon.r9());
+      evInfo[iRes].electron_pt.push_back(electron.pt());  
+      evInfo[iRes].electron_eta.push_back(electron.eta());  
+      evInfo[iRes].electron_phi.push_back(electron.phi()); 
+      evInfo[iRes].electron_isMatchedToGen.push_back(isMatched);
+      evInfo[iRes].electron_r9.push_back(electron.r9());
       
       for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
-	//cout<< "chIso = " << chIso[iCone] << " chIso_dT = " <<chIso_dT[iCone][iRes] << endl;
-	(evInfo[iRes].photon_chIso[iCone]).push_back(chIso[iCone]);  
-	(evInfo[iRes].photon_chIso_dT[iCone][iRes]).push_back(chIso_dT[iCone][iRes]);
+	(evInfo[iRes].electron_chIso[iCone]).push_back(chIso[iCone]);  
+	(evInfo[iRes].electron_chIso_dT[iCone][iRes]).push_back(chIso_dT[iCone][iRes]);
       }
     }
-  }// end loop over photons
+  }// end loop over electrons
 
-
-
-  // fill info per event
+  // -- fill info per event
   for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
     evInfo[iRes].npu = nPU;
     evInfo[iRes].vtx_t = vtx.t();
@@ -320,13 +298,12 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
     eventTree[iRes]->Fill();
   }
 
-  
 }// end analyze event
   
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-PhotonIsolationAnalyzer::beginJob()
+ElectronIsolationAnalyzer::beginJob()
 {
   for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
   
@@ -335,17 +312,15 @@ PhotonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "vtx3D_z",           &evInfo[iRes].vtx3D_z);
     eventTree[iRes]->Branch( "vtx_z",             &evInfo[iRes].vtx_z);
     eventTree[iRes]->Branch( "vtx_t",             &evInfo[iRes].vtx_t);
-    eventTree[iRes]->Branch( "photon_pt",         &evInfo[iRes].photon_pt);  
-    eventTree[iRes]->Branch( "photon_eta",        &evInfo[iRes].photon_eta);  
-    eventTree[iRes]->Branch( "photon_phi",        &evInfo[iRes].photon_phi);  
-    eventTree[iRes]->Branch( "photon_isPrompt",   &evInfo[iRes].photon_isPrompt);  
-    eventTree[iRes]->Branch( "photon_hasConversionTracks",   &evInfo[iRes].photon_hasConversionTracks);  
-    eventTree[iRes]->Branch( "photon_sigmaIetaIeta",   &evInfo[iRes].photon_sigmaIetaIeta);  
-    eventTree[iRes]->Branch( "photon_r9",   &evInfo[iRes].photon_r9);  
+    eventTree[iRes]->Branch( "electron_pt",         &evInfo[iRes].electron_pt);  
+    eventTree[iRes]->Branch( "electron_eta",        &evInfo[iRes].electron_eta);  
+    eventTree[iRes]->Branch( "electron_phi",        &evInfo[iRes].electron_phi);  
+    eventTree[iRes]->Branch( "electron_isMatchedToGen",   &evInfo[iRes].electron_isMatchedToGen);  
+    eventTree[iRes]->Branch( "electron_r9",   &evInfo[iRes].electron_r9);  
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
-      eventTree[iRes]->Branch( Form("photon_chIso%.2d",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].photon_chIso[iCone]);  
-      eventTree[iRes]->Branch( Form("photon_chIso%.2d_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].photon_chIso_dT[iCone][iRes]);  
+      eventTree[iRes]->Branch( Form("electron_chIso%.2d",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].electron_chIso[iCone]);  
+      eventTree[iRes]->Branch( Form("electron_chIso%.2d_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].electron_chIso_dT[iCone][iRes]);  
     }
 
     if (saveTracks_){
@@ -362,13 +337,13 @@ PhotonIsolationAnalyzer::beginJob()
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-PhotonIsolationAnalyzer::endJob() 
+ElectronIsolationAnalyzer::endJob() 
 {
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-PhotonIsolationAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+ElectronIsolationAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -377,9 +352,9 @@ PhotonIsolationAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descri
 }
 
 
-// ------------ method initialize tree structure ------------
+// ------------ method initialize tree structure ----------------------------------------------------
 void
-PhotonIsolationAnalyzer::initEventStructure()
+ElectronIsolationAnalyzer::initEventStructure()
 {
   // per-event trees:
   for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
@@ -389,17 +364,15 @@ PhotonIsolationAnalyzer::initEventStructure()
     evInfo[iRes].vtx_z = -999;
     evInfo[iRes].vtx_t = -999;
 
-    evInfo[iRes].photon_pt.clear();
-    evInfo[iRes].photon_eta.clear();
-    evInfo[iRes].photon_phi.clear();
-    evInfo[iRes].photon_isPrompt.clear();
-    evInfo[iRes].photon_hasConversionTracks.clear();
-    evInfo[iRes].photon_sigmaIetaIeta.clear();
-    evInfo[iRes].photon_r9.clear();
+    evInfo[iRes].electron_pt.clear();
+    evInfo[iRes].electron_eta.clear();
+    evInfo[iRes].electron_phi.clear();
+    evInfo[iRes].electron_isMatchedToGen.clear();
+    evInfo[iRes].electron_r9.clear();
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
-      evInfo[iRes].photon_chIso[iCone].clear();
-      evInfo[iRes].photon_chIso_dT[iCone][iRes].clear();
+      evInfo[iRes].electron_chIso[iCone].clear();
+      evInfo[iRes].electron_chIso_dT[iCone][iRes].clear();
     }
 
     if (saveTracks_){
@@ -414,17 +387,17 @@ PhotonIsolationAnalyzer::initEventStructure()
 
 
 
-
-bool isPromptPhoton(const reco::Photon& photon, const edm::View<reco::GenParticle>& genParticles)
+// --- Electrons matching to gen level -------- ----------------------------------------------------  
+bool isMatchedToGen(const reco::GsfElectron& electron, const edm::View<reco::GenParticle>& genParticles)
 {
   bool isPrompt = false;
 
   for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
     const reco::GenParticle& genp = genParticles[ip];
-    if ( std::abs(genp.pdgId()) != 22) continue;
+    if ( std::abs(genp.pdgId()) != 11) continue;
     if ( !genp.isPromptFinalState() ) continue;
     if ( genp.pt() < 5.0 ) continue;
-    double dr = deltaR(photon,genp);
+    double dr = deltaR(electron,genp);
     if (dr > 0.1){ 
       continue;
     }
@@ -441,16 +414,5 @@ bool isPromptPhoton(const reco::Photon& photon, const edm::View<reco::GenParticl
 
 
 
-XYZTLorentzVector correctP4(const reco::Photon &photon, const reco::Vertex& vtx){
-  // -- recompute p4 wrt to the chosen vertex (taken from flashgg)                                                                                                                                      
-  math::XYZVector vtx_Pos( vtx.x(), vtx.y(), vtx.z() );
-  math::XYZVector sc_Pos( photon.superCluster()->x(), photon.superCluster()->y(), photon.superCluster()->z());
-  math::XYZVector direction = sc_Pos - vtx_Pos;
-  math::XYZVector p = ( direction.Unit() ) * ( photon.energy() );
-  math::XYZTLorentzVector corr_p4( p.x(), p.y(), p.z(), photon.energy() );
-  
-  return corr_p4;
-}
-
 //define this as a plug-in
-DEFINE_FWK_MODULE(PhotonIsolationAnalyzer);
+DEFINE_FWK_MODULE(ElectronIsolationAnalyzer);

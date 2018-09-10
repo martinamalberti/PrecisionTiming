@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    PrecisionTiming/PhotonIsolationAnalyzer
-// Class:      PhotonIsolationAnalyzer
+// Package:    PrecisionTiming/ElectronIsolationAnalyzer
+// Class:      ElectronIsolationAnalyzer
 // 
-/**\class PhotonIsolationAnalyzer PhotonIsolationAnalyzer.cc PrecisionTiming/PhotonIsolationAnalyzer/plugins/PhotonIsolationAnalyzer.cc
+/**\class ElectronIsolationAnalyzer ElectronIsolationAnalyzer.cc PrecisionTiming/ElectronIsolationAnalyzer/plugins/ElectronIsolationAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -40,7 +40,7 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
-#include "DataFormats/PatCandidates/interface/Photon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/ValueMap.h"
@@ -78,31 +78,26 @@ struct eventInfo
   float vtx3D_z;
   float vtx_z;
   float vtx_t;
-  vector<float> photon_pt;
-  vector<float> photon_eta;
-  vector<float> photon_phi;
-  vector<float> photon_isPrompt;
-  vector<float> photon_hasConversionTracks;
-  vector<float> photon_sigmaIetaIeta;
-  vector<float> photon_r9;
-  vector<float> photon_chIso[10];
-  vector<float> photon_chIso_dT[10][10];
+  vector<float> electron_pt;
+  vector<float> electron_eta;
+  vector<float> electron_phi;
+  vector<float> electron_isMatchedToGen;
+  vector<float> electron_r9;
+  vector<float> electron_chIso[10];
+  vector<float> electron_chIso_dT[10][10];
 };
 
 
-class PhotonIsolationAnalyzer : public edm::EDAnalyzer  
+class ElectronIsolationAnalyzer : public edm::EDAnalyzer  
 {
 public:
-  explicit PhotonIsolationAnalyzer(const edm::ParameterSet&);
-  ~PhotonIsolationAnalyzer();
+  explicit ElectronIsolationAnalyzer(const edm::ParameterSet&);
+  ~ElectronIsolationAnalyzer();
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 
 private:
-  //virtual void beginJob() override;
-  //virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-  //virtual void endJob() override;
   virtual void beginJob() ;
   virtual void analyze(const edm::Event&, const edm::EventSetup&) ;
   virtual void endJob() ;
@@ -119,7 +114,7 @@ private:
   EDGetTokenT<edm::View<reco::PFCandidate> >      pfcandToken_;
   EDGetTokenT<View<reco::GenParticle> > genPartToken_;
   EDGetTokenT<vector<SimVertex> >  genVertexToken_;
-  EDGetTokenT<View<reco::Photon> > photonsToken_; 
+  EDGetTokenT<View<reco::GsfElectron> > electronsToken_; 
   
   //--- outputs
   edm::Service<TFileService> fs_;
@@ -134,5 +129,4 @@ private:
   float minDr_;
 };
 
-bool isPromptPhoton(const reco::Photon &photon, const edm::View<reco::GenParticle>& genParticles);
-math::XYZTLorentzVector correctP4(const reco::Photon &photon, const reco::Vertex& vtx);
+bool isMatchedToGen(const reco::GsfElectron &electron, const edm::View<reco::GenParticle>& genParticles);
