@@ -114,12 +114,11 @@ private:
   EDGetTokenT<vector<PileupSummaryInfo> > PileUpToken_;
   EDGetTokenT<View<reco::Vertex> > vertexToken3D_;
   EDGetTokenT<View<reco::Vertex> > vertexToken4D_;
-  EDGetTokenT<View<reco::Track> > tracksToken_;
-  EDGetTokenT<ValueMap<float> > trackTimeToken_;
   EDGetTokenT<edm::View<reco::PFCandidate> >      pfcandToken_;
   EDGetTokenT<View<reco::GenParticle> > genPartToken_;
   EDGetTokenT<vector<SimVertex> >  genVertexToken_;
-  EDGetTokenT<View<reco::Photon> > photonsToken_; 
+  EDGetTokenT<View<reco::Photon> > barrelPhotonsToken_; 
+  EDGetTokenT<View<reco::Photon> > endcapPhotonsToken_; 
   
   //--- outputs
   edm::Service<TFileService> fs_;

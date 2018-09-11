@@ -52,12 +52,11 @@ PhotonIsolationAnalyzer::PhotonIsolationAnalyzer(const edm::ParameterSet& iConfi
   PileUpToken_( consumes<vector<PileupSummaryInfo> >( iConfig.getParameter<InputTag> ( "PileUpTag" ) ) ),
   vertexToken3D_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag3D" ) ) ),
   vertexToken4D_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag4D" ) ) ),
-  tracksToken_( consumes<View<reco::Track> >( iConfig.getParameter<InputTag>( "TracksTag" ) ) ),
-  trackTimeToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeValueMapTag" ) ) ),
   pfcandToken_( consumes<View<reco::PFCandidate> >( iConfig.getParameter<InputTag>( "PFCandidateTag" ) ) ),
   genPartToken_(consumes<View<reco::GenParticle> >(iConfig.getUntrackedParameter<InputTag>("genPartTag"))),
   genVertexToken_(consumes<vector<SimVertex> >(iConfig.getUntrackedParameter<InputTag>("genVtxTag"))),
-  photonsToken_(consumes<View<reco::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("photonsTag")))
+  barrelPhotonsToken_(consumes<View<reco::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("barrelPhotonsTag"))),
+  endcapPhotonsToken_(consumes<View<reco::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("endcapPhotonsTag")))
 {
   timeResolutions_ = iConfig.getUntrackedParameter<vector<double> >("timeResolutions");
   isoConeDR_       = iConfig.getUntrackedParameter<vector<double> >("isoConeDR");
@@ -91,6 +90,7 @@ PhotonIsolationAnalyzer::~PhotonIsolationAnalyzer()
 void
 PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+
   
   // -- get the vertex 3D collection
   Handle<View<reco::Vertex> > Vertex3DCollectionH;
@@ -108,19 +108,15 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
     iEvent.getByToken( PileUpToken_, PileupInfos );
    } else return;
 
-  // -- get the photons
-  Handle<View<reco::Photon> > PhotonCollectionH;
-  iEvent.getByToken(photonsToken_, PhotonCollectionH);
-  const edm::View<reco::Photon>& photons = *PhotonCollectionH;
+  // -- get the barrel photons
+  Handle<View<reco::Photon> > BarrelPhotonCollectionH;
+  iEvent.getByToken(barrelPhotonsToken_, BarrelPhotonCollectionH);
+  const edm::View<reco::Photon>& barrelPhotons = *BarrelPhotonCollectionH;
 
-  // -- get the track collection
-  Handle<View<reco::Track> > TrackCollectionH;
-  iEvent.getByToken(tracksToken_, TrackCollectionH);
-  const edm::View<reco::Track>& tracks = *TrackCollectionH;
-
-  // -- get the trackTimeValueMap
-  Handle<ValueMap<float> > trackTimeValueMap;
-  iEvent.getByToken( trackTimeToken_, trackTimeValueMap );
+  // -- get the endcap photons
+  Handle<View<reco::Photon> > EndcapPhotonCollectionH;
+  iEvent.getByToken(endcapPhotonsToken_, EndcapPhotonCollectionH);
+  const edm::View<reco::Photon>& endcapPhotons = *EndcapPhotonCollectionH;
 
   // -- get the PFCandidate collection
   Handle<View<reco::PFCandidate> > PFCandidateCollectionH;
@@ -191,16 +187,19 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
   const reco::Vertex& vtx   = vertices4D[pv_index_4D];
   const reco::Vertex& vtx3D = vertices3D[pv_index_3D];
 
-  for(unsigned int ipho=0; ipho < photons.size(); ipho++ ){
 
-    const reco::Photon& photon = photons[ipho];
+  // --- start loop over barrel 
+  for(unsigned int ipho=0; ipho < barrelPhotons.size(); ipho++ ){
+
+    const reco::Photon& photon = barrelPhotons[ipho];
 
     // -- minimal checks
     if(photon.pt() < 15.) continue;
   
     // -- check if prompt or fake photon
     bool isPromptPho = isPromptPhoton(photon,genParticles);
-  
+
+
     // -- recompute p4 wrt to the chosen vertex (taken from flashgg)
     math::XYZTLorentzVector pho_p4 = correctP4(photon, vtx);
     math::XYZTLorentzVector pho_p4_3Dvtx = correctP4(photon, vtx3D);
@@ -216,13 +215,6 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
     for(unsigned icand = 0; icand < pfcands.size(); ++icand) {
       const reco::PFCandidate& pfcand = pfcands[icand];
       if (pfcand.charge() == 0 ) continue;
-      float trkTime = pfcand.time();
-
-      //auto pfcandRef = pfcands.refAt(icand);
-      //reco::TrackRef trackRef = pfcandRef->trackRef();
-      //if (trackRef.isNull()) continue;
-      //cout << trackRef -> pt() << "  " << trackRef -> eta() <<endl;
-      //cout << pfcand.pt() << "  " << pfcand.eta() <<endl;  
 
       // -- skip tracks if dz(track, vertex) > dzCut 
       float dz = std::abs(pfcand.vz() - vtx.z());
@@ -231,6 +223,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       float dxy = sqrt( pow(pfcand.vx() - vtx.x(),2) + pow(pfcand.vy() - vtx.y(), 2)); 
       if (dxy > 0.02) continue;
      
+
       // --- no timing 
       float dr  = deltaR(pho_p4_3Dvtx.eta(), pho_p4_3Dvtx.phi(), pfcand.eta(), pfcand.phi());
       for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
@@ -273,19 +266,10 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	  }
 	}                                                                                                                                                                      
       }// end loop over cone sizes                                                                                                                                              
-                                                                                                                                                                                
-      //if (saveTracks_){                                                                                                                                                         
-      //  for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                      
-      //    evInfo[iRes].track_t.push_back(trkTime);                                                                                                                               
-      //    evInfo[iRes].track_pt.push_back(pfcand.pt());                                                                                                                             
-      //    evInfo[iRes].track_eta.push_back(pfcand.eta());                                                                                                                           
-      //    evInfo[iRes].track_phi.push_back(pfcand.phi());                                                                                                                           
-      //  }                                                                                                                                                                       
-      //}   
     }// end loop over tracks
 
     
-    // fill photon info
+    // -- fill photon info
     for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
       evInfo[iRes].photon_pt.push_back(pho_p4.pt());  
       evInfo[iRes].photon_eta.push_back(pho_p4.eta());  
@@ -296,16 +280,115 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       evInfo[iRes].photon_r9.push_back(photon.r9());
       
       for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
-	//cout<< "chIso = " << chIso[iCone] << " chIso_dT = " <<chIso_dT[iCone][iRes] << endl;
 	(evInfo[iRes].photon_chIso[iCone]).push_back(chIso[iCone]);  
 	(evInfo[iRes].photon_chIso_dT[iCone][iRes]).push_back(chIso_dT[iCone][iRes]);
       }
     }
-  }// end loop over photons
+  }// end loop over barrel photons
 
 
 
-  // fill info per event
+  // --- start loop over endcap
+  for(unsigned int ipho=0; ipho < endcapPhotons.size(); ipho++ ){
+    
+    const reco::Photon& photon = endcapPhotons[ipho];
+
+    // -- minimal checks
+    if (photon.pt()  < 15.) continue;
+    if (fabs(photon.eta()) < 1.5) continue; // only endcap photons
+
+    // -- check if prompt or fake photon
+    bool isPromptPho = isPromptPhoton(photon,genParticles);
+
+    // -- recompute p4 wrt to the chosen vertex (taken from flashgg)
+    math::XYZTLorentzVector pho_p4 = correctP4(photon, vtx);
+    math::XYZTLorentzVector pho_p4_3Dvtx = correctP4(photon, vtx3D);
+
+    // -- compute charged isolations
+    const int nCones = isoConeDR_.size();
+    const int nResol = timeResolutions_.size();
+    float chIso[nCones] = {0.};
+    float chIso_dT[nCones][nResol] = {{0.}} ;
+    float time[nCones][nResol] = {{0.}};
+
+    // -- loop over charged pf candidates
+    for(unsigned icand = 0; icand < pfcands.size(); ++icand) {
+      const reco::PFCandidate& pfcand = pfcands[icand];
+      if (pfcand.charge() == 0 ) continue;
+
+      // -- skip tracks if dz(track, vertex) > dzCut
+      float dz = std::abs(pfcand.vz() - vtx.z());
+      if (dz  > maxDz_) continue; // 1 mm
+
+      float dxy = sqrt( pow(pfcand.vx() - vtx.x(),2) + pow(pfcand.vy() - vtx.y(), 2));
+      if (dxy > 0.02) continue;
+
+
+
+      // --- no timing
+      float dr  = deltaR(pho_p4_3Dvtx.eta(), pho_p4_3Dvtx.phi(), pfcand.eta(), pfcand.phi());
+      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+        if (dr > minDr_ && dr < isoConeDR_[iCone]){
+          chIso[iCone]+= pfcand.pt();
+        }
+      }
+
+
+
+      // --- with timing
+      dr  = deltaR(pho_p4.eta(), pho_p4.phi(), pfcand.eta(), pfcand.phi());
+      double dt = 0;
+
+      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+        if (dr > minDr_ && dr < isoConeDR_[iCone]){
+          for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+            double time_resol = timeResolutions_[iRes];
+            double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);
+            if ( pfcand.isTimeValid() ) {
+              time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
+              dt = std::abs(time[iCone][iRes] - vtx.t());
+            }
+            else{
+              dt = 0;
+            }
+            if ( dt < 3*time_resol){
+              chIso_dT[iCone][iRes]+= pfcand.pt();
+            }
+          }// end loop over time resolutions
+
+          // save info for tracks in the isolation cone
+          if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
+            for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+              evInfo[iRes].track_t.push_back(time[iCone][iRes]);
+              evInfo[iRes].track_dz.push_back(dz);
+              evInfo[iRes].track_pt.push_back(pfcand.pt());
+              evInfo[iRes].track_eta.push_back(pfcand.eta());
+              evInfo[iRes].track_phi.push_back(pfcand.phi());
+            }
+          }
+        }
+      }// end loop over cone sizes
+    }// end loop over tracks                                                                                                                                                                                                                
+   
+    // -- fill photon info
+    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+      evInfo[iRes].photon_pt.push_back(pho_p4.pt());
+      evInfo[iRes].photon_eta.push_back(pho_p4.eta());
+      evInfo[iRes].photon_phi.push_back(pho_p4.phi());
+      evInfo[iRes].photon_isPrompt.push_back(isPromptPho);
+      evInfo[iRes].photon_hasConversionTracks.push_back(photon.hasConversionTracks());
+      evInfo[iRes].photon_sigmaIetaIeta.push_back(photon.sigmaIetaIeta());
+      evInfo[iRes].photon_r9.push_back(photon.r9());
+      
+      for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
+        (evInfo[iRes].photon_chIso[iCone]).push_back(chIso[iCone]);
+        (evInfo[iRes].photon_chIso_dT[iCone][iRes]).push_back(chIso_dT[iCone][iRes]);
+      }
+    }
+  }// end loop over endcap photons
+
+
+  // -- fill event info
   for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
     evInfo[iRes].npu = nPU;
     evInfo[iRes].vtx_t = vtx.t();
