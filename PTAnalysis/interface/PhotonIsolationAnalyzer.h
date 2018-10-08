@@ -41,6 +41,7 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
+#include "DataFormats/JetReco/interface/GenJetCollection.h"
 
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/ValueMap.h"
@@ -75,14 +76,17 @@ struct eventInfo
   vector<float> track_t;
 
   float vtxGen_z;
-  float vtx3D_z;
+  float vtxGen_t;
   float vtx_z;
   float vtx_t;
+  float vtx3D_z;
   vector<float> photon_pt;
   vector<float> photon_eta;
   vector<float> photon_phi;
   vector<float> photon_isPrompt;
+  vector<float> photon_isMatchedToGenJet;
   vector<float> photon_hasConversionTracks;
+  vector<float> photon_hasPixelSeed;
   vector<float> photon_sigmaIetaIeta;
   vector<float> photon_r9;
   vector<float> photon_chIso[10];
@@ -117,6 +121,7 @@ private:
   EDGetTokenT<edm::View<reco::PFCandidate> >      pfcandToken_;
   EDGetTokenT<View<reco::GenParticle> > genPartToken_;
   EDGetTokenT<vector<SimVertex> >  genVertexToken_;
+  EDGetTokenT<View<reco::GenJet> > genJetsToken_;
   EDGetTokenT<View<reco::Photon> > barrelPhotonsToken_; 
   EDGetTokenT<View<reco::Photon> > endcapPhotonsToken_; 
   
@@ -134,4 +139,5 @@ private:
 };
 
 bool isPromptPhoton(const reco::Photon &photon, const edm::View<reco::GenParticle>& genParticles);
+bool isMatchedToGenJet(const reco::Photon &photon, const edm::View<reco::GenJet>& genJet);
 math::XYZTLorentzVector correctP4(const reco::Photon &photon, const reco::Vertex& vtx);

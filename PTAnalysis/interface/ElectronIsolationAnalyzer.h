@@ -41,6 +41,7 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/JetReco/interface/GenJetCollection.h"
 
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/ValueMap.h"
@@ -75,13 +76,16 @@ struct eventInfo
   vector<float> track_t;
 
   float vtxGen_z;
+  float vtxGen_t;
   float vtx3D_z;
   float vtx_z;
   float vtx_t;
   vector<float> electron_pt;
   vector<float> electron_eta;
   vector<float> electron_phi;
+  vector<float> electron_sigmaIetaIeta;
   vector<float> electron_isMatchedToGen;
+  vector<float> electron_isMatchedToGenJet;
   vector<float> electron_r9;
   vector<float> electron_chIso[10];
   vector<float> electron_chIso_dT[10][10];
@@ -112,6 +116,7 @@ private:
   EDGetTokenT<edm::View<reco::PFCandidate> >      pfcandToken_;
   EDGetTokenT<View<reco::GenParticle> > genPartToken_;
   EDGetTokenT<vector<SimVertex> >  genVertexToken_;
+  EDGetTokenT<View<reco::GenJet> > genJetsToken_;
   EDGetTokenT<View<reco::GsfElectron> > barrelElectronsToken_; 
   EDGetTokenT<View<reco::GsfElectron> > endcapElectronsToken_; 
   
@@ -129,3 +134,4 @@ private:
 };
 
 bool isMatchedToGen(const reco::GsfElectron &electron, const edm::View<reco::GenParticle>& genParticles);
+bool isMatchedToGenJet(const reco::GsfElectron &electron, const edm::View<reco::GenJet>& genJet);

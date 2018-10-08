@@ -55,6 +55,7 @@ ElectronIsolationAnalyzer::ElectronIsolationAnalyzer(const edm::ParameterSet& iC
   pfcandToken_( consumes<View<reco::PFCandidate> >( iConfig.getParameter<InputTag>( "PFCandidateTag" ) ) ),
   genPartToken_(consumes<View<reco::GenParticle> >(iConfig.getUntrackedParameter<InputTag>("genPartTag"))),
   genVertexToken_(consumes<vector<SimVertex> >(iConfig.getUntrackedParameter<InputTag>("genVtxTag"))),
+  genJetsToken_(consumes<View<reco::GenJet> >(iConfig.getUntrackedParameter<InputTag>("genJetsTag"))),
   barrelElectronsToken_(consumes<View<reco::GsfElectron> >(iConfig.getUntrackedParameter<edm::InputTag>("barrelElectronsTag"))),
   endcapElectronsToken_(consumes<View<reco::GsfElectron> >(iConfig.getUntrackedParameter<edm::InputTag>("endcapElectronsTag")))
 {
@@ -131,7 +132,11 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
   iEvent.getByToken( genVertexToken_, GenVertexCollectionH );
   const vector<SimVertex>& genVertices = *GenVertexCollectionH;
 
-  
+  // -- get the gen jets collection
+  Handle<View<reco::GenJet> > GenJetCollectionH;
+  iEvent.getByToken(genJetsToken_, GenJetCollectionH);
+  const edm::View<reco::GenJet>& genJets = *GenJetCollectionH;  
+
   // -- initialize output tree
   initEventStructure();
   
@@ -195,7 +200,8 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
     if(electron.pt() < 15.) continue;
   
     // -- check if prompt or fake electron
-    bool isMatched = isMatchedToGen(electron,genParticles);
+    bool isMatchedEle = isMatchedToGen(electron,genParticles);
+    bool isMatchedJet = isMatchedToGenJet(electron, genJets);
   
     // -- compute charged isolations
     const int nCones = isoConeDR_.size();
@@ -220,6 +226,7 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
       float dr  = deltaR(electron.eta(), electron.phi(), pfcand.eta(), pfcand.phi());
       for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
         if (dr > minDr_ && dr < isoConeDR_[iCone]){
+	  //if (iCone == 0) cout << iele << " " << dr << "   " << electron.eta() << "   pt = " << electron.pt() << "  " << pfcand.pt() <<endl ;
 	  chIso[iCone]+= pfcand.pt();
 	}
       }
@@ -265,8 +272,10 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
       evInfo[iRes].electron_pt.push_back(electron.pt());  
       evInfo[iRes].electron_eta.push_back(electron.eta());  
       evInfo[iRes].electron_phi.push_back(electron.phi()); 
-      evInfo[iRes].electron_isMatchedToGen.push_back(isMatched);
+      evInfo[iRes].electron_isMatchedToGen.push_back(isMatchedEle);
+      evInfo[iRes].electron_isMatchedToGenJet.push_back(isMatchedJet);
       evInfo[iRes].electron_r9.push_back(electron.r9());
+      evInfo[iRes].electron_sigmaIetaIeta.push_back(electron.sigmaIetaIeta()); 
       
       for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
 	(evInfo[iRes].electron_chIso[iCone]).push_back(chIso[iCone]);  
@@ -289,7 +298,8 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
     if(fabs(electron.eta()) < 1.5) continue;
 
     // -- check if prompt or fake electron
-    bool isMatched = isMatchedToGen(electron,genParticles);
+    bool isMatchedEle = isMatchedToGen(electron,genParticles);
+    bool isMatchedJet = isMatchedToGenJet(electron, genJets);
 
     // -- compute charged isolations
     const int nCones = isoConeDR_.size();
@@ -315,7 +325,8 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
       float dr  = deltaR(electron.eta(), electron.phi(), pfcand.eta(), pfcand.phi());
       for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
         if (dr > minDr_ && dr < isoConeDR_[iCone]){
-          chIso[iCone]+= pfcand.pt();
+          if (iCone == 0) cout << iele << " " << dr << "   " << electron.eta() << "   pt = " << electron.pt() << "  " << pfcand.pt() <<endl ;
+	  chIso[iCone]+= pfcand.pt();
         }
       }
 
@@ -360,8 +371,10 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
       evInfo[iRes].electron_pt.push_back(electron.pt());
       evInfo[iRes].electron_eta.push_back(electron.eta());
       evInfo[iRes].electron_phi.push_back(electron.phi());
-      evInfo[iRes].electron_isMatchedToGen.push_back(isMatched);
+      evInfo[iRes].electron_isMatchedToGen.push_back(isMatchedEle);
+      evInfo[iRes].electron_isMatchedToGenJet.push_back(isMatchedJet);
       evInfo[iRes].electron_r9.push_back(electron.r9());
+      evInfo[iRes].electron_sigmaIetaIeta.push_back(electron.sigmaIetaIeta()); 
 
       for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
         (evInfo[iRes].electron_chIso[iCone]).push_back(chIso[iCone]);
@@ -378,6 +391,7 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
     evInfo[iRes].vtx_z = vtx.z();
     evInfo[iRes].vtx3D_z = vtx3D.z();
     evInfo[iRes].vtxGen_z = genPV.position().z();
+    evInfo[iRes].vtxGen_t = genPV.position().t();
   }
   
   
@@ -397,6 +411,7 @@ ElectronIsolationAnalyzer::beginJob()
   
     eventTree[iRes]->Branch( "npu",               &evInfo[iRes].npu);
     eventTree[iRes]->Branch( "vtxGen_z",          &evInfo[iRes].vtxGen_z);
+    eventTree[iRes]->Branch( "vtxGen_t",          &evInfo[iRes].vtxGen_t);
     eventTree[iRes]->Branch( "vtx3D_z",           &evInfo[iRes].vtx3D_z);
     eventTree[iRes]->Branch( "vtx_z",             &evInfo[iRes].vtx_z);
     eventTree[iRes]->Branch( "vtx_t",             &evInfo[iRes].vtx_t);
@@ -404,7 +419,9 @@ ElectronIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "electron_eta",        &evInfo[iRes].electron_eta);  
     eventTree[iRes]->Branch( "electron_phi",        &evInfo[iRes].electron_phi);  
     eventTree[iRes]->Branch( "electron_isMatchedToGen",   &evInfo[iRes].electron_isMatchedToGen);  
+    eventTree[iRes]->Branch( "electron_isMatchedToGenJet",   &evInfo[iRes].electron_isMatchedToGenJet);  
     eventTree[iRes]->Branch( "electron_r9",   &evInfo[iRes].electron_r9);  
+    eventTree[iRes]->Branch( "electron_sigmaIetaIeta",   &evInfo[iRes].electron_sigmaIetaIeta);  
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
       eventTree[iRes]->Branch( Form("electron_chIso%.2d",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].electron_chIso[iCone]);  
@@ -448,6 +465,7 @@ ElectronIsolationAnalyzer::initEventStructure()
   for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
     evInfo[iRes].npu = -1;
     evInfo[iRes].vtxGen_z = -999;
+    evInfo[iRes].vtxGen_t = -999;
     evInfo[iRes].vtx3D_z = -999;
     evInfo[iRes].vtx_z = -999;
     evInfo[iRes].vtx_t = -999;
@@ -456,7 +474,9 @@ ElectronIsolationAnalyzer::initEventStructure()
     evInfo[iRes].electron_eta.clear();
     evInfo[iRes].electron_phi.clear();
     evInfo[iRes].electron_isMatchedToGen.clear();
+    evInfo[iRes].electron_isMatchedToGenJet.clear();
     evInfo[iRes].electron_r9.clear();
+    evInfo[iRes].electron_sigmaIetaIeta.clear();
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
       evInfo[iRes].electron_chIso[iCone].clear();
@@ -498,6 +518,28 @@ bool isMatchedToGen(const reco::GsfElectron& electron, const edm::View<reco::Gen
   return isPrompt;
 }
 
+
+
+// --- matching to gen jet
+bool isMatchedToGenJet(const reco::GsfElectron& electron, const edm::View<reco::GenJet>& genJets)
+{
+  bool isMatched = false;
+
+  for(unsigned int ip=0; ip < genJets.size(); ip++ ){
+    const reco::GenParticle& genj = genJets[ip];
+    if ( genj.pt() < 15.0 ) continue;
+    double dr = deltaR(electron,genj);
+    if (dr > 0.1){
+      continue;
+    }
+    else{
+      isMatched=true;
+      break;
+    }
+  }
+
+  return isMatched;
+}
 
 
 

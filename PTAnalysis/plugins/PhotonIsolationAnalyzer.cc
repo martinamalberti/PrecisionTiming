@@ -55,6 +55,7 @@ PhotonIsolationAnalyzer::PhotonIsolationAnalyzer(const edm::ParameterSet& iConfi
   pfcandToken_( consumes<View<reco::PFCandidate> >( iConfig.getParameter<InputTag>( "PFCandidateTag" ) ) ),
   genPartToken_(consumes<View<reco::GenParticle> >(iConfig.getUntrackedParameter<InputTag>("genPartTag"))),
   genVertexToken_(consumes<vector<SimVertex> >(iConfig.getUntrackedParameter<InputTag>("genVtxTag"))),
+  genJetsToken_(consumes<View<reco::GenJet> >(iConfig.getUntrackedParameter<InputTag>("genJetsTag"))),
   barrelPhotonsToken_(consumes<View<reco::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("barrelPhotonsTag"))),
   endcapPhotonsToken_(consumes<View<reco::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("endcapPhotonsTag")))
 {
@@ -133,6 +134,10 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
   iEvent.getByToken( genVertexToken_, GenVertexCollectionH );
   const vector<SimVertex>& genVertices = *GenVertexCollectionH;
 
+  // -- get the gen jets collection
+  Handle<View<reco::GenJet> > GenJetCollectionH;
+  iEvent.getByToken(genJetsToken_, GenJetCollectionH);
+  const edm::View<reco::GenJet>& genJets = *GenJetCollectionH;
   
   // -- initialize output tree
   initEventStructure();
@@ -198,7 +203,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
   
     // -- check if prompt or fake photon
     bool isPromptPho = isPromptPhoton(photon,genParticles);
-
+    bool isMatched   = isMatchedToGenJet(photon, genJets);
 
     // -- recompute p4 wrt to the chosen vertex (taken from flashgg)
     math::XYZTLorentzVector pho_p4 = correctP4(photon, vtx);
@@ -275,7 +280,9 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       evInfo[iRes].photon_eta.push_back(pho_p4.eta());  
       evInfo[iRes].photon_phi.push_back(pho_p4.phi()); 
       evInfo[iRes].photon_isPrompt.push_back(isPromptPho);
+      evInfo[iRes].photon_isMatchedToGenJet.push_back(isMatched);
       evInfo[iRes].photon_hasConversionTracks.push_back(photon.hasConversionTracks());
+      evInfo[iRes].photon_hasPixelSeed.push_back(photon.hasPixelSeed());
       evInfo[iRes].photon_sigmaIetaIeta.push_back(photon.sigmaIetaIeta());
       evInfo[iRes].photon_r9.push_back(photon.r9());
       
@@ -299,8 +306,9 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     // -- check if prompt or fake photon
     bool isPromptPho = isPromptPhoton(photon,genParticles);
+    bool isMatched   = isMatchedToGenJet(photon, genJets);
 
-    // -- recompute p4 wrt to the chosen vertex (taken from flashgg)
+     // -- recompute p4 wrt to the chosen vertex (taken from flashgg)
     math::XYZTLorentzVector pho_p4 = correctP4(photon, vtx);
     math::XYZTLorentzVector pho_p4_3Dvtx = correctP4(photon, vtx3D);
 
@@ -376,7 +384,9 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       evInfo[iRes].photon_eta.push_back(pho_p4.eta());
       evInfo[iRes].photon_phi.push_back(pho_p4.phi());
       evInfo[iRes].photon_isPrompt.push_back(isPromptPho);
+      evInfo[iRes].photon_isMatchedToGenJet.push_back(isMatched);
       evInfo[iRes].photon_hasConversionTracks.push_back(photon.hasConversionTracks());
+      evInfo[iRes].photon_hasPixelSeed.push_back(photon.hasPixelSeed());
       evInfo[iRes].photon_sigmaIetaIeta.push_back(photon.sigmaIetaIeta());
       evInfo[iRes].photon_r9.push_back(photon.r9());
       
@@ -395,6 +405,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
     evInfo[iRes].vtx_z = vtx.z();
     evInfo[iRes].vtx3D_z = vtx3D.z();
     evInfo[iRes].vtxGen_z = genPV.position().z();
+    evInfo[iRes].vtxGen_t = genPV.position().t();
   }
   
   
@@ -415,6 +426,7 @@ PhotonIsolationAnalyzer::beginJob()
   
     eventTree[iRes]->Branch( "npu",               &evInfo[iRes].npu);
     eventTree[iRes]->Branch( "vtxGen_z",          &evInfo[iRes].vtxGen_z);
+    eventTree[iRes]->Branch( "vtxGen_t",          &evInfo[iRes].vtxGen_t);
     eventTree[iRes]->Branch( "vtx3D_z",           &evInfo[iRes].vtx3D_z);
     eventTree[iRes]->Branch( "vtx_z",             &evInfo[iRes].vtx_z);
     eventTree[iRes]->Branch( "vtx_t",             &evInfo[iRes].vtx_t);
@@ -422,7 +434,9 @@ PhotonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "photon_eta",        &evInfo[iRes].photon_eta);  
     eventTree[iRes]->Branch( "photon_phi",        &evInfo[iRes].photon_phi);  
     eventTree[iRes]->Branch( "photon_isPrompt",   &evInfo[iRes].photon_isPrompt);  
+    eventTree[iRes]->Branch( "photon_isMatchedToGenJet",   &evInfo[iRes].photon_isMatchedToGenJet);  
     eventTree[iRes]->Branch( "photon_hasConversionTracks",   &evInfo[iRes].photon_hasConversionTracks);  
+    eventTree[iRes]->Branch( "photon_hasPixelSeed",   &evInfo[iRes].photon_hasPixelSeed);  
     eventTree[iRes]->Branch( "photon_sigmaIetaIeta",   &evInfo[iRes].photon_sigmaIetaIeta);  
     eventTree[iRes]->Branch( "photon_r9",   &evInfo[iRes].photon_r9);  
 
@@ -467,6 +481,7 @@ PhotonIsolationAnalyzer::initEventStructure()
   // per-event trees:
   for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
     evInfo[iRes].npu = -1;
+    evInfo[iRes].vtxGen_t = -999;
     evInfo[iRes].vtxGen_z = -999;
     evInfo[iRes].vtx3D_z = -999;
     evInfo[iRes].vtx_z = -999;
@@ -476,7 +491,9 @@ PhotonIsolationAnalyzer::initEventStructure()
     evInfo[iRes].photon_eta.clear();
     evInfo[iRes].photon_phi.clear();
     evInfo[iRes].photon_isPrompt.clear();
+    evInfo[iRes].photon_isMatchedToGenJet.clear();
     evInfo[iRes].photon_hasConversionTracks.clear();
+    evInfo[iRes].photon_hasPixelSeed.clear();
     evInfo[iRes].photon_sigmaIetaIeta.clear();
     evInfo[iRes].photon_r9.clear();
 
@@ -497,7 +514,7 @@ PhotonIsolationAnalyzer::initEventStructure()
 
 
 
-
+// --- matching to gen photon
 bool isPromptPhoton(const reco::Photon& photon, const edm::View<reco::GenParticle>& genParticles)
 {
   bool isPrompt = false;
@@ -518,6 +535,29 @@ bool isPromptPhoton(const reco::Photon& photon, const edm::View<reco::GenParticl
   }
   
   return isPrompt;
+}
+
+
+// --- matching to gen jet
+bool isMatchedToGenJet(const reco::Photon& photon, const edm::View<reco::GenJet>& genJets)
+{
+  bool isMatched = false;
+
+  for(unsigned int ip=0; ip < genJets.size(); ip++ ){
+    const reco::GenParticle& genj = genJets[ip];
+    if ( genj.pt() < 15.0 ) continue;
+    double dr = deltaR(photon,genj);
+    //    if (dr > 0.1){ 
+    if (dr > 0.3){ 
+      continue;
+    }
+    else{ 
+      isMatched=true;
+      break;
+    }
+  }
+  
+  return isMatched;
 }
 
 
