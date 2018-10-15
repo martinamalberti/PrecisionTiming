@@ -29,7 +29,7 @@ process.analysis = cms.EDAnalyzer(
     isoConeDR = cms.untracked.vdouble(0.2, 0.3, 0.4, 0.5),
     saveTracks = cms.untracked.bool(True),
     maxDz = cms.untracked.double(0.1),
-    minDr = cms.untracked.double(0.01)
+    minDr = cms.untracked.double(0.0)
 )
 
 # Output TFile

@@ -215,58 +215,66 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
       const reco::PFCandidate& pfcand = pfcands[icand];
       if (pfcand.charge() == 0 ) continue;
 
-      // -- skip tracks if dz(track, vertex) > dzCut 
-      float dz = std::abs(pfcand.vz() - vtx.z());
-      if (dz  > maxDz_) continue; // 1 mm
+      // -- get the track ref
+      auto pfcandRef = pfcands.refAt(icand);
+      reco::TrackRef trackRef = pfcandRef->trackRef();
+      if ( trackRef.isNull() ) continue;
 
-      float dxy = sqrt( pow(pfcand.vx() - vtx.x(),2) + pow(pfcand.vy() - vtx.y(), 2)); 
-      if (dxy > 0.02) continue;
+      // -- get dz, dxy 
+      float dz4D = std::abs( trackRef->dz(vtx.position()) );
+      float dz3D = std::abs( trackRef->dz(vtx3D.position()) );
+
+      float dxy4D = std::abs( trackRef->dxy(vtx.position()) );
+      float dxy3D = std::abs( trackRef->dxy(vtx3D.position()) );
      
-      // --- no timing 
       float dr  = deltaR(electron.eta(), electron.phi(), pfcand.eta(), pfcand.phi());
-      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-        if (dr > minDr_ && dr < isoConeDR_[iCone]){
-	  //if (iCone == 0) cout << iele << " " << dr << "   " << electron.eta() << "   pt = " << electron.pt() << "  " << pfcand.pt() <<endl ;
-	  chIso[iCone]+= pfcand.pt();
+
+      // --- no timing 
+      if (dz3D < maxDz_  && dxy3D < 0.02) {
+	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+	  if (dr > minDr_ && dr < isoConeDR_[iCone]){
+	    chIso[iCone]+= pfcand.pt();
+	  }
 	}
       }
 
-
       // --- with timing
-      dr  = deltaR(electron.eta(), electron.phi(), pfcand.eta(), pfcand.phi());     
-      double dt = 0;
-      
-      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-        if (dr > minDr_ && dr < isoConeDR_[iCone]){ 	  
-	  for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
-	    double time_resol = timeResolutions_[iRes];
-	    double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);                                                                                                      
-	    if ( pfcand.isTimeValid() ) {
-	      time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
-	      dt = std::abs(time[iCone][iRes] - vtx.t());
-	    }
-	    else{
-	      dt = 0;
-	    }
-	    if ( dt < 3*time_resol){                                                                                                                                         
-	      chIso_dT[iCone][iRes]+= pfcand.pt();                                                                                                                            
-            }                                                                                                                                                                   
-          }// end loop over time resolutions                                                                                                                                    
-	
-	  // save info for tracks in the isolation cone
-	  if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
-	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
-	      evInfo[iRes].track_t.push_back(time[iCone][iRes]); 
-	      evInfo[iRes].track_dz.push_back(dz);                                                                                                                               
-	      evInfo[iRes].track_pt.push_back(pfcand.pt());                                      
-	      evInfo[iRes].track_eta.push_back(pfcand.eta()); 
-	      evInfo[iRes].track_phi.push_back(pfcand.phi());
-	    }
-	  }
-	}                                                                                                                                                                      
-      }// end loop over cone sizes                                                                                                                                              
-    }// end loop over tracks
+      if ( dz4D < maxDz_  && dxy4D < 0.02 ){
 
+	double dt = 0;
+	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+	  if (dr > minDr_ && dr < isoConeDR_[iCone]){ 	  
+	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
+	      double time_resol = timeResolutions_[iRes];
+	      double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);                                                                                                      
+	      if ( pfcand.isTimeValid() ) {
+		time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
+		dt = std::abs(time[iCone][iRes] - vtx.t());
+	      }
+	      else{
+		dt = 0;
+	      }
+	      if ( dt < 3*time_resol){                                                                                                                                         
+		chIso_dT[iCone][iRes]+= pfcand.pt();                                                                                                                            
+	      }                                                                                                                                                                   
+	    }// end loop over time resolutions                                                                                                                                    
+	    
+	    // save info for tracks in the isolation cone
+	    if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
+	      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+		evInfo[iRes].track_t.push_back(time[iCone][iRes]); 
+		evInfo[iRes].track_dz.push_back(trackRef->dz( vtx.position() ));
+                evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() ));
+		evInfo[iRes].track_pt.push_back(pfcand.pt());                                      
+		evInfo[iRes].track_eta.push_back(pfcand.eta()); 
+		evInfo[iRes].track_phi.push_back(pfcand.phi());
+	      }
+	    }
+	  }                                                                                                                                                                      
+	}// end loop over cone sizes                                                                                                                                              
+      }
+    }// end loop over tracks
+    
     // fill electron info
     for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
       evInfo[iRes].electron_pt.push_back(electron.pt());  
@@ -287,7 +295,7 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
 
 
 
-
+  
   // -- start loop over endcap electrons
   for(unsigned int iele=0; iele < endcapElectrons.size(); iele++ ){
 
@@ -313,59 +321,68 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
       const reco::PFCandidate& pfcand = pfcands[icand];
       if (pfcand.charge() == 0 ) continue;
 
-      // -- skip tracks if dz(track, vertex) > dzCut
-      float dz = std::abs(pfcand.vz() - vtx.z());
-      if (dz  > maxDz_) continue; // 1 mm
+      // -- get the track ref
+      auto pfcandRef = pfcands.refAt(icand);
+      reco::TrackRef trackRef = pfcandRef->trackRef();
+      if ( trackRef.isNull() ) continue;
 
-      float dxy = sqrt( pow(pfcand.vx() - vtx.x(),2) + pow(pfcand.vy() - vtx.y(), 2));
-      if (dxy > 0.02) continue;
+      // -- get dz, dxy
+      float dz4D = std::abs( trackRef->dz(vtx.position()) );
+      float dz3D = std::abs( trackRef->dz(vtx3D.position()) );
+
+      float dxy4D = std::abs( trackRef->dxy(vtx.position()) );
+      float dxy3D = std::abs( trackRef->dxy(vtx3D.position()) );
+  
+      float dr  = deltaR(electron.eta(), electron.phi(), pfcand.eta(), pfcand.phi());
 
 
       // --- no timing
-      float dr  = deltaR(electron.eta(), electron.phi(), pfcand.eta(), pfcand.phi());
-      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-        if (dr > minDr_ && dr < isoConeDR_[iCone]){
-          if (iCone == 0) cout << iele << " " << dr << "   " << electron.eta() << "   pt = " << electron.pt() << "  " << pfcand.pt() <<endl ;
-	  chIso[iCone]+= pfcand.pt();
-        }
+      if (dz3D < maxDz_  && dxy3D < 0.02){
+	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+	  if (dr > minDr_ && dr < isoConeDR_[iCone]){
+	    if (iCone == 0) cout << iele << " " << dr << "   " << electron.eta() << "   pt = " << electron.pt() << "  " << pfcand.pt() <<endl ;
+	    chIso[iCone]+= pfcand.pt();
+	  }
+	}
       }
 
-
       // --- with timing
-      dr  = deltaR(electron.eta(), electron.phi(), pfcand.eta(), pfcand.phi());
-      double dt = 0;
-
-      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-        if (dr > minDr_ && dr < isoConeDR_[iCone]){
-          for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
-            double time_resol = timeResolutions_[iRes];
-            double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);
-            if ( pfcand.isTimeValid() ) {
-              time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
-              dt = std::abs(time[iCone][iRes] - vtx.t());
-            }
-            else{
-              dt = 0;
-            }
-            if ( dt < 3*time_resol){
-              chIso_dT[iCone][iRes]+= pfcand.pt();
-            }
-          }// end loop over time resolutions
-
-          // -- save info for tracks in the isolation cone 
-          if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
-            for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
-              evInfo[iRes].track_t.push_back(time[iCone][iRes]);
-              evInfo[iRes].track_dz.push_back(dz);
-              evInfo[iRes].track_pt.push_back(pfcand.pt());
-              evInfo[iRes].track_eta.push_back(pfcand.eta());
-              evInfo[iRes].track_phi.push_back(pfcand.phi());
-            }
-          }
-        }
-      }// end loop over cone sizes
+      if ( dz4D < maxDz_  && dxy4D < 0.02 ){
+	double dt = 0;
+	
+	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+	  if (dr > minDr_ && dr < isoConeDR_[iCone]){
+	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+	      double time_resol = timeResolutions_[iRes];
+	      double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);
+	      if ( pfcand.isTimeValid() ) {
+		time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
+		dt = std::abs(time[iCone][iRes] - vtx.t());
+	      }
+	      else{
+		dt = 0;
+	      }
+	      if ( dt < 3*time_resol){
+		chIso_dT[iCone][iRes]+= pfcand.pt();
+	      }
+	    }// end loop over time resolutions
+	    
+	    // -- save info for tracks in the isolation cone 
+	    if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
+	      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+		evInfo[iRes].track_t.push_back(time[iCone][iRes]);
+		evInfo[iRes].track_dz.push_back(trackRef->dz( vtx.position() ));
+                evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() ));
+		evInfo[iRes].track_pt.push_back(pfcand.pt());
+		evInfo[iRes].track_eta.push_back(pfcand.eta());
+		evInfo[iRes].track_phi.push_back(pfcand.phi());
+	      }
+	    }
+	  }
+	}// end loop over cone sizes
+      }
     }// end loop over tracks                                                                                                                                                                                                                
-
+    
     // fill electron info
     for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
       evInfo[iRes].electron_pt.push_back(electron.pt());
@@ -429,8 +446,9 @@ ElectronIsolationAnalyzer::beginJob()
     }
 
     if (saveTracks_){
-      eventTree[iRes]->Branch( "track_t",   &evInfo[iRes].track_t);
-      eventTree[iRes]->Branch( "track_dz",   &evInfo[iRes].track_dz);
+      eventTree[iRes]->Branch( "track_t",      &evInfo[iRes].track_t);
+      eventTree[iRes]->Branch( "track_dz",     &evInfo[iRes].track_dz);
+      eventTree[iRes]->Branch( "track_dz3D",   &evInfo[iRes].track_dz3D);
       eventTree[iRes]->Branch( "track_pt",     &evInfo[iRes].track_pt);
       eventTree[iRes]->Branch( "track_eta",    &evInfo[iRes].track_eta);
       eventTree[iRes]->Branch( "track_phi",    &evInfo[iRes].track_phi);
@@ -486,6 +504,7 @@ ElectronIsolationAnalyzer::initEventStructure()
     if (saveTracks_){
       evInfo[iRes].track_t.clear();
       evInfo[iRes].track_dz.clear();
+      evInfo[iRes].track_dz3D.clear();
       evInfo[iRes].track_pt.clear();
       evInfo[iRes].track_eta.clear();
       evInfo[iRes].track_phi.clear();

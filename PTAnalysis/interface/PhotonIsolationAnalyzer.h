@@ -72,6 +72,7 @@ struct eventInfo
   vector<float> track_pt;
   vector<float> track_eta;
   vector<float> track_phi;
+  vector<float> track_dz3D;
   vector<float> track_dz;
   vector<float> track_t;
 

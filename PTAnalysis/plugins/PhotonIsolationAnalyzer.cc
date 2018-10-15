@@ -221,58 +221,67 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       const reco::PFCandidate& pfcand = pfcands[icand];
       if (pfcand.charge() == 0 ) continue;
 
-      // -- skip tracks if dz(track, vertex) > dzCut 
-      float dz = std::abs(pfcand.vz() - vtx.z());
-      if (dz  > maxDz_) continue; // 1 mm
+      // -- get the track ref
+      auto pfcandRef = pfcands.refAt(icand);
+      reco::TrackRef trackRef = pfcandRef->trackRef();
+      if ( trackRef.isNull() ) continue;
 
-      float dxy = sqrt( pow(pfcand.vx() - vtx.x(),2) + pow(pfcand.vy() - vtx.y(), 2)); 
-      if (dxy > 0.02) continue;
-     
+      // -- compute dz and dxy
+      float dz4D = std::abs( trackRef->dz(vtx.position()) );
+      float dz3D = std::abs( trackRef->dz(vtx3D.position()) );
+
+      float dxy4D = std::abs( trackRef->dxy(vtx.position()) );
+      float dxy3D = std::abs( trackRef->dxy(vtx3D.position()) );           
 
       // --- no timing 
-      float dr  = deltaR(pho_p4_3Dvtx.eta(), pho_p4_3Dvtx.phi(), pfcand.eta(), pfcand.phi());
-      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-        if (dr > minDr_ && dr < isoConeDR_[iCone]){
-	  chIso[iCone]+= pfcand.pt();
+      if (dz3D < maxDz_  && dxy3D < 0.02){
+	float dr  = deltaR(pho_p4_3Dvtx.eta(), pho_p4_3Dvtx.phi(), pfcand.eta(), pfcand.phi());
+	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+	  if (dr > minDr_ && dr < isoConeDR_[iCone]){
+	    chIso[iCone]+= pfcand.pt();
+	  }
 	}
       }
 
 
       // --- with timing
-      dr  = deltaR(pho_p4.eta(), pho_p4.phi(), pfcand.eta(), pfcand.phi());     
-      double dt = 0;
-      
-      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-        if (dr > minDr_ && dr < isoConeDR_[iCone]){ 	  
-	  for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
-	    double time_resol = timeResolutions_[iRes];
-	    double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);                                                                                                      
-	    if ( pfcand.isTimeValid() ) {
-	      time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
-	      dt = std::abs(time[iCone][iRes] - vtx.t());
-	    }
-	    else{
-	      dt = 0;
-	    }
-	    if ( dt < 3*time_resol){                                                                                                                                         
-	      chIso_dT[iCone][iRes]+= pfcand.pt();                                                                                                                            
-            }                                                                                                                                                                   
-          }// end loop over time resolutions                                                                                                                                    
+      if ( dz4D < maxDz_  && dxy4D < 0.02 ){
+	float dr  = deltaR(pho_p4.eta(), pho_p4.phi(), pfcand.eta(), pfcand.phi());     
+	double dt = 0;
 	
-	  // save info for tracks in the isolation cone
-	  if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
-	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                      
-	      evInfo[iRes].track_t.push_back(time[iCone][iRes]);                                                                                                                               
-	      evInfo[iRes].track_dz.push_back(dz);                                                                                                                               
-	      evInfo[iRes].track_pt.push_back(pfcand.pt());
-	      evInfo[iRes].track_eta.push_back(pfcand.eta());                                                                                                                           
-	      evInfo[iRes].track_phi.push_back(pfcand.phi());                                                                                                                           
-	    }                                                                                                                                                                       
-	  }
-	}                                                                                                                                                                      
-      }// end loop over cone sizes                                                                                                                                              
+	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+	  if (dr > minDr_ && dr < isoConeDR_[iCone]){ 	  
+	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
+	      double time_resol = timeResolutions_[iRes];
+	      double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);                                                                                                      
+	      if ( pfcand.isTimeValid() ) {
+		time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
+		dt = std::abs(time[iCone][iRes] - vtx.t());
+	      }
+	      else{
+		dt = 0;
+	      }
+	      if ( dt < 3*time_resol){                                                                                                                                         
+		chIso_dT[iCone][iRes]+= pfcand.pt();                                                                                                                            
+	      }                                                                                                                                                                   
+	    }// end loop over time resolutions                                                                                                                                    
+	    
+	    // save info for tracks in the isolation cone
+	    if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
+	      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                      
+		evInfo[iRes].track_t.push_back(time[iCone][iRes]);
+		evInfo[iRes].track_dz.push_back(trackRef->dz( vtx.position() ));
+                evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() ));
+		evInfo[iRes].track_pt.push_back(pfcand.pt());
+		evInfo[iRes].track_eta.push_back(pfcand.eta());                                                                                                                           
+		evInfo[iRes].track_phi.push_back(pfcand.phi());                                                                                                                           
+	      }                                                                                                                                                                       
+	    }
+	  }                                                                                                                                                                      
+	}// end loop over cone sizes                                                                                                                                              
+      }
     }// end loop over tracks
-
+    
     
     // -- fill photon info
     for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
@@ -324,58 +333,69 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       const reco::PFCandidate& pfcand = pfcands[icand];
       if (pfcand.charge() == 0 ) continue;
 
-      // -- skip tracks if dz(track, vertex) > dzCut
-      float dz = std::abs(pfcand.vz() - vtx.z());
-      if (dz  > maxDz_) continue; // 1 mm
+      // -- get the track ref
+      auto pfcandRef = pfcands.refAt(icand);
+      reco::TrackRef trackRef = pfcandRef->trackRef();
+      if ( trackRef.isNull() ) continue;
 
-      float dxy = sqrt( pow(pfcand.vx() - vtx.x(),2) + pow(pfcand.vy() - vtx.y(), 2));
-      if (dxy > 0.02) continue;
+      // -- compute dz and dxy
+      float dz4D = std::abs( trackRef->dz(vtx.position()) );
+      float dz3D = std::abs( trackRef->dz(vtx3D.position()) );
 
+      float dxy4D = std::abs( trackRef->dxy(vtx.position()) );
+      float dxy3D = std::abs( trackRef->dxy(vtx3D.position()) );
 
 
       // --- no timing
-      float dr  = deltaR(pho_p4_3Dvtx.eta(), pho_p4_3Dvtx.phi(), pfcand.eta(), pfcand.phi());
-      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-        if (dr > minDr_ && dr < isoConeDR_[iCone]){
-          chIso[iCone]+= pfcand.pt();
-        }
+      if (dz3D < maxDz_  && dxy3D < 0.02){
+	float dr  = deltaR(pho_p4_3Dvtx.eta(), pho_p4_3Dvtx.phi(), pfcand.eta(), pfcand.phi());
+	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+	  if (dr > minDr_ && dr < isoConeDR_[iCone]){
+	    chIso[iCone]+= pfcand.pt();
+	  }
+	}
       }
 
 
 
       // --- with timing
-      dr  = deltaR(pho_p4.eta(), pho_p4.phi(), pfcand.eta(), pfcand.phi());
-      double dt = 0;
+      if ( dz4D < maxDz_  && dxy4D < 0.02 ){
 
-      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-        if (dr > minDr_ && dr < isoConeDR_[iCone]){
-          for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
-            double time_resol = timeResolutions_[iRes];
-            double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);
-            if ( pfcand.isTimeValid() ) {
-              time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
-              dt = std::abs(time[iCone][iRes] - vtx.t());
-            }
-            else{
-              dt = 0;
-            }
-            if ( dt < 3*time_resol){
-              chIso_dT[iCone][iRes]+= pfcand.pt();
-            }
-          }// end loop over time resolutions
+	float dr  = deltaR(pho_p4.eta(), pho_p4.phi(), pfcand.eta(), pfcand.phi());
+	double dt = 0;
+	
+	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+	  if (dr > minDr_ && dr < isoConeDR_[iCone]){
+	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+	      double time_resol = timeResolutions_[iRes];
+	      double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);
+	      if ( pfcand.isTimeValid() ) {
+		time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
+		dt = std::abs(time[iCone][iRes] - vtx.t());
+	      }
+	      else{
+		dt = 0;
+	      }
+	      if ( dt < 3*time_resol){
+		chIso_dT[iCone][iRes]+= pfcand.pt();
+	      }
+	    }// end loop over time resolutions
+	    
+	    // save info for tracks in the isolation cone
+	    if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
+	      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+		evInfo[iRes].track_t.push_back(time[iCone][iRes]);
+		evInfo[iRes].track_dz.push_back(trackRef->dz( vtx.position() ));
+                evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() ));
+		evInfo[iRes].track_pt.push_back(pfcand.pt());
+		evInfo[iRes].track_eta.push_back(pfcand.eta());
+		evInfo[iRes].track_phi.push_back(pfcand.phi());
+	      }
+	    }
+	  }
+	}// end loop over cone sizes
+      }
 
-          // save info for tracks in the isolation cone
-          if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
-            for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
-              evInfo[iRes].track_t.push_back(time[iCone][iRes]);
-              evInfo[iRes].track_dz.push_back(dz);
-              evInfo[iRes].track_pt.push_back(pfcand.pt());
-              evInfo[iRes].track_eta.push_back(pfcand.eta());
-              evInfo[iRes].track_phi.push_back(pfcand.phi());
-            }
-          }
-        }
-      }// end loop over cone sizes
     }// end loop over tracks                                                                                                                                                                                                                
    
     // -- fill photon info
@@ -446,8 +466,9 @@ PhotonIsolationAnalyzer::beginJob()
     }
 
     if (saveTracks_){
-      eventTree[iRes]->Branch( "track_t",   &evInfo[iRes].track_t);
-      eventTree[iRes]->Branch( "track_dz",   &evInfo[iRes].track_dz);
+      eventTree[iRes]->Branch( "track_t",      &evInfo[iRes].track_t);
+      eventTree[iRes]->Branch( "track_dz",     &evInfo[iRes].track_dz);
+      eventTree[iRes]->Branch( "track_dz3D",   &evInfo[iRes].track_dz3D);
       eventTree[iRes]->Branch( "track_pt",     &evInfo[iRes].track_pt);
       eventTree[iRes]->Branch( "track_eta",    &evInfo[iRes].track_eta);
       eventTree[iRes]->Branch( "track_phi",    &evInfo[iRes].track_phi);
@@ -505,6 +526,7 @@ PhotonIsolationAnalyzer::initEventStructure()
     if (saveTracks_){
       evInfo[iRes].track_t.clear();
       evInfo[iRes].track_dz.clear();
+      evInfo[iRes].track_dz3D.clear();
       evInfo[iRes].track_pt.clear();
       evInfo[iRes].track_eta.clear();
       evInfo[iRes].track_phi.clear();
@@ -547,7 +569,6 @@ bool isMatchedToGenJet(const reco::Photon& photon, const edm::View<reco::GenJet>
     const reco::GenParticle& genj = genJets[ip];
     if ( genj.pt() < 15.0 ) continue;
     double dr = deltaR(photon,genj);
-    //    if (dr > 0.1){ 
     if (dr > 0.3){ 
       continue;
     }
