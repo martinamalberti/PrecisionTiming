@@ -179,8 +179,6 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       }
   }
 
-
-
   // -- get isolation around a candidate photon 
   // --- using only vtx closest to gen vtx
   const reco::Vertex& vtx   = vertices4D[pv_index_4D];
@@ -200,14 +198,22 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     bool isPromptMu = isPromptMuon(muon,genParticles);
     bool isMatchedGenJet  = isMatchedToGenJet(muon, genJets);
 
-
     // -- compute charged isolations
     const int nCones = isoConeDR_.size();
     const int nResol = timeResolutions_.size();
-    float chIso[nCones] = {0.};
-    float chIso_dT[nCones][nResol] = {{0.}} ;
-    float time[nCones][nResol] = {{0.}}; 
+    float chIso[nCones];
+    float chIso_dT[nCones][nResol];
+    float time[nCones][nResol]; 
     
+    // -- initialize 
+    for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+      chIso[iCone] = 0;
+      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+	chIso_dT[iCone][iRes] = 0.;
+	time[iCone][iRes] = 0.;
+      }
+    }
+
     // -- loop over charged pf candidates
     for(unsigned icand = 0; icand < pfcands.size(); ++icand) {
       const reco::PFCandidate& pfcand = pfcands[icand];
@@ -217,11 +223,10 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       auto pfcandRef = pfcands.refAt(icand);
       reco::TrackRef trackRef = pfcandRef->trackRef();                   
       if ( trackRef.isNull() ) continue;
+      if ( !trackRef->quality(reco::TrackBase::highPurity) ) continue;
       if ( trackRef == muon.track() ) continue;
-      
-
-      
-      // -- skip tracks if dz(track, vertex) > dzCut 
+            
+      // -- compute dz, dxy 
       float dz4D = std::abs( trackRef->dz(vtx.position()) );
       float dz3D = std::abs( trackRef->dz(vtx3D.position()) );
       //std::cout << "*** 3D ****  dz = " << dz3D << "  dz = " <<  std::abs(trackRef->dz( vtx3D.position()  )) << "   diff = " << dz3D-std::abs(trackRef->dz( vtx3D.position()  ))<<std::endl;;
@@ -231,8 +236,6 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       float dxy3D = std::abs( trackRef->dxy(vtx3D.position()) );
      
       float dr  = deltaR(muon.eta(), muon.phi(), pfcand.eta(), pfcand.phi());
-      
-      //std::cout << pfcand.eta() << "  " << trackRef->eta() << "  " << pfcand.phi() << "  " << trackRef->phi() <<std::endl;
 
       // --- no timing 
       if (dz3D < maxDz_  && dxy3D < 0.02){
