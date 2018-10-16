@@ -229,6 +229,7 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
       auto pfcandRef = pfcands.refAt(icand);
       reco::TrackRef trackRef = pfcandRef->trackRef();
       if ( trackRef.isNull() ) continue;
+      if ( !trackRef->quality(reco::TrackBase::highPurity) ) continue;
 
       // -- get dz, dxy 
       float dz4D = std::abs( trackRef->dz(vtx.position()) );
@@ -345,6 +346,7 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
       auto pfcandRef = pfcands.refAt(icand);
       reco::TrackRef trackRef = pfcandRef->trackRef();
       if ( trackRef.isNull() ) continue;
+      if ( !trackRef->quality(reco::TrackBase::highPurity) ) continue;
       
       // -- get dz, dxy
       float dz4D = std::abs( trackRef->dz(vtx.position()) );

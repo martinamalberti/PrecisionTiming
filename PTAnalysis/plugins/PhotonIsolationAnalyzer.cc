@@ -235,6 +235,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       auto pfcandRef = pfcands.refAt(icand);
       reco::TrackRef trackRef = pfcandRef->trackRef();
       if ( trackRef.isNull() ) continue;
+      if ( !trackRef->quality(reco::TrackBase::highPurity) ) continue;
 
       // -- compute dz and dxy
       float dz4D = std::abs( trackRef->dz(vtx.position()) );
@@ -357,6 +358,8 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       auto pfcandRef = pfcands.refAt(icand);
       reco::TrackRef trackRef = pfcandRef->trackRef();
       if ( trackRef.isNull() ) continue;
+      if ( !trackRef->quality(reco::TrackBase::highPurity) ) continue;
+
 
       // -- compute dz and dxy
       float dz4D = std::abs( trackRef->dz(vtx.position()) );
