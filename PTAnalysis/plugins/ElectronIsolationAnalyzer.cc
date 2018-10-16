@@ -206,9 +206,19 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
     // -- compute charged isolations
     const int nCones = isoConeDR_.size();
     const int nResol = timeResolutions_.size();
-    float chIso[nCones] = {0.};
-    float chIso_dT[nCones][nResol] = {{0.}} ;
-    float time[nCones][nResol] = {{0.}}; 
+    float chIso[nCones];
+    float chIso_dT[nCones][nResol];
+    float time[nCones][nResol];
+
+    // -- initialize
+    for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+      chIso[iCone] = 0;
+      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+        chIso_dT[iCone][iRes] = 0.;
+        time[iCone][iRes] = 0.;
+      }
+    }
+
     
     // -- loop over charged pf candidates
     for(unsigned icand = 0; icand < pfcands.size(); ++icand) {
@@ -312,30 +322,40 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
     // -- compute charged isolations
     const int nCones = isoConeDR_.size();
     const int nResol = timeResolutions_.size();
-    float chIso[nCones] = {0.};
-    float chIso_dT[nCones][nResol] = {{0.}} ;
-    float time[nCones][nResol] = {{0.}};
+    float chIso[nCones];
+    float chIso_dT[nCones][nResol];
+    float time[nCones][nResol];
+
+    // -- initialize
+    for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+      chIso[iCone] = 0;
+      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+        chIso_dT[iCone][iRes] = 0.;
+        time[iCone][iRes] = 0.;
+      }
+    }
+
 
     // -- loop over charged pf candidates
     for(unsigned icand = 0; icand < pfcands.size(); ++icand) {
       const reco::PFCandidate& pfcand = pfcands[icand];
       if (pfcand.charge() == 0 ) continue;
-
+      
       // -- get the track ref
       auto pfcandRef = pfcands.refAt(icand);
       reco::TrackRef trackRef = pfcandRef->trackRef();
       if ( trackRef.isNull() ) continue;
-
+      
       // -- get dz, dxy
       float dz4D = std::abs( trackRef->dz(vtx.position()) );
       float dz3D = std::abs( trackRef->dz(vtx3D.position()) );
 
       float dxy4D = std::abs( trackRef->dxy(vtx.position()) );
       float dxy3D = std::abs( trackRef->dxy(vtx3D.position()) );
-  
+      
       float dr  = deltaR(electron.eta(), electron.phi(), pfcand.eta(), pfcand.phi());
-
-
+      
+      
       // --- no timing
       if (dz3D < maxDz_  && dxy3D < 0.02){
 	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
@@ -345,7 +365,7 @@ ElectronIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
 	  }
 	}
       }
-
+      
       // --- with timing
       if ( dz4D < maxDz_  && dxy4D < 0.02 ){
 	double dt = 0;

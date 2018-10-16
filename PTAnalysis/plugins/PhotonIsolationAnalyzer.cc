@@ -212,10 +212,20 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
     // -- compute charged isolations
     const int nCones = isoConeDR_.size();
     const int nResol = timeResolutions_.size();
-    float chIso[nCones] = {0.};
-    float chIso_dT[nCones][nResol] = {{0.}} ;
-    float time[nCones][nResol] = {{0.}}; 
+    float chIso[nCones];
+    float chIso_dT[nCones][nResol];
+    float time[nCones][nResol]; 
+
+    // -- initialize
+    for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+      chIso[iCone] = 0;
+      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+        chIso_dT[iCone][iRes] = 0.;
+        time[iCone][iRes] = 0.;
+      }
+    }
     
+
     // -- loop over charged pf candidates
     for(unsigned icand = 0; icand < pfcands.size(); ++icand) {
       const reco::PFCandidate& pfcand = pfcands[icand];
@@ -324,9 +334,19 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
     // -- compute charged isolations
     const int nCones = isoConeDR_.size();
     const int nResol = timeResolutions_.size();
-    float chIso[nCones] = {0.};
-    float chIso_dT[nCones][nResol] = {{0.}} ;
-    float time[nCones][nResol] = {{0.}};
+    float chIso[nCones];
+    float chIso_dT[nCones][nResol];
+    float time[nCones][nResol];
+
+    // -- initialize
+    for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+      chIso[iCone] = 0;
+      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
+        chIso_dT[iCone][iRes] = 0.;
+        time[iCone][iRes] = 0.;
+      }
+    }
+
 
     // -- loop over charged pf candidates
     for(unsigned icand = 0; icand < pfcands.size(); ++icand) {
