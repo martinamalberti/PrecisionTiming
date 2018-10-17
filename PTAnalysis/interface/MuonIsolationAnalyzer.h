@@ -72,13 +72,13 @@ struct eventInfo
   vector<float> track_eta;
   vector<float> track_phi;
   vector<float> track_dz3D;
-  vector<float> track_dz;
+  vector<float> track_dz4D;
   vector<float> track_t;
 
   float vtxGen_z;
   float vtxGen_t;
-  float vtx_z;
-  float vtx_t;
+  float vtx4D_z;
+  float vtx4D_t;
   float vtx3D_z;
   vector<float> muon_pt;
   vector<float> muon_eta;
@@ -87,6 +87,10 @@ struct eventInfo
   vector<int> muon_isMedium;
   vector<int> muon_isTight3D;
   vector<int> muon_isTight4D;
+  vector<float> muon_dz3D;
+  vector<float> muon_dxy3D;
+  vector<float> muon_dz4D;
+  vector<float> muon_dxy4D;
   vector<int> muon_isPrompt;
   vector<int> muon_isMatchedToGenJet;
   vector<float> muon_chIso[10];

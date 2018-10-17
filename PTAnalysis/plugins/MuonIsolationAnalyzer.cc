@@ -1,5 +1,4 @@
-// -*- C++ -*-%
-//
+// -*- C++ -*-%//
 // Package:    PrecisionTiming/MuonIsolationAnalyzer
 // Class:      MuonIsolationAnalyzer
 // 
@@ -156,16 +155,17 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //---get truth PV
   SimVertex genPV = genVertices.at(0);
-  double mindz = 999999.;
+  float mindz = 999999.;
   int pv_index_3D = -1;
   int pv_index_4D = -1;
 
   // -- find the reco vertex closest to the gen vertex (3D)
   for(unsigned int ivtx=0; ivtx < vertices3D.size(); ivtx++ ){
     const reco::Vertex& vtx = vertices3D[ivtx];
-    const float dz = std::abs(vtx.z() - genPV.position().z());
+    float dz = std::abs(vtx.z() - genPV.position().z());
     if( dz < mindz )
       {
+	
 	mindz = dz;
 	pv_index_3D = ivtx;
       }
@@ -175,7 +175,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   mindz = 999999.;
   for(unsigned int ivtx=0; ivtx < vertices4D.size(); ivtx++ ){
     const reco::Vertex& vtx = vertices4D[ivtx];
-    const float dz = std::abs(vtx.z() - genPV.position().z());
+    float dz = std::abs(vtx.z() - genPV.position().z());
     if( dz < mindz )
       {
 	mindz = dz;
@@ -186,11 +186,11 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   if (pv_index_3D==-1) pv_index_3D = 0;
   if (pv_index_4D==-1) pv_index_4D = 0;
 
-
+  std::cout << pv_index_3D << "  " << pv_index_4D <<std::endl;
 
   // -- get isolation around a candidate photon 
   // --- using only vtx closest to gen vtx
-  const reco::Vertex& vtx   = vertices4D[pv_index_4D];
+  const reco::Vertex& vtx4D = vertices4D[pv_index_4D];
   const reco::Vertex& vtx3D = vertices3D[pv_index_3D];
 
 
@@ -214,7 +214,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     
     // -- initialize 
     for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-      chIso[iCone] = 0;
+      chIso[iCone] = 0.;
       for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
 	chIso_dT[iCone][iRes] = 0.;
 	time[iCone][iRes] = 0.;
@@ -234,12 +234,9 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
 
       // -- compute dz, dxy 
-      float dz4D = std::abs( trackRef->dz(vtx.position()) );
+      float dz4D = std::abs( trackRef->dz(vtx4D.position()) );
       float dz3D = std::abs( trackRef->dz(vtx3D.position()) );
-      //std::cout << "*** 3D ****  dz = " << dz3D << "  dz = " <<  std::abs(trackRef->dz( vtx3D.position()  )) << "   diff = " << dz3D-std::abs(trackRef->dz( vtx3D.position()  ))<<std::endl;;
-      //std::cout << "*** 4D ****  dz = " << dz4D << "  dz = " <<  std::abs(trackRef->dz( vtx.position()  )) << "   diff = " << dz4D-std::abs(trackRef->dz( vtx.position()  ))<<std::endl;;
-
-      float dxy4D = std::abs( trackRef->dxy(vtx.position()) );
+      float dxy4D = std::abs( trackRef->dxy(vtx4D.position()) );
       float dxy3D = std::abs( trackRef->dxy(vtx3D.position()) );
      
       float dr  = deltaR(muon.eta(), muon.phi(), pfcand.eta(), pfcand.phi());
@@ -266,7 +263,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	      time[iCone][iRes] = -999.;
 	      if ( pfcand.isTimeValid() ) {
 		time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
-		dt = std::abs(time[iCone][iRes] - vtx.t());
+		dt = std::abs(time[iCone][iRes] - vtx4D.t());
 	      }
 	      else{
 		dt = 0;
@@ -280,7 +277,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	    if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
 	      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                      
 		evInfo[iRes].track_t.push_back(time[iCone][iRes]);                                                                                                                               
-		evInfo[iRes].track_dz.push_back(trackRef->dz( vtx.position() )); 
+		evInfo[iRes].track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
 		evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() )); 
 		evInfo[iRes].track_pt.push_back(pfcand.pt());
 		evInfo[iRes].track_eta.push_back(pfcand.eta());                                                                                                                           
@@ -300,9 +297,13 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       evInfo[iRes].muon_isLoose.push_back(muon::isLooseMuon(muon)); 
       evInfo[iRes].muon_isMedium.push_back(muon::isMediumMuon(muon));
       int isTight3D = muon::isTightMuon(muon, vtx3D);
-      int isTight4D = muon::isTightMuon(muon, vtx);
+      int isTight4D = muon::isTightMuon(muon, vtx4D);
       evInfo[iRes].muon_isTight3D.push_back(isTight3D); 
       evInfo[iRes].muon_isTight4D.push_back(isTight4D); 
+      evInfo[iRes].muon_dz4D.push_back( muon.track()->dz(vtx4D.position()) );
+      evInfo[iRes].muon_dxy4D.push_back( muon.track()->dxy(vtx4D.position()) );
+      evInfo[iRes].muon_dz3D.push_back( muon.track()->dz(vtx3D.position()) );
+      evInfo[iRes].muon_dxy3D.push_back( muon.track()->dxy(vtx3D.position()) );
       evInfo[iRes].muon_isPrompt.push_back(isPromptMu);
       evInfo[iRes].muon_isMatchedToGenJet.push_back(isMatchedGenJet);
         
@@ -318,8 +319,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   // -- fill event info
   for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
     evInfo[iRes].npu = nPU;
-    evInfo[iRes].vtx_t = vtx.t();
-    evInfo[iRes].vtx_z = vtx.z();
+    evInfo[iRes].vtx4D_t = vtx4D.t();
+    evInfo[iRes].vtx4D_z = vtx4D.z();
     evInfo[iRes].vtx3D_z = vtx3D.z();
     evInfo[iRes].vtxGen_z = genPV.position().z();
     evInfo[iRes].vtxGen_t = genPV.position().t();
@@ -345,8 +346,8 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "vtxGen_z",        &evInfo[iRes].vtxGen_z);
     eventTree[iRes]->Branch( "vtxGen_t",        &evInfo[iRes].vtxGen_t);
     eventTree[iRes]->Branch( "vtx3D_z",         &evInfo[iRes].vtx3D_z);
-    eventTree[iRes]->Branch( "vtx_z",           &evInfo[iRes].vtx_z);
-    eventTree[iRes]->Branch( "vtx_t",           &evInfo[iRes].vtx_t);
+    eventTree[iRes]->Branch( "vtx4D_z",         &evInfo[iRes].vtx4D_z);
+    eventTree[iRes]->Branch( "vtx4D_t",         &evInfo[iRes].vtx4D_t);
     eventTree[iRes]->Branch( "muon_pt",         &evInfo[iRes].muon_pt);  
     eventTree[iRes]->Branch( "muon_eta",        &evInfo[iRes].muon_eta);  
     eventTree[iRes]->Branch( "muon_phi",        &evInfo[iRes].muon_phi);  
@@ -354,6 +355,10 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "muon_isMedium",   &evInfo[iRes].muon_isMedium);  
     eventTree[iRes]->Branch( "muon_isTight3D",  &evInfo[iRes].muon_isTight3D);  
     eventTree[iRes]->Branch( "muon_isTight4D",  &evInfo[iRes].muon_isTight4D);  
+    eventTree[iRes]->Branch( "muon_dz3D",       &evInfo[iRes].muon_dz3D);  
+    eventTree[iRes]->Branch( "muon_dz4D",       &evInfo[iRes].muon_dz4D);  
+    eventTree[iRes]->Branch( "muon_dxy3D",      &evInfo[iRes].muon_dxy3D);  
+    eventTree[iRes]->Branch( "muon_dxy4D",      &evInfo[iRes].muon_dxy4D);  
     eventTree[iRes]->Branch( "muon_isPrompt",   &evInfo[iRes].muon_isPrompt);  
     eventTree[iRes]->Branch( "muon_isMatchedToGenJet",   &evInfo[iRes].muon_isMatchedToGenJet);  
 
@@ -364,7 +369,7 @@ MuonIsolationAnalyzer::beginJob()
 
     if (saveTracks_){
       eventTree[iRes]->Branch( "track_t",      &evInfo[iRes].track_t);
-      eventTree[iRes]->Branch( "track_dz",     &evInfo[iRes].track_dz);
+      eventTree[iRes]->Branch( "track_dz4D",     &evInfo[iRes].track_dz4D);
       eventTree[iRes]->Branch( "track_dz3D",   &evInfo[iRes].track_dz3D);
       eventTree[iRes]->Branch( "track_pt",     &evInfo[iRes].track_pt);
       eventTree[iRes]->Branch( "track_eta",    &evInfo[iRes].track_eta);
@@ -402,8 +407,8 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes].vtxGen_t = -999;
     evInfo[iRes].vtxGen_z = -999;
     evInfo[iRes].vtx3D_z = -999;
-    evInfo[iRes].vtx_z = -999;
-    evInfo[iRes].vtx_t = -999;
+    evInfo[iRes].vtx4D_z = -999;
+    evInfo[iRes].vtx4D_t = -999;
 
     evInfo[iRes].muon_pt.clear();
     evInfo[iRes].muon_eta.clear();
@@ -412,6 +417,10 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes].muon_isMedium.clear();
     evInfo[iRes].muon_isTight3D.clear();    
     evInfo[iRes].muon_isTight4D.clear();
+    evInfo[iRes].muon_dz3D.clear();
+    evInfo[iRes].muon_dxy3D.clear();
+    evInfo[iRes].muon_dz4D.clear();
+    evInfo[iRes].muon_dxy4D.clear();
     evInfo[iRes].muon_isPrompt.clear();
     evInfo[iRes].muon_isMatchedToGenJet.clear();
 
@@ -422,7 +431,7 @@ MuonIsolationAnalyzer::initEventStructure()
 
     if (saveTracks_){
       evInfo[iRes].track_t.clear();
-      evInfo[iRes].track_dz.clear();
+      evInfo[iRes].track_dz4D.clear();
       evInfo[iRes].track_dz3D.clear();
       evInfo[iRes].track_pt.clear();
       evInfo[iRes].track_eta.clear();
