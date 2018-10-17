@@ -136,6 +136,12 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   // -- initialize output tree
   initEventStructure();
   
+  const int nCones = isoConeDR_.size();
+  const int nResol = timeResolutions_.size();
+
+  TRandom *gRandom = new TRandom();
+
+
   // -- number of pileup events
   int nPU = 0;
   if( ! iEvent.isRealData() ) {
@@ -151,10 +157,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //---get truth PV
   SimVertex genPV = genVertices.at(0);
   double mindz = 999999.;
-  int pv_index_3D = 0;
-  int pv_index_4D = 0;
-
-  TRandom *gRandom = new TRandom();
+  int pv_index_3D = -1;
+  int pv_index_4D = -1;
 
   // -- find the reco vertex closest to the gen vertex (3D)
   for(unsigned int ivtx=0; ivtx < vertices3D.size(); ivtx++ ){
@@ -179,6 +183,11 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       }
   }
 
+  if (pv_index_3D==-1) pv_index_3D = 0;
+  if (pv_index_4D==-1) pv_index_4D = 0;
+
+
+
   // -- get isolation around a candidate photon 
   // --- using only vtx closest to gen vtx
   const reco::Vertex& vtx   = vertices4D[pv_index_4D];
@@ -199,8 +208,6 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     bool isMatchedGenJet  = isMatchedToGenJet(muon, genJets);
 
     // -- compute charged isolations
-    const int nCones = isoConeDR_.size();
-    const int nResol = timeResolutions_.size();
     float chIso[nCones];
     float chIso_dT[nCones][nResol];
     float time[nCones][nResol]; 
@@ -220,12 +227,12 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       if (pfcand.charge() == 0 ) continue;
       
       // -- skip the track if it is the muon track
-      auto pfcandRef = pfcands.refAt(icand);
-      reco::TrackRef trackRef = pfcandRef->trackRef();                   
+      reco::TrackRef trackRef = pfcand.trackRef();
       if ( trackRef.isNull() ) continue;
-      if ( !trackRef->quality(reco::TrackBase::highPurity) ) continue;
+      if ( !(trackRef->quality(reco::TrackBase::highPurity)) ) continue;
       if ( trackRef == muon.track() ) continue;
-            
+
+
       // -- compute dz, dxy 
       float dz4D = std::abs( trackRef->dz(vtx.position()) );
       float dz3D = std::abs( trackRef->dz(vtx3D.position()) );
@@ -250,12 +257,13 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       // --- with timing
       if ( dz4D < maxDz_  && dxy4D < 0.02 ){
       
-	double dt = 0;
 	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
 	  if (dr > minDr_ && dr < isoConeDR_[iCone]){ 	  
 	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
 	      double time_resol = timeResolutions_[iRes];
 	      double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);                                                                                                      
+	      double dt = 0.;
+	      time[iCone][iRes] = -999.;
 	      if ( pfcand.isTimeValid() ) {
 		time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
 		dt = std::abs(time[iCone][iRes] - vtx.t());
@@ -263,7 +271,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	      else{
 		dt = 0;
 	      }
-	      if ( dt < 3*time_resol){                                                                                                                                         
+	      if ( dt < 3*time_resol){                                                     
 		chIso_dT[iCone][iRes]+= pfcand.pt();                                                                                                                            
 	      }                                                                                                                                                                   
 	    }// end loop over time resolutions                                                                                                                                    
@@ -434,9 +442,8 @@ bool isPromptMuon(const reco::Muon& muon, const edm::View<reco::GenParticle>& ge
     const reco::GenParticle& genp = genParticles[ip];
     if ( std::abs(genp.pdgId()) != 13) continue;
     if ( !genp.isPromptFinalState() ) continue;
-    if ( genp.pt() < 10.0 ) continue;
     double dr = deltaR(muon,genp);
-    if (dr > 0.1){ 
+    if (dr > 0.2){ 
       continue;
     }
     else{ 
