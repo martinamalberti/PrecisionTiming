@@ -165,7 +165,6 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float dz = std::abs(vtx.z() - genPV.position().z());
     if( dz < mindz )
       {
-	
 	mindz = dz;
 	pv_index_3D = ivtx;
       }
@@ -186,7 +185,6 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   if (pv_index_3D==-1) pv_index_3D = 0;
   if (pv_index_4D==-1) pv_index_4D = 0;
 
-  std::cout << pv_index_3D << "  " << pv_index_4D <<std::endl;
 
   // -- get isolation around a candidate photon 
   // --- using only vtx closest to gen vtx
@@ -450,6 +448,7 @@ bool isPromptMuon(const reco::Muon& muon, const edm::View<reco::GenParticle>& ge
   for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
     const reco::GenParticle& genp = genParticles[ip];
     if ( std::abs(genp.pdgId()) != 13) continue;
+    if (genp.status() != 1 || !genp.isLastCopy() ) continue; // -- from Simone
     if ( !genp.isPromptFinalState() ) continue;
     double dr = deltaR(muon,genp);
     if (dr > 0.2){ 
