@@ -232,6 +232,16 @@ int main(int argc, char** argv)
   h_muon_relChIso05_dT_endcap->GetXaxis()->SetTitle("relative charged isolation");
 
 
+  //
+  TH1F *h_muon_relChIso03_diff = new TH1F("h_muon_relChIso03_diff","h_muon_relChIso03_diff",1000,0,1);
+  h_muon_relChIso03_diff->GetXaxis()->SetTitle("(relChIso_{Zcut}-relChIso_{ZTcut})/relChIso_{Zcut}");
+
+  TH1F *h_muon_relChIso03_diff_barrel = new TH1F("h_muon_relChIso03_diff_barrel","h_muon_relChIso03_diff_barrel",1000,0,1);
+  h_muon_relChIso03_diff_barrel->GetXaxis()->SetTitle("(relChIso_{Zcut}-relChIso_{ZTcut})/relChIso_{Zcut}");
+
+  TH1F *h_muon_relChIso03_diff_endcap = new TH1F("h_muon_relChIso03_diff_endcap","h_muon_relChIso03_diff_endcap",1000,0,1);
+  h_muon_relChIso03_diff_endcap ->GetXaxis()->SetTitle("(relChIso_{Zcut}-relChIso_{ZTcut})/relChIso_{Zcut}");
+
 
   // -- loop over events
   //int maxEntries = std::min(int(chain ->GetEntries()),1000000);  
@@ -255,7 +265,7 @@ int main(int argc, char** argv)
       pt = muon_pt->at(imu);
       
       if ( pt < 20. )  continue;
-      //if ( muon_isLoose->at(imu) == 0 ) continue;
+      if ( muon_isLoose->at(imu) == 0 ) continue;
 
 
       // -- pt/eta reweighting
@@ -280,6 +290,20 @@ int main(int argc, char** argv)
       h_muon_eta->Fill(muon_eta->at(imu), w);
       h_muon_phi->Fill(muon_phi->at(imu), w);
       h2_muon_pt_vs_eta->Fill(muon_eta->at(imu), pt, w);
+
+      // control plots
+      if ( fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy && fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy){
+	float chIsoDiff = ( muon_chIso03->at(imu) - muon_chIso03_dT->at(imu) ) / muon_chIso03->at(imu);
+	if ( muon_chIso03->at(imu) == 0 && chIsoDiff ) chIsoDiff = 0.; 
+	h_muon_relChIso03_diff -> Fill( chIsoDiff, w );
+	if (fabs(muon_eta->at(imu))<1.5){ 
+	  h_muon_relChIso03_diff_barrel -> Fill( chIsoDiff, w );
+	}
+        else{ 
+	  h_muon_relChIso03_diff_endcap -> Fill( chIsoDiff, w );
+	}
+      }
+
       // all
       if ( fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy){
 	h_muon_relChIso02    -> Fill(muon_chIso02->at(imu)/pt, w);
@@ -339,6 +363,10 @@ int main(int argc, char** argv)
   h_muon_eta->Write();
   h_muon_phi->Write();
   h2_muon_pt_vs_eta->Write();
+
+  h_muon_relChIso03_diff ->Write();
+  h_muon_relChIso03_diff_barrel ->Write();
+  h_muon_relChIso03_diff_endcap ->Write();
 
   h_muon_relChIso02->Write();
   h_muon_relChIso02_barrel->Write();
