@@ -62,6 +62,7 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   saveTracks_      = iConfig.getUntrackedParameter<bool>("saveTracks");
   maxDz_           = iConfig.getUntrackedParameter<double>("maxDz");
   minDr_           = iConfig.getUntrackedParameter<double>("minDr");
+  useVertexClosestToGen_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGen");
 
   //Now do what ever initialization is needed
   for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
@@ -159,29 +160,32 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   int pv_index_3D = -1;
   int pv_index_4D = -1;
 
-  // -- find the reco vertex closest to the gen vertex (3D)
-  for(unsigned int ivtx=0; ivtx < vertices3D.size(); ivtx++ ){
-    const reco::Vertex& vtx = vertices3D[ivtx];
-    float dz = std::abs(vtx.z() - genPV.position().z());
-    if( dz < mindz )
-      {
-	mindz = dz;
-	pv_index_3D = ivtx;
-      }
-  }
-  
-  // -- find the reco vertex closest to the gen vertex (4D)
-  mindz = 999999.;
-  for(unsigned int ivtx=0; ivtx < vertices4D.size(); ivtx++ ){
-    const reco::Vertex& vtx = vertices4D[ivtx];
-    float dz = std::abs(vtx.z() - genPV.position().z());
-    if( dz < mindz )
-      {
-	mindz = dz;
-	pv_index_4D = ivtx;
-      }
+  if (useVertexClosestToGen_){
+    // -- find the reco vertex closest to the gen vertex (3D)
+    for(unsigned int ivtx=0; ivtx < vertices3D.size(); ivtx++ ){
+      const reco::Vertex& vtx = vertices3D[ivtx];
+      float dz = std::abs(vtx.z() - genPV.position().z());
+      if( dz < mindz )
+	{
+	  mindz = dz;
+	  pv_index_3D = ivtx;
+	}
+    }
+    
+    // -- find the reco vertex closest to the gen vertex (4D)
+    mindz = 999999.;
+    for(unsigned int ivtx=0; ivtx < vertices4D.size(); ivtx++ ){
+      const reco::Vertex& vtx = vertices4D[ivtx];
+      float dz = std::abs(vtx.z() - genPV.position().z());
+      if( dz < mindz )
+	{
+	  mindz = dz;
+	  pv_index_4D = ivtx;
+	}
+    }
   }
 
+  // -- if PV index == -1, use highest ranked vertex 
   if (pv_index_3D==-1) pv_index_3D = 0;
   if (pv_index_4D==-1) pv_index_4D = 0;
 
@@ -191,6 +195,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   const reco::Vertex& vtx4D = vertices4D[pv_index_4D];
   const reco::Vertex& vtx3D = vertices3D[pv_index_3D];
 
+  if (vtx3D.isFake()) std::cout << vtx3D.chi2() << "  " << vtx3D.ndof()<<std::endl; 
 
   // --- start loop over muons
   for(unsigned int imu=0; imu < muons.size(); imu++ ){
@@ -322,6 +327,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     evInfo[iRes].vtx3D_z = vtx3D.z();
     evInfo[iRes].vtxGen_z = genPV.position().z();
     evInfo[iRes].vtxGen_t = genPV.position().t();
+    evInfo[iRes].vtx3D_isFake = vtx3D.isFake();
+    evInfo[iRes].vtx4D_isFake = vtx4D.isFake();
   }
   
   
@@ -346,6 +353,8 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "vtx3D_z",         &evInfo[iRes].vtx3D_z);
     eventTree[iRes]->Branch( "vtx4D_z",         &evInfo[iRes].vtx4D_z);
     eventTree[iRes]->Branch( "vtx4D_t",         &evInfo[iRes].vtx4D_t);
+    eventTree[iRes]->Branch( "vtx4D_isFake",    &evInfo[iRes].vtx4D_isFake);
+    eventTree[iRes]->Branch( "vtx3D_isFake",    &evInfo[iRes].vtx3D_isFake);
     eventTree[iRes]->Branch( "muon_pt",         &evInfo[iRes].muon_pt);  
     eventTree[iRes]->Branch( "muon_eta",        &evInfo[iRes].muon_eta);  
     eventTree[iRes]->Branch( "muon_phi",        &evInfo[iRes].muon_phi);  
@@ -407,6 +416,8 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes].vtx3D_z = -999;
     evInfo[iRes].vtx4D_z = -999;
     evInfo[iRes].vtx4D_t = -999;
+    evInfo[iRes].vtx3D_isFake = -999;
+    evInfo[iRes].vtx4D_isFake = -999;
 
     evInfo[iRes].muon_pt.clear();
     evInfo[iRes].muon_eta.clear();

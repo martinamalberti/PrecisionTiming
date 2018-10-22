@@ -80,6 +80,8 @@ struct eventInfo
   float vtx4D_z;
   float vtx4D_t;
   float vtx3D_z;
+  int vtx3D_isFake;
+  int vtx4D_isFake;
   vector<float> muon_pt;
   vector<float> muon_eta;
   vector<float> muon_phi;
@@ -136,6 +138,7 @@ private:
   bool saveTracks_;
   float maxDz_;
   float minDr_;
+  bool useVertexClosestToGen_;
 };
 
 bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
