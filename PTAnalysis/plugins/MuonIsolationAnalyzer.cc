@@ -54,6 +54,8 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   pfcandToken_( consumes<View<reco::PFCandidate> >( iConfig.getParameter<InputTag>( "PFCandidateTag" ) ) ),
   genPartToken_(consumes<View<reco::GenParticle> >(iConfig.getUntrackedParameter<InputTag>("genPartTag"))),
   genVertexToken_(consumes<vector<SimVertex> >(iConfig.getUntrackedParameter<InputTag>("genVtxTag"))),
+  genXYZToken_(consumes<genXYZ>(iConfig.getUntrackedParameter<edm::InputTag>("genXYZTag"))),    
+  genT0Token_(consumes<float>(iConfig.getUntrackedParameter<edm::InputTag>("genT0Tag"))),      
   genJetsToken_(consumes<View<reco::GenJet> >(iConfig.getUntrackedParameter<InputTag>("genJetsTag"))),
   muonsToken_(consumes<View<reco::Muon> >(iConfig.getUntrackedParameter<edm::InputTag>("muonsTag")))
 {
@@ -126,8 +128,17 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   // -- get the gen vertex collection
   Handle<vector<SimVertex> > GenVertexCollectionH;
   iEvent.getByToken( genVertexToken_, GenVertexCollectionH );
-  const vector<SimVertex>& genVertices = *GenVertexCollectionH;
+  //const vector<SimVertex>& genVertices = *GenVertexCollectionH;
 
+
+  // -- get the genXYZ
+  Handle<genXYZ> genXYZH;
+  iEvent.getByToken(genXYZToken_, genXYZH);
+  
+  // -- get the genT0
+  Handle<float> genT0H;
+  iEvent.getByToken(genT0Token_, genT0H);
+    
   // -- get the gen jets collection
   Handle<View<reco::GenJet> > GenJetCollectionH;
   iEvent.getByToken(genJetsToken_, GenJetCollectionH);
@@ -155,7 +166,18 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
   //---get truth PV
-  SimVertex genPV = genVertices.at(0);
+  SimVertex genPV; 
+  if ( GenVertexCollectionH.isValid()) {
+    const vector<SimVertex>& genVertices = *GenVertexCollectionH;   
+    genPV = genVertices.at(0);
+  }
+  else{
+    auto xyz = genXYZH.product();
+    auto t = *genT0H.product();
+    auto v = math::XYZVectorD(xyz->x(), xyz->y(), xyz->z());
+    genPV = SimVertex(v, t);
+  }
+  
   float mindz = 999999.;
   int pv_index_3D = -1;
   int pv_index_4D = -1;
@@ -195,7 +217,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   const reco::Vertex& vtx4D = vertices4D[pv_index_4D];
   const reco::Vertex& vtx3D = vertices3D[pv_index_3D];
 
-  if (vtx3D.isFake()) std::cout << vtx3D.chi2() << "  " << vtx3D.ndof()<<std::endl; 
+
+  int muonIndex =  -1;
 
   // --- start loop over muons
   for(unsigned int imu=0; imu < muons.size(); imu++ ){
@@ -205,7 +228,9 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     // -- minimal checks
     if (muon.track().isNull()) continue;
     if (muon.pt() < 10.) continue;
-  
+    
+    muonIndex++;
+
     // -- check if prompt or fake muon
     bool isPromptMu = isPromptMuon(muon,genParticles);
     bool isMatchedGenJet  = isMatchedToGenJet(muon, genJets);
@@ -224,6 +249,9 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       }
     }
 
+    
+    float muonTime =  0;
+      
     // -- loop over charged pf candidates
     for(unsigned icand = 0; icand < pfcands.size(); ++icand) {
       const reco::PFCandidate& pfcand = pfcands[icand];
@@ -233,6 +261,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       reco::TrackRef trackRef = pfcand.trackRef();
       if ( trackRef.isNull() ) continue;
       if ( !(trackRef->quality(reco::TrackBase::highPurity)) ) continue;
+      if ( trackRef == muon.track() ) muonTime = pfcand.time();
       if ( trackRef == muon.track() ) continue;
 
 
@@ -273,25 +302,30 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	      }
 	      if ( dt < 3*time_resol){                                                     
 		chIso_dT[iCone][iRes]+= pfcand.pt();                                                                                                                            
-	      }                                                                                                                                                                   
-	    }// end loop over time resolutions                                                                                                                                    
-	
-	    // save info for tracks in the isolation cone
-	    if ( isoConeDR_[iCone] == 0.3 && saveTracks_){
-	      for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                      
-		evInfo[iRes].track_t.push_back(time[iCone][iRes]);                                                                                                                               
+	      }
+
+	      
+	      
+	      // -- save info for tracks in the isolation cone (only for DR = 0.3)
+	      if (saveTracks_ && isoConeDR_[iCone] == 0.3) {
+		evInfo[iRes].track_t.push_back(time[iCone][iRes]); 
 		evInfo[iRes].track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
 		evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() )); 
 		evInfo[iRes].track_pt.push_back(pfcand.pt());
 		evInfo[iRes].track_eta.push_back(pfcand.eta());                                                                                                                           
 		evInfo[iRes].track_phi.push_back(pfcand.phi());                                                                                                                           
+		evInfo[iRes].track_muIndex.push_back(muonIndex);                                                                                                                           
 	      }
-	    }
-	  }                                                                                                                                                                      
+
+                                                                                                                                                                   
+	    }// end loop over time resolutions                                                                                                                                    
+	  }
 	}// end loop over cone sizes                                                                                                                                              
       }
     }// end loop over tracks
         
+
+
     // -- fill muon info
     for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
       evInfo[iRes].muon_pt.push_back(muon.pt());  
@@ -307,6 +341,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       evInfo[iRes].muon_dxy4D.push_back( muon.track()->dxy(vtx4D.position()) );
       evInfo[iRes].muon_dz3D.push_back( muon.track()->dz(vtx3D.position()) );
       evInfo[iRes].muon_dxy3D.push_back( muon.track()->dxy(vtx3D.position()) );
+      evInfo[iRes].muon_t.push_back(muonTime); 
       evInfo[iRes].muon_isPrompt.push_back(isPromptMu);
       evInfo[iRes].muon_isMatchedToGenJet.push_back(isMatchedGenJet);
         
@@ -366,6 +401,7 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "muon_dz4D",       &evInfo[iRes].muon_dz4D);  
     eventTree[iRes]->Branch( "muon_dxy3D",      &evInfo[iRes].muon_dxy3D);  
     eventTree[iRes]->Branch( "muon_dxy4D",      &evInfo[iRes].muon_dxy4D);  
+    eventTree[iRes]->Branch( "muon_t",          &evInfo[iRes].muon_t);  
     eventTree[iRes]->Branch( "muon_isPrompt",   &evInfo[iRes].muon_isPrompt);  
     eventTree[iRes]->Branch( "muon_isMatchedToGenJet",   &evInfo[iRes].muon_isMatchedToGenJet);  
 
@@ -381,6 +417,7 @@ MuonIsolationAnalyzer::beginJob()
       eventTree[iRes]->Branch( "track_pt",     &evInfo[iRes].track_pt);
       eventTree[iRes]->Branch( "track_eta",    &evInfo[iRes].track_eta);
       eventTree[iRes]->Branch( "track_phi",    &evInfo[iRes].track_phi);
+      eventTree[iRes]->Branch( "track_muIndex",    &evInfo[iRes].track_muIndex);
     }
   
   }
@@ -430,6 +467,7 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes].muon_dxy3D.clear();
     evInfo[iRes].muon_dz4D.clear();
     evInfo[iRes].muon_dxy4D.clear();
+    evInfo[iRes].muon_t.clear();
     evInfo[iRes].muon_isPrompt.clear();
     evInfo[iRes].muon_isMatchedToGenJet.clear();
 
@@ -445,6 +483,8 @@ MuonIsolationAnalyzer::initEventStructure()
       evInfo[iRes].track_pt.clear();
       evInfo[iRes].track_eta.clear();
       evInfo[iRes].track_phi.clear();
+      evInfo[iRes].track_muIndex.clear();
+
     }
   }
 }

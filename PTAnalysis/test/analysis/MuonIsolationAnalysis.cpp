@@ -73,6 +73,8 @@ int main(int argc, char** argv)
 
   // -- tree vars
   int npu;
+  int vtx3D_isFake;
+  int vtx4D_isFake;
   vector<float> *muon_pt;
   vector<float> *muon_eta;
   vector<float> *muon_phi;
@@ -118,16 +120,18 @@ int main(int argc, char** argv)
 
   chain->SetBranchStatus("*",0);
   chain->SetBranchStatus("npu",1);                     chain->SetBranchAddress("npu",              &npu);
+  chain->SetBranchStatus("vtx3D_isFake",1);            chain->SetBranchAddress("vtx3D_isFake",     &vtx3D_isFake);
+  chain->SetBranchStatus("vtx4D_isFake",1);            chain->SetBranchAddress("vtx4D_isFake",     &vtx4D_isFake);
   chain->SetBranchStatus("muon_pt",1);                 chain->SetBranchAddress("muon_pt",        &muon_pt);
   chain->SetBranchStatus("muon_eta",1);                chain->SetBranchAddress("muon_eta",       &muon_eta);
   chain->SetBranchStatus("muon_phi",1);                chain->SetBranchAddress("muon_phi",       &muon_phi);
-  chain->SetBranchStatus("muon_dz3D",1);                chain->SetBranchAddress("muon_dz3D",       &muon_dz3D);
-  chain->SetBranchStatus("muon_dxy3D",1);                chain->SetBranchAddress("muon_dxy3D",       &muon_dxy3D);
-  chain->SetBranchStatus("muon_dz4D",1);                chain->SetBranchAddress("muon_dz4D",       &muon_dz4D);
-  chain->SetBranchStatus("muon_dxy4D",1);                chain->SetBranchAddress("muon_dxy4D",       &muon_dxy4D);
+  chain->SetBranchStatus("muon_dz3D",1);               chain->SetBranchAddress("muon_dz3D",       &muon_dz3D);
+  chain->SetBranchStatus("muon_dxy3D",1);              chain->SetBranchAddress("muon_dxy3D",       &muon_dxy3D);
+  chain->SetBranchStatus("muon_dz4D",1);               chain->SetBranchAddress("muon_dz4D",       &muon_dz4D);
+  chain->SetBranchStatus("muon_dxy4D",1);              chain->SetBranchAddress("muon_dxy4D",       &muon_dxy4D);
   chain->SetBranchStatus("muon_isLoose",1);            chain->SetBranchAddress("muon_isLoose",       &muon_isLoose);
-  chain->SetBranchStatus("muon_isTight3D",1);            chain->SetBranchAddress("muon_isTight3D",       &muon_isTight3D);
-  chain->SetBranchStatus("muon_isTight4D",1);            chain->SetBranchAddress("muon_isTight4D",       &muon_isTight4D);
+  chain->SetBranchStatus("muon_isTight3D",1);          chain->SetBranchAddress("muon_isTight3D",       &muon_isTight3D);
+  chain->SetBranchStatus("muon_isTight4D",1);          chain->SetBranchAddress("muon_isTight4D",       &muon_isTight4D);
   chain->SetBranchStatus("muon_isPrompt",1);           chain->SetBranchAddress("muon_isPrompt",       &muon_isPrompt);
   chain->SetBranchStatus("muon_isMatchedToGenJet",1);  chain->SetBranchAddress("muon_isMatchedToGenJet",  &muon_isMatchedToGenJet);
   chain->SetBranchStatus("muon_chIso02",1);            chain->SetBranchAddress("muon_chIso02",   &muon_chIso02);
@@ -285,6 +289,11 @@ int main(int argc, char** argv)
 
       if (!pass) continue;
 
+      //bool pass3D = fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy ;
+      //bool pass4D = fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy ;
+      bool pass3D = fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy && !vtx3D_isFake;
+      bool pass4D = fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy && !vtx4D_isFake;
+
       
       h_muon_pt->Fill(pt, w);
       h_muon_eta->Fill(muon_eta->at(imu), w);
@@ -292,7 +301,7 @@ int main(int argc, char** argv)
       h2_muon_pt_vs_eta->Fill(muon_eta->at(imu), pt, w);
 
       // control plots
-      if ( fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy && fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy){
+      if (pass3D && pass4D){	
 	float chIsoDiff = ( muon_chIso03->at(imu) - muon_chIso03_dT->at(imu) ) / muon_chIso03->at(imu);
 	if ( muon_chIso03->at(imu) == 0 && chIsoDiff ) chIsoDiff = 0.; 
 	h_muon_relChIso03_diff -> Fill( chIsoDiff, w );
@@ -303,15 +312,15 @@ int main(int argc, char** argv)
 	  h_muon_relChIso03_diff_endcap -> Fill( chIsoDiff, w );
 	}
       }
-
+      
       // all
-      if ( fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy){
+      if ( pass3D ){
 	h_muon_relChIso02    -> Fill(muon_chIso02->at(imu)/pt, w);
 	h_muon_relChIso03    -> Fill(muon_chIso03->at(imu)/pt, w);
 	h_muon_relChIso04    -> Fill(muon_chIso04->at(imu)/pt, w);
 	h_muon_relChIso05    -> Fill(muon_chIso05->at(imu)/pt, w);
       }
-      if ( fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy){
+      if ( pass4D ){
 	h_muon_relChIso02_dT -> Fill(muon_chIso02_dT->at(imu)/pt, w);
 	h_muon_relChIso03_dT -> Fill(muon_chIso03_dT->at(imu)/pt, w);
 	h_muon_relChIso04_dT -> Fill(muon_chIso04_dT->at(imu)/pt, w);
@@ -320,13 +329,13 @@ int main(int argc, char** argv)
 
       // barrel 
       if (fabs(muon_eta->at(imu))<1.5){
-	if ( fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy){
+	if ( pass3D ) {
 	  h_muon_relChIso02_barrel    -> Fill(muon_chIso02->at(imu)/pt, w);
 	  h_muon_relChIso03_barrel    -> Fill(muon_chIso03->at(imu)/pt, w);
 	  h_muon_relChIso04_barrel    -> Fill(muon_chIso04->at(imu)/pt, w);
 	  h_muon_relChIso05_barrel    -> Fill(muon_chIso05->at(imu)/pt, w);
 	}
-	if ( fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy ){
+	if ( pass4D ){
 	  h_muon_relChIso02_dT_barrel -> Fill(muon_chIso02_dT->at(imu)/pt, w);
 	  h_muon_relChIso03_dT_barrel -> Fill(muon_chIso03_dT->at(imu)/pt, w);
 	  h_muon_relChIso04_dT_barrel -> Fill(muon_chIso04_dT->at(imu)/pt, w);
@@ -335,13 +344,13 @@ int main(int argc, char** argv)
       }
       // endcap
       else{
-	if ( fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy){
+	if ( pass3D ){
 	  h_muon_relChIso02_endcap    -> Fill(muon_chIso02->at(imu)/pt, w);
 	  h_muon_relChIso03_endcap    -> Fill(muon_chIso03->at(imu)/pt, w);
 	  h_muon_relChIso04_endcap    -> Fill(muon_chIso04->at(imu)/pt, w);
 	  h_muon_relChIso05_endcap    -> Fill(muon_chIso05->at(imu)/pt, w);
 	}
-	if ( fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy ){
+	if ( pass4D ) {
 	  h_muon_relChIso02_dT_endcap -> Fill(muon_chIso02_dT->at(imu)/pt, w);
 	  h_muon_relChIso03_dT_endcap -> Fill(muon_chIso03_dT->at(imu)/pt, w);
 	  h_muon_relChIso04_dT_endcap -> Fill(muon_chIso04_dT->at(imu)/pt, w);

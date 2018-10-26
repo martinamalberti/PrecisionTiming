@@ -19,10 +19,12 @@
 
 // system include files
 #include <memory>
+#include <cstdlib>
+#include <cmath>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/one/EDAnalyzer.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -74,6 +76,7 @@ struct eventInfo
   vector<float> track_dz3D;
   vector<float> track_dz4D;
   vector<float> track_t;
+  vector<int> track_muIndex;
 
   float vtxGen_z;
   float vtxGen_t;
@@ -93,6 +96,7 @@ struct eventInfo
   vector<float> muon_dxy3D;
   vector<float> muon_dz4D;
   vector<float> muon_dxy4D;
+  vector<float> muon_t;
   vector<int> muon_isPrompt;
   vector<int> muon_isMatchedToGenJet;
   vector<float> muon_chIso[10];
@@ -105,6 +109,8 @@ class MuonIsolationAnalyzer : public edm::EDAnalyzer
 public:
   explicit MuonIsolationAnalyzer(const edm::ParameterSet&);
   ~MuonIsolationAnalyzer();
+
+  typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>,ROOT::Math::DefaultCoordinateSystemTag> genXYZ;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -124,6 +130,8 @@ private:
   EDGetTokenT<edm::View<reco::PFCandidate> >      pfcandToken_;
   EDGetTokenT<View<reco::GenParticle> > genPartToken_;
   EDGetTokenT<vector<SimVertex> >  genVertexToken_;
+  EDGetTokenT<genXYZ> genXYZToken_;
+  EDGetTokenT<float>  genT0Token_;
   EDGetTokenT<View<reco::GenJet> > genJetsToken_;
   EDGetTokenT<View<reco::Muon> > muonsToken_; 
   
