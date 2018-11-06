@@ -81,8 +81,11 @@ struct eventInfo
   float vtxGen_z;
   float vtxGen_t;
   float vtx4D_z;
-  float vtx4D_t;
   float vtx3D_z;
+  float vtx3D_zErr;
+  float vtx4D_t;
+  float vtx4D_tErr;
+  float vtx4D_zErr;
   int vtx3D_isFake;
   int vtx4D_isFake;
   vector<float> muon_pt;
@@ -101,6 +104,7 @@ struct eventInfo
   vector<int> muon_isMatchedToGenJet;
   vector<float> muon_chIso[10];
   vector<float> muon_chIso_dT[10][10];
+  vector<float> muon_chIso_dT2[10][10];
 };
 
 

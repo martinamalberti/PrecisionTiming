@@ -211,6 +211,9 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   if (pv_index_3D==-1) pv_index_3D = 0;
   if (pv_index_4D==-1) pv_index_4D = 0;
 
+  //cout << "pv_index_3D = " << pv_index_3D <<endl;
+  //cout << "pv_index_4D = " << pv_index_4D <<endl;
+
 
   // -- get isolation around a candidate photon 
   // --- using only vtx closest to gen vtx
@@ -238,6 +241,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     // -- compute charged isolations
     float chIso[nCones];
     float chIso_dT[nCones][nResol];
+    float chIso_dT2[nCones][nResol];
     float time[nCones][nResol]; 
     
     // -- initialize 
@@ -245,6 +249,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       chIso[iCone] = 0.;
       for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
 	chIso_dT[iCone][iRes] = 0.;
+	chIso_dT2[iCone][iRes] = 0.;
 	time[iCone][iRes] = 0.;
       }
     }
@@ -300,9 +305,16 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	      else{
 		dt = 0;
 	      }
+	      // --- consider only track time resol
 	      if ( dt < 3*time_resol){                                                     
 		chIso_dT[iCone][iRes]+= pfcand.pt();                                                                                                                            
 	      }
+
+	      // --- track and vertex time resol
+	      if ( dt < 3*sqrt(time_resol*time_resol + vtx4D.tError()*vtx4D.tError()) ){                                                     
+		chIso_dT2[iCone][iRes]+= pfcand.pt();                                                                                                                            
+	      }
+
 
 	      
 	      
@@ -312,12 +324,11 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 		evInfo[iRes].track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
 		evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() )); 
 		evInfo[iRes].track_pt.push_back(pfcand.pt());
-		evInfo[iRes].track_eta.push_back(pfcand.eta());                                                                                                                           
-		evInfo[iRes].track_phi.push_back(pfcand.phi());                                                                                                                           
-		evInfo[iRes].track_muIndex.push_back(muonIndex);                                                                                                                           
+		evInfo[iRes].track_eta.push_back(pfcand.eta());
+		evInfo[iRes].track_phi.push_back(pfcand.phi());
+		evInfo[iRes].track_muIndex.push_back(muonIndex);
 	      }
-
-                                                                                                                                                                   
+	      
 	    }// end loop over time resolutions                                                                                                                                    
 	  }
 	}// end loop over cone sizes                                                                                                                                              
@@ -348,6 +359,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
 	(evInfo[iRes].muon_chIso[iCone]).push_back(chIso[iCone]);  
 	(evInfo[iRes].muon_chIso_dT[iCone][iRes]).push_back(chIso_dT[iCone][iRes]);
+	(evInfo[iRes].muon_chIso_dT2[iCone][iRes]).push_back(chIso_dT2[iCone][iRes]);
       }
     }
   }// end loop over muon
@@ -358,8 +370,11 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
     evInfo[iRes].npu = nPU;
     evInfo[iRes].vtx4D_t = vtx4D.t();
+    evInfo[iRes].vtx4D_tErr = vtx4D.tError();
     evInfo[iRes].vtx4D_z = vtx4D.z();
+    evInfo[iRes].vtx4D_zErr = vtx4D.zError();
     evInfo[iRes].vtx3D_z = vtx3D.z();
+    evInfo[iRes].vtx3D_zErr = vtx3D.zError();
     evInfo[iRes].vtxGen_z = genPV.position().z();
     evInfo[iRes].vtxGen_t = genPV.position().t();
     evInfo[iRes].vtx3D_isFake = vtx3D.isFake();
@@ -386,8 +401,11 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "vtxGen_z",        &evInfo[iRes].vtxGen_z);
     eventTree[iRes]->Branch( "vtxGen_t",        &evInfo[iRes].vtxGen_t);
     eventTree[iRes]->Branch( "vtx3D_z",         &evInfo[iRes].vtx3D_z);
+    eventTree[iRes]->Branch( "vtx3D_zErr",      &evInfo[iRes].vtx3D_zErr);
     eventTree[iRes]->Branch( "vtx4D_z",         &evInfo[iRes].vtx4D_z);
+    eventTree[iRes]->Branch( "vtx4D_zErr",      &evInfo[iRes].vtx4D_zErr);
     eventTree[iRes]->Branch( "vtx4D_t",         &evInfo[iRes].vtx4D_t);
+    eventTree[iRes]->Branch( "vtx4D_tErr",      &evInfo[iRes].vtx4D_tErr);
     eventTree[iRes]->Branch( "vtx4D_isFake",    &evInfo[iRes].vtx4D_isFake);
     eventTree[iRes]->Branch( "vtx3D_isFake",    &evInfo[iRes].vtx3D_isFake);
     eventTree[iRes]->Branch( "muon_pt",         &evInfo[iRes].muon_pt);  
@@ -408,6 +426,7 @@ MuonIsolationAnalyzer::beginJob()
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
       eventTree[iRes]->Branch( Form("muon_chIso%.2d",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso[iCone]);  
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dT[iCone][iRes]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dT2",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dT2[iCone][iRes]);  
     }
 
     if (saveTracks_){
@@ -451,8 +470,11 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes].vtxGen_t = -999;
     evInfo[iRes].vtxGen_z = -999;
     evInfo[iRes].vtx3D_z = -999;
+    evInfo[iRes].vtx3D_zErr = -999;
     evInfo[iRes].vtx4D_z = -999;
+    evInfo[iRes].vtx4D_zErr = -999;
     evInfo[iRes].vtx4D_t = -999;
+    evInfo[iRes].vtx4D_tErr = -999;
     evInfo[iRes].vtx3D_isFake = -999;
     evInfo[iRes].vtx4D_isFake = -999;
 
@@ -474,6 +496,7 @@ MuonIsolationAnalyzer::initEventStructure()
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
       evInfo[iRes].muon_chIso[iCone].clear();
       evInfo[iRes].muon_chIso_dT[iCone][iRes].clear();
+      evInfo[iRes].muon_chIso_dT2[iCone][iRes].clear();
     }
 
     if (saveTracks_){
