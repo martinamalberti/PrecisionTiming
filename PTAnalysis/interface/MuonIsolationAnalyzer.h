@@ -104,7 +104,10 @@ struct eventInfo
   vector<int> muon_isMatchedToGenJet;
   vector<float> muon_chIso[10];
   vector<float> muon_chIso_dT[10][10];
-  vector<float> muon_chIso_dT2[10][10];
+  vector<float> muon_chIso_reldZ[10];
+  vector<float> muon_chIso_reldZ_dT[10][10];
+  vector<float> muon_chIso_simVtx[10];
+  vector<float> muon_chIso_dT_simVtx[10][10];
 };
 
 

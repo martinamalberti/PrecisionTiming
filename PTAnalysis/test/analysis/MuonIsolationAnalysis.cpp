@@ -103,6 +103,15 @@ int main(int argc, char** argv)
   vector<float> *muon_chIso04_dT;
   vector<float> *muon_chIso05;
   vector<float> *muon_chIso05_dT;
+
+  vector<float> *muon_chIso02_simVtx;
+  vector<float> *muon_chIso02_dT_simVtx;
+  vector<float> *muon_chIso03_simVtx;
+  vector<float> *muon_chIso03_dT_simVtx;
+  vector<float> *muon_chIso04_simVtx;
+  vector<float> *muon_chIso04_dT_simVtx;
+  vector<float> *muon_chIso05_simVtx;
+  vector<float> *muon_chIso05_dT_simVtx;
   
   muon_pt = 0;
   muon_eta = 0;
@@ -124,6 +133,14 @@ int main(int argc, char** argv)
   muon_chIso04_dT = 0;
   muon_chIso05 = 0;
   muon_chIso05_dT = 0;
+  muon_chIso02_simVtx = 0;
+  muon_chIso02_dT_simVtx = 0;
+  muon_chIso03_simVtx = 0;
+  muon_chIso03_dT_simVtx = 0;
+  muon_chIso04_simVtx = 0;
+  muon_chIso04_dT_simVtx = 0;
+  muon_chIso05_simVtx = 0;
+  muon_chIso05_dT_simVtx = 0;
 
 
   chain->SetBranchStatus("*",0);
@@ -160,6 +177,15 @@ int main(int argc, char** argv)
   chain->SetBranchStatus("muon_chIso04_dT",1);         chain->SetBranchAddress("muon_chIso04_dT",&muon_chIso04_dT);
   chain->SetBranchStatus("muon_chIso05",1);            chain->SetBranchAddress("muon_chIso05",   &muon_chIso05);
   chain->SetBranchStatus("muon_chIso05_dT",1);         chain->SetBranchAddress("muon_chIso05_dT",&muon_chIso05_dT);
+
+  chain->SetBranchStatus("muon_chIso02_simVtx",1);            chain->SetBranchAddress("muon_chIso02_simVtx",   &muon_chIso02_simVtx);
+  chain->SetBranchStatus("muon_chIso02_dT_simVtx",1);         chain->SetBranchAddress("muon_chIso02_dT_simVtx",&muon_chIso02_dT_simVtx);
+  chain->SetBranchStatus("muon_chIso03_simVtx",1);            chain->SetBranchAddress("muon_chIso03_simVtx",   &muon_chIso03_simVtx);
+  chain->SetBranchStatus("muon_chIso03_dT_simVtx",1);         chain->SetBranchAddress("muon_chIso03_dT_simVtx",&muon_chIso03_dT_simVtx);
+  chain->SetBranchStatus("muon_chIso04_simVtx",1);            chain->SetBranchAddress("muon_chIso04_simVtx",   &muon_chIso04_simVtx);
+  chain->SetBranchStatus("muon_chIso04_dT_simVtx",1);         chain->SetBranchAddress("muon_chIso04_dT_simVtx",&muon_chIso04_dT_simVtx);
+  chain->SetBranchStatus("muon_chIso05_simVtx",1);            chain->SetBranchAddress("muon_chIso05_simVtx",   &muon_chIso05_simVtx);
+  chain->SetBranchStatus("muon_chIso05_dT_simVtx",1);         chain->SetBranchAddress("muon_chIso05_dT_simVtx",&muon_chIso05_dT_simVtx);
 
 
   // -- book histograms
@@ -274,17 +300,86 @@ int main(int argc, char** argv)
   h_muon_relChIso05_dT_endcap->GetXaxis()->SetTitle("relative charged isolation");
 
 
-  //
-  TH1F *h_muon_relChIso03_diff = new TH1F("h_muon_relChIso03_diff","h_muon_relChIso03_diff",1000,-1,1);
-  h_muon_relChIso03_diff->GetXaxis()->SetTitle("(relChIso_{Zcut}-relChIso_{ZTcut})/relChIso_{Zcut}");
+  // chIso wrt to sim vertex
+  TH1F *h_muon_relChIso02_simVtx = new TH1F("h_muon_relChIso02_simVtx","h_muon_relChIso02_simVtx",5000,0,5);
+  h_muon_relChIso02_simVtx->GetXaxis()->SetTitle("relative charged isolation");
 
-  TH1F *h_muon_relChIso03_diff_barrel = new TH1F("h_muon_relChIso03_diff_barrel","h_muon_relChIso03_diff_barrel",1000,-1,1);
-  h_muon_relChIso03_diff_barrel->GetXaxis()->SetTitle("(relChIso_{Zcut}-relChIso_{ZTcut})/relChIso_{Zcut}");
+  TH1F *h_muon_relChIso02_dT_simVtx = new TH1F("h_muon_relChIso02_dT_simVtx","h_muon_relChIso02_dT_simVtx",5000,0,5);
+  h_muon_relChIso02_dT_simVtx->GetXaxis()->SetTitle("relative charged isolation");
 
-  TH1F *h_muon_relChIso03_diff_endcap = new TH1F("h_muon_relChIso03_diff_endcap","h_muon_relChIso03_diff_endcap",1000,-1,1);
-  h_muon_relChIso03_diff_endcap ->GetXaxis()->SetTitle("(relChIso_{Zcut}-relChIso_{ZTcut})/relChIso_{Zcut}");
+  TH1F *h_muon_relChIso03_simVtx = new TH1F("h_muon_relChIso03_simVtx","h_muon_relChIso03_simVtx",5000,0,5);
+  h_muon_relChIso03_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dT_simVtx = new TH1F("h_muon_relChIso03_dT_simVtx","h_muon_relChIso03_dT_simVtx",5000,0,5);
+  h_muon_relChIso03_dT_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso04_simVtx = new TH1F("h_muon_relChIso04_simVtx","h_muon_relChIso04_simVtx",5000,0,5);
+  h_muon_relChIso04_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso04_dT_simVtx = new TH1F("h_muon_relChIso04_dT_simVtx","h_muon_relChIso04_dT_simVtx",5000,0,5);
+  h_muon_relChIso04_dT_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso05_simVtx = new TH1F("h_muon_relChIso05_simVtx","h_muon_relChIso05_simVtx",5000,0,5);
+  h_muon_relChIso05_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso05_dT_simVtx = new TH1F("h_muon_relChIso05_dT_simVtx","h_muon_relChIso05_dT_simVtx",5000,0,5);
+  h_muon_relChIso05_dT_simVtx->GetXaxis()->SetTitle("relative charged isolation");
 
 
+  TH1F *h_muon_relChIso02_simVtx_barrel = new TH1F("h_muon_relChIso02_simVtx_barrel","h_muon_relChIso02_simVtx_barrel",5000,0,5);
+  h_muon_relChIso02_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso02_dT_simVtx_barrel = new TH1F("h_muon_relChIso02_dT_simVtx_barrel","h_muon_relChIso02_dT_simVtx_barrel",5000,0,5);
+  h_muon_relChIso02_dT_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_simVtx_barrel = new TH1F("h_muon_relChIso03_simVtx_barrel","h_muon_relChIso03_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dT_simVtx_barrel = new TH1F("h_muon_relChIso03_dT_simVtx_barrel","h_muon_relChIso03_dT_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_dT_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso04_simVtx_barrel = new TH1F("h_muon_relChIso04_simVtx_barrel","h_muon_relChIso04_simVtx_barrel",5000,0,5);
+  h_muon_relChIso04_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso04_dT_simVtx_barrel = new TH1F("h_muon_relChIso04_dT_simVtx_barrel","h_muon_relChIso04_dT_simVtx_barrel",5000,0,5);
+  h_muon_relChIso04_dT_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso05_simVtx_barrel = new TH1F("h_muon_relChIso05_simVtx_barrel","h_muon_relChIso05_simVtx_barrel",5000,0,5);
+  h_muon_relChIso05_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso05_dT_simVtx_barrel = new TH1F("h_muon_relChIso05_dT_simVtx_barrel","h_muon_relChIso05_dT_simVtx_barrel",5000,0,5);
+  h_muon_relChIso05_dT_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+
+
+  TH1F *h_muon_relChIso02_simVtx_endcap = new TH1F("h_muon_relChIso02_simVtx_endcap","h_muon_relChIso02_simVtx_endcap",5000,0,5);
+  h_muon_relChIso02_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso02_dT_simVtx_endcap = new TH1F("h_muon_relChIso02_dT_simVtx_endcap","h_muon_relChIso02_dT_simVtx_endcap",5000,0,5);
+  h_muon_relChIso02_dT_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_simVtx_endcap = new TH1F("h_muon_relChIso03_simVtx_endcap","h_muon_relChIso03_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dT_simVtx_endcap = new TH1F("h_muon_relChIso03_dT_simVtx_endcap","h_muon_relChIso03_dT_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_dT_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso04_simVtx_endcap = new TH1F("h_muon_relChIso04_simVtx_endcap","h_muon_relChIso04_simVtx_endcap",5000,0,5);
+  h_muon_relChIso04_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso04_dT_simVtx_endcap = new TH1F("h_muon_relChIso04_dT_simVtx_endcap","h_muon_relChIso04_dT_simVtx_endcap",5000,0,5);
+  h_muon_relChIso04_dT_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso05_simVtx_endcap = new TH1F("h_muon_relChIso05_simVtx_endcap","h_muon_relChIso05_simVtx_endcap",5000,0,5);
+  h_muon_relChIso05_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso05_dT_simVtx_endcap = new TH1F("h_muon_relChIso05_dT_simVtx_endcap","h_muon_relChIso05_dT_simVtx_endcap",5000,0,5);
+  h_muon_relChIso05_dT_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+
+
+
+  // ratio iso
   TH1F *h_muon_relChIso03_ratio = new TH1F("h_muon_relChIso03_ratio","h_muon_relChIso03_ratio",1000,0,2);
   h_muon_relChIso03_ratio->GetXaxis()->SetTitle("relChIso_{ZTcut}/relChIso_{Zcut}");
 
@@ -293,6 +388,10 @@ int main(int argc, char** argv)
 
   TH1F *h_muon_relChIso03_ratio_endcap = new TH1F("h_muon_relChIso03_ratio_endcap","h_muon_relChIso03_ratio_endcap",1000,0,2);
   h_muon_relChIso03_ratio_endcap->GetXaxis()->SetTitle("relChIso_{ZTcut}/relChIso_{Zcut}");
+
+
+
+
 
   // -- loop over events
   //int maxEntries = std::min(int(chain ->GetEntries()),1000000);  
@@ -311,7 +410,7 @@ int main(int argc, char** argv)
     
     h_npu->Fill(npu);
 
-    int nMuonsPerEvent = 0;
+    int nMuonsInEvent = 0;
 
     for (unsigned int imu = 0; imu < muon_pt->size(); imu++){
       
@@ -338,15 +437,16 @@ int main(int argc, char** argv)
 
       if (!pass) continue;
 
-      nMuonsPerEvent++;
+      nMuonsInEvent++;
       
-      //bool pass3D = fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy && !vtx3D_isFake;
-      //bool pass4D = fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy && !vtx4D_isFake;
+      bool pass3D = fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy && !vtx3D_isFake;
+      bool pass4D = fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy && !vtx4D_isFake;
 
-      bool pass3D = fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy && !vtx3D_isFake && fabs(vtx3D_z-vtxGen_z) < 0.01 ;
-      bool pass4D = fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy && !vtx4D_isFake && fabs(vtx4D_z-vtxGen_z) < 0.01 && fabs(vtx4D_t-vtxGen_t*1000000000.) < 0.02;
+      //bool pass3D = fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy && !vtx3D_isFake && fabs(vtx3D_z-vtxGen_z) < 0.01 ;
+      //bool pass4D = fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy && !vtx4D_isFake && fabs(vtx4D_z-vtxGen_z) < 0.01 && fabs(vtx4D_t-vtxGen_t*1000000000.) < 0.02;
 
-      if (nMuonsPerEvent == 1){
+      if (nMuonsInEvent == 1){
+
       	if (pass3D) h_vtx_dz3D->Fill( vtx3D_z - vtxGen_z);
       	if (pass4D) h_vtx_dz4D->Fill( vtx4D_z - vtxGen_z);
       	if (pass4D) h_vtx_dt4D->Fill( vtx4D_t - vtxGen_t*1000000000.);
@@ -364,36 +464,39 @@ int main(int argc, char** argv)
 
       // control plots
       if (pass3D && pass4D){	
-	float chIsoDiff = ( muon_chIso03->at(imu) - muon_chIso03_dT->at(imu) ) / muon_chIso03->at(imu);
-	if ( muon_chIso03->at(imu) == 0 && chIsoDiff ) chIsoDiff = 0.; 
-	
 	float chIsoRatio = muon_chIso03_dT->at(imu)/muon_chIso03->at(imu);
 	if ( muon_chIso03->at(imu) == 0 ) chIsoRatio = 1;
-
-	h_muon_relChIso03_diff -> Fill( chIsoDiff, w );
 	h_muon_relChIso03_ratio -> Fill( chIsoRatio, w );
 	if (fabs(muon_eta->at(imu))<1.5){ 
-	  h_muon_relChIso03_diff_barrel -> Fill( chIsoDiff, w );
 	  h_muon_relChIso03_ratio_barrel -> Fill( chIsoRatio, w );
 	}
         else{ 
-	  h_muon_relChIso03_diff_endcap -> Fill( chIsoDiff, w );
 	  h_muon_relChIso03_ratio_endcap -> Fill( chIsoRatio, w );
 	}
       }
       
-      // all
+      // chiIso plots - all
       if ( pass3D ){
-	h_muon_relChIso02    -> Fill(muon_chIso02->at(imu)/pt, w);
-	h_muon_relChIso03    -> Fill(muon_chIso03->at(imu)/pt, w);
-	h_muon_relChIso04    -> Fill(muon_chIso04->at(imu)/pt, w);
-	h_muon_relChIso05    -> Fill(muon_chIso05->at(imu)/pt, w);
+	h_muon_relChIso02 -> Fill(muon_chIso02->at(imu)/pt, w);
+	h_muon_relChIso03 -> Fill(muon_chIso03->at(imu)/pt, w);
+	h_muon_relChIso04 -> Fill(muon_chIso04->at(imu)/pt, w);
+	h_muon_relChIso05 -> Fill(muon_chIso05->at(imu)/pt, w);
+
+	h_muon_relChIso02_simVtx -> Fill(muon_chIso02_simVtx->at(imu)/pt, w);
+	h_muon_relChIso03_simVtx -> Fill(muon_chIso03_simVtx->at(imu)/pt, w);
+	h_muon_relChIso04_simVtx -> Fill(muon_chIso04_simVtx->at(imu)/pt, w);
+	h_muon_relChIso05_simVtx -> Fill(muon_chIso05_simVtx->at(imu)/pt, w);
       }
       if ( pass4D ){
 	h_muon_relChIso02_dT -> Fill(muon_chIso02_dT->at(imu)/pt, w);
 	h_muon_relChIso03_dT -> Fill(muon_chIso03_dT->at(imu)/pt, w);
 	h_muon_relChIso04_dT -> Fill(muon_chIso04_dT->at(imu)/pt, w);
 	h_muon_relChIso05_dT -> Fill(muon_chIso05_dT->at(imu)/pt, w);
+
+	h_muon_relChIso02_dT_simVtx -> Fill(muon_chIso02_dT_simVtx->at(imu)/pt, w);
+	h_muon_relChIso03_dT_simVtx -> Fill(muon_chIso03_dT_simVtx->at(imu)/pt, w);
+	h_muon_relChIso04_dT_simVtx -> Fill(muon_chIso04_dT_simVtx->at(imu)/pt, w);
+	h_muon_relChIso05_dT_simVtx -> Fill(muon_chIso05_dT_simVtx->at(imu)/pt, w);
       }
 
       // barrel 
@@ -403,12 +506,23 @@ int main(int argc, char** argv)
 	  h_muon_relChIso03_barrel    -> Fill(muon_chIso03->at(imu)/pt, w);
 	  h_muon_relChIso04_barrel    -> Fill(muon_chIso04->at(imu)/pt, w);
 	  h_muon_relChIso05_barrel    -> Fill(muon_chIso05->at(imu)/pt, w);
+
+	  h_muon_relChIso02_simVtx_barrel -> Fill(muon_chIso02_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_simVtx_barrel -> Fill(muon_chIso03_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso04_simVtx_barrel -> Fill(muon_chIso04_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso05_simVtx_barrel -> Fill(muon_chIso05_simVtx->at(imu)/pt, w);
+
 	}
 	if ( pass4D ){
 	  h_muon_relChIso02_dT_barrel -> Fill(muon_chIso02_dT->at(imu)/pt, w);
 	  h_muon_relChIso03_dT_barrel -> Fill(muon_chIso03_dT->at(imu)/pt, w);
 	  h_muon_relChIso04_dT_barrel -> Fill(muon_chIso04_dT->at(imu)/pt, w);
 	  h_muon_relChIso05_dT_barrel -> Fill(muon_chIso05_dT->at(imu)/pt, w);
+
+	  h_muon_relChIso02_dT_simVtx_barrel -> Fill(muon_chIso02_dT_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dT_simVtx_barrel -> Fill(muon_chIso03_dT_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso04_dT_simVtx_barrel -> Fill(muon_chIso04_dT_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso05_dT_simVtx_barrel -> Fill(muon_chIso05_dT_simVtx->at(imu)/pt, w);
 	}
       }
       // endcap
@@ -418,12 +532,23 @@ int main(int argc, char** argv)
 	  h_muon_relChIso03_endcap    -> Fill(muon_chIso03->at(imu)/pt, w);
 	  h_muon_relChIso04_endcap    -> Fill(muon_chIso04->at(imu)/pt, w);
 	  h_muon_relChIso05_endcap    -> Fill(muon_chIso05->at(imu)/pt, w);
+
+	  h_muon_relChIso02_simVtx_endcap -> Fill(muon_chIso02_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_simVtx_endcap -> Fill(muon_chIso03_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso04_simVtx_endcap -> Fill(muon_chIso04_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso05_simVtx_endcap -> Fill(muon_chIso05_simVtx->at(imu)/pt, w);
+
 	}
 	if ( pass4D ) {
 	  h_muon_relChIso02_dT_endcap -> Fill(muon_chIso02_dT->at(imu)/pt, w);
 	  h_muon_relChIso03_dT_endcap -> Fill(muon_chIso03_dT->at(imu)/pt, w);
 	  h_muon_relChIso04_dT_endcap -> Fill(muon_chIso04_dT->at(imu)/pt, w);
 	  h_muon_relChIso05_dT_endcap -> Fill(muon_chIso05_dT->at(imu)/pt, w);
+
+	  h_muon_relChIso02_dT_simVtx_endcap -> Fill(muon_chIso02_dT_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dT_simVtx_endcap -> Fill(muon_chIso03_dT_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso04_dT_simVtx_endcap -> Fill(muon_chIso04_dT_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso05_dT_simVtx_endcap -> Fill(muon_chIso05_dT_simVtx->at(imu)/pt, w);
 	}
       }
         
@@ -470,10 +595,6 @@ int main(int argc, char** argv)
   h_muon_phi->Write();
   h2_muon_pt_vs_eta->Write();
 
-  h_muon_relChIso03_diff ->Write();
-  h_muon_relChIso03_diff_barrel ->Write();
-  h_muon_relChIso03_diff_endcap ->Write();
-
   h_muon_relChIso03_ratio ->Write();
   h_muon_relChIso03_ratio_barrel ->Write();
   h_muon_relChIso03_ratio_endcap ->Write();
@@ -505,6 +626,35 @@ int main(int argc, char** argv)
   h_muon_relChIso05_dT->Write();
   h_muon_relChIso05_dT_barrel->Write();
   h_muon_relChIso05_dT_endcap->Write();
+
+
+  h_muon_relChIso02_simVtx->Write();
+  h_muon_relChIso02_dT_simVtx->Write();
+  h_muon_relChIso02_simVtx_barrel->Write();
+  h_muon_relChIso02_dT_simVtx_barrel->Write();
+  h_muon_relChIso02_simVtx_endcap->Write();
+  h_muon_relChIso02_dT_simVtx_endcap->Write();
+
+  h_muon_relChIso03_simVtx->Write();
+  h_muon_relChIso03_dT_simVtx->Write();
+  h_muon_relChIso03_simVtx_barrel->Write();
+  h_muon_relChIso03_dT_simVtx_barrel->Write();
+  h_muon_relChIso03_simVtx_endcap->Write();
+  h_muon_relChIso03_dT_simVtx_endcap->Write();
+
+  h_muon_relChIso04_simVtx->Write();
+  h_muon_relChIso04_dT_simVtx->Write();
+  h_muon_relChIso04_simVtx_barrel->Write();
+  h_muon_relChIso04_dT_simVtx_barrel->Write();
+  h_muon_relChIso04_simVtx_endcap->Write();
+  h_muon_relChIso04_dT_simVtx_endcap->Write();
+
+  h_muon_relChIso05_simVtx->Write();
+  h_muon_relChIso05_dT_simVtx->Write();
+  h_muon_relChIso05_simVtx_barrel->Write();
+  h_muon_relChIso05_dT_simVtx_barrel->Write();
+  h_muon_relChIso05_simVtx_endcap->Write();
+  h_muon_relChIso05_dT_simVtx_endcap->Write();
 
   fout->Close();
   
