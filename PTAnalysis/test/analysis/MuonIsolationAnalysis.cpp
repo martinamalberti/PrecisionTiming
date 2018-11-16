@@ -169,6 +169,7 @@ int main(int argc, char** argv)
   chain->SetBranchStatus("muon_isTight4D",1);          chain->SetBranchAddress("muon_isTight4D", &muon_isTight4D);
   chain->SetBranchStatus("muon_isPrompt",1);           chain->SetBranchAddress("muon_isPrompt",  &muon_isPrompt);
   chain->SetBranchStatus("muon_isMatchedToGenJet",1);  chain->SetBranchAddress("muon_isMatchedToGenJet",  &muon_isMatchedToGenJet);
+
   chain->SetBranchStatus("muon_chIso02",1);            chain->SetBranchAddress("muon_chIso02",   &muon_chIso02);
   chain->SetBranchStatus("muon_chIso02_dT",1);         chain->SetBranchAddress("muon_chIso02_dT",&muon_chIso02_dT);
   chain->SetBranchStatus("muon_chIso03",1);            chain->SetBranchAddress("muon_chIso03",   &muon_chIso03);
@@ -186,6 +187,7 @@ int main(int argc, char** argv)
   chain->SetBranchStatus("muon_chIso04_dT_simVtx",1);         chain->SetBranchAddress("muon_chIso04_dT_simVtx",&muon_chIso04_dT_simVtx);
   chain->SetBranchStatus("muon_chIso05_simVtx",1);            chain->SetBranchAddress("muon_chIso05_simVtx",   &muon_chIso05_simVtx);
   chain->SetBranchStatus("muon_chIso05_dT_simVtx",1);         chain->SetBranchAddress("muon_chIso05_dT_simVtx",&muon_chIso05_dT_simVtx);
+
 
 
   // -- book histograms
@@ -402,6 +404,10 @@ int main(int argc, char** argv)
   float maxdz = 0.5;
   float maxdxy = 0.2;
 
+  //float maxdz = 0.1;
+  //float maxdxy = 0.02;
+ 
+
   for (int i = 0; i < maxEntries; i++) {
     
     chain -> GetEntry(i);
@@ -414,11 +420,11 @@ int main(int argc, char** argv)
 
     for (unsigned int imu = 0; imu < muon_pt->size(); imu++){
       
+
       pt = muon_pt->at(imu);
       
       if ( pt < 20. )  continue;
       if ( muon_isLoose->at(imu) == 0 ) continue;
-
 
       // -- pt/eta reweighting
       if (applyPtReweighting){
@@ -429,7 +435,7 @@ int main(int argc, char** argv)
 	w = 1;
       }
 
-      
+          
       // -- prompt muons or non-prompt muons
       bool pass = false;
       if (usePromptMuons && muon_isPrompt->at(imu)) pass = true; 
@@ -461,6 +467,7 @@ int main(int argc, char** argv)
       h_muon_eta->Fill(muon_eta->at(imu), w);
       h_muon_phi->Fill(muon_phi->at(imu), w);
       h2_muon_pt_vs_eta->Fill(muon_eta->at(imu), pt, w);
+
 
       // control plots
       if (pass3D && pass4D){	

@@ -102,12 +102,23 @@ struct eventInfo
   vector<float> muon_t;
   vector<int> muon_isPrompt;
   vector<int> muon_isMatchedToGenJet;
+  vector<int> muon_isFromTauDecay;
+
   vector<float> muon_chIso[10];
   vector<float> muon_chIso_dT[10][10];
-  vector<float> muon_chIso_reldZ[10];
-  vector<float> muon_chIso_reldZ_dT[10][10];
+  vector<float> muon_chIso_dTmu[10][10];
+
   vector<float> muon_chIso_simVtx[10];
   vector<float> muon_chIso_dT_simVtx[10][10];
+  
+  vector<float> muon_chIso_dZ05[10];
+  vector<float> muon_chIso_dZ2[10];
+  vector<float> muon_chIso_dZ05_dT[10][10];
+  vector<float> muon_chIso_dZ2_dT[10][10];
+  vector<float> muon_chIso_reldZ[10];
+  vector<float> muon_chIso_reldZ_dT[10][10];
+
+
 };
 
 
@@ -158,3 +169,4 @@ private:
 
 bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenJet(const reco::Muon &muon, const edm::View<reco::GenJet>& genJet);
+bool isFromTau(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);

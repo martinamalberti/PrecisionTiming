@@ -237,24 +237,35 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     // -- check if prompt or fake muon
     bool isPromptMu = isPromptMuon(muon,genParticles);
     bool isMatchedGenJet  = isMatchedToGenJet(muon, genJets);
+    bool isFromTauDecay = isFromTau(muon,genParticles);
 
     // -- compute charged isolations
-    float chIso[nCones];
-    float chIso_dT[nCones][nResol];
-    float chIso_reldZ[nCones];
-    float chIso_reldZ_dT[nCones][nResol];
     float chIso_simVtx[nCones];
     float chIso_dT_simVtx[nCones][nResol];
+    float chIso[nCones];
+    float chIso_dT[nCones][nResol];
+    float chIso_dTmu[nCones][nResol];
+    float chIso_dZ05[nCones];
+    float chIso_dZ05_dT[nCones][nResol];
+    float chIso_dZ2[nCones];
+    float chIso_dZ2_dT[nCones][nResol];
+    float chIso_reldZ[nCones];
+    float chIso_reldZ_dT[nCones][nResol];
     float time[nCones][nResol]; 
     
     // -- initialize 
     for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
       chIso_simVtx[iCone] = 0.;
       chIso[iCone] = 0.;
+      chIso_dZ05[iCone] = 0.;
+      chIso_dZ2[iCone] = 0.;
       chIso_reldZ[iCone] = 0.;
       for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
 	chIso_dT_simVtx[iCone][iRes] = 0.;
 	chIso_dT[iCone][iRes] = 0.;
+	chIso_dTmu[iCone][iRes] = 0.;
+	chIso_dZ05_dT[iCone][iRes] = 0.;
+	chIso_dZ2_dT[iCone][iRes] = 0.;
 	chIso_reldZ_dT[iCone][iRes] = 0.;
 	time[iCone][iRes] = 0.;
       }
@@ -282,138 +293,98 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       float dxy4D = std::abs( trackRef->dxy(vtx4D.position()) );
       float dxy3D = std::abs( trackRef->dxy(vtx3D.position()) );
    
-      float dz3Drel = std::abs(dz3D/std::sqrt(trackRef->dzError()*trackRef->dzError() + vtx3D.zError()*vtx3D.zError()));
       float dz4Drel = std::abs(dz4D/std::sqrt(trackRef->dzError()*trackRef->dzError() + vtx4D.zError()*vtx4D.zError()));
+      float dz3Drel = std::abs(dz3D/std::sqrt(trackRef->dzError()*trackRef->dzError() + vtx3D.zError()*vtx3D.zError()));
 
       float dzsim  = std::abs( trackRef->vz() - genPV.position().z() ); 
       float dxysim  = sqrt ( pow(trackRef->vx() - genPV.position().x(),2) + pow(trackRef->vy() - genPV.position().y(),2) ); 
-      //cout << trackRef->vz() << "   " << trackRef->dz() << "   " << genPV.position().z() <<endl;
+
+      float dzmu  = std::abs( trackRef->dz(vtx4D.position()) - muon.track()->dz(vtx4D.position()) );
+      float dxymu = std::abs( trackRef->dxy(vtx4D.position()) - muon.track()->dxy(vtx4D.position()) );
 
       float dr  = deltaR(muon.eta(), muon.phi(), pfcand.eta(), pfcand.phi());
 
       // --- no timing 
+      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+	if (dr > minDr_ && dr < isoConeDR_[iCone]){
+	  
+	  // -- sim vertex 
+	  if (dzsim < maxDz_  && dxysim < 0.02) { chIso_simVtx[iCone]+= pfcand.pt(); }
+	  
+	  // -- reco vtx closest to the sim one
+	  if (dz3D < maxDz_  &&  dxy3D < 0.02) { chIso[iCone]+= pfcand.pt(); }
 
-      // -- using sim vertex 
-      if (dzsim < maxDz_  && dxysim < 0.02){
-	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-	  if (dr > minDr_ && dr < isoConeDR_[iCone]){
-	    chIso_simVtx[iCone]+= pfcand.pt();
-	  }
+	  if (dz3D < 0.05    &&  dxy3D < 0.02) { chIso_dZ05[iCone]+= pfcand.pt(); }
+	
+	  if (dz3D < 0.2     &&  dxy3D < 0.02) { chIso_dZ2[iCone]+= pfcand.pt(); }
+	  
+	  // -- using reco vtx closest to the sim one   and cut on relative dz  
+	  if (dz3Drel < 3.0  && dxy3D < 0.02) { chIso_reldZ[iCone]+= pfcand.pt(); } 
+	  
 	}
       }
-
-      // -- using reco vtx closest to the sim one
-      if (dz3D < maxDz_  && dxy3D < 0.02){
-	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-	  if (dr > minDr_ && dr < isoConeDR_[iCone]){
-	    chIso[iCone]+= pfcand.pt();
-	  }
-	}
-      }
-
-      // -- using reco vtx closest to the sim one   and cut on relative dz
-      if (dz3Drel < 3.0  && dxy3D < 0.02){
-	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-	  if (dr > minDr_ && dr < isoConeDR_[iCone]){
-	    chIso_reldZ[iCone]+= pfcand.pt();
-	  }
-	}
-      }
-
+      
 
       // --- with timing
+      for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
+	if (dr > minDr_ && dr < isoConeDR_[iCone]){ 	  
+	  for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
+	    double targetTimeResol = timeResolutions_[iRes];
+	    double defaultTimeResol  = 0;
+	    if ( pfcand.isTimeValid() ) defaultTimeResol  = pfcand.timeError(); 
+	    double extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol);                                                                                       
+	    double dtsim = 0.;
+	    double dt = 0.;
+	    double dtmu = 0.;
+	    time[iCone][iRes] = -999.;
+	    if ( pfcand.isTimeValid() ) {
+	      time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
+	      dtsim = std::abs(time[iCone][iRes] - genPV.position().t()*1000000000.);
+	      dt    = std::abs(time[iCone][iRes] - vtx4D.t());
+	      dtmu  = std::abs(time[iCone][iRes] - muonTime);
+	    }
+	    else{
+	      dtsim = 0.;
+	      dt    = 0.;
+	      dtmu  = 0.;
+	    }
+	    
+	    // -- sim vertex
+	    if (dtsim < 3*targetTimeResol && dzsim < maxDz_  && dxysim < 0.02 ) { chIso_dT_simVtx[iCone][iRes]+= pfcand.pt();}
+	    
+	    // -- reco vtx closest to the sim one
+	    if (dt < 3*targetTimeResol && dz4D < maxDz_  &&  dxy4D < 0.02) { chIso_dT[iCone][iRes]+= pfcand.pt(); }
+
+	    if (dt < 3*targetTimeResol && dz4D < 0.05    &&  dxy4D < 0.02) { chIso_dZ05_dT[iCone][iRes]+= pfcand.pt(); }
+
+	    if (dt < 3*targetTimeResol && dz4D < 0.2     &&  dxy4D < 0.02) { chIso_dZ2_dT[iCone][iRes]+= pfcand.pt(); }
+	    
+	    // -- using reco vtx closest to the sim one   and cut on relative dz
+	    if (dt < 3*targetTimeResol && dz4Drel < 3.0  && dxy4D < 0.02) { chIso_reldZ_dT[iCone][iRes]+= pfcand.pt(); }
+
+	    // -- dT wrt to muon 
+	    if ( dtmu < sqrt(2)*3*targetTimeResol && dzmu < maxDz_  &&  dxymu < 0.02) { chIso_dTmu[iCone][iRes]+= pfcand.pt(); }
+
+	    // -- save info for tracks in the isolation cone (only for DR = 0.3)
+	    if (saveTracks_ && isoConeDR_[iCone] == 0.3 && (dz4D < 1.0 || dz3D < 1. || dzmu < 1. ) ) { // save a subset of tracks with loose dz selection
+	      evInfo[iRes].track_t.push_back(time[iCone][iRes]); 
+	      evInfo[iRes].track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
+	      evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() )); 
+	      evInfo[iRes].track_pt.push_back(pfcand.pt());
+	      evInfo[iRes].track_eta.push_back(pfcand.eta());
+	      evInfo[iRes].track_phi.push_back(pfcand.phi());
+	      evInfo[iRes].track_muIndex.push_back(muonIndex);
+	    }
+	    
+
+	  }// end loop over time resolutions                                                                                                                                    
+	}
+      }// end loop over cone sizes                                                                                                                                              
       
-      // -- using sim vtx
-      if ( dzsim < maxDz_  && dxysim < 0.02 ){
-      	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-	  if (dr > minDr_ && dr < isoConeDR_[iCone]){ 	  
-	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
-	      double time_resol = timeResolutions_[iRes];
-	      double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);                                                                                                      
-	      cout << iRes << "  " << time_resol << "  " << extra_resol <<endl;
-	      double dt = 0.;
-	      time[iCone][iRes] = -999.;
-	      if ( pfcand.isTimeValid() ) {
-		time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
-		dt = std::abs(time[iCone][iRes] - genPV.position().t()*1000000000.);
-		cout << pfcand.time() << "   " << time[iCone][iRes] << "   " << genPV.position().t()*1000000000. <<endl;
-	       }
-	       else{
-		 dt = 0;
-	       }
-	       if ( dt < 3*time_resol){                                                     
-		 chIso_dT_simVtx[iCone][iRes]+= pfcand.pt();                                                                                                                            
-	       }
-	     }// end loop over time resolutions                                                                                                                                    
-	   }
-	 }// end loop over cone sizes                                                                                                                                              
-       }
-
-
-      // -- using reco vertex closest in dz to the gen vtx
-      if ( dz4D < maxDz_  && dxy4D < 0.02 ){
-	for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-	  if (dr > minDr_ && dr < isoConeDR_[iCone]){ 	  
-	    for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
-	      double time_resol = timeResolutions_[iRes];
-	      double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);                                                                                                      
-	      double dt = 0.;
-	      time[iCone][iRes] = -999.;
-	      if ( pfcand.isTimeValid() ) {
-		time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
-		dt = std::abs(time[iCone][iRes] - vtx4D.t());
-	      }
-	      else{
-		dt = 0;
-	      }
-	      if ( dt < 3*time_resol){                                                     
-		chIso_dT[iCone][iRes]+= pfcand.pt();                                                                                                                            
-	      }
-	      
-	      // -- save info for tracks in the isolation cone (only for DR = 0.3)
-	      if (saveTracks_ && isoConeDR_[iCone] == 0.3) {
-		evInfo[iRes].track_t.push_back(time[iCone][iRes]); 
-		evInfo[iRes].track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
-		evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() )); 
-		evInfo[iRes].track_pt.push_back(pfcand.pt());
-		evInfo[iRes].track_eta.push_back(pfcand.eta());
-		evInfo[iRes].track_phi.push_back(pfcand.phi());
-		evInfo[iRes].track_muIndex.push_back(muonIndex);
-	      }
-	    }// end loop over time resolutions                                                                                                                                    
-	  }
-	}// end loop over cone sizes                                                                                                                                              
-      }
-      
-      // -- using reco vertex closest in dz to the sim vertex and use a relative dz cut
-      if ( dz4Drel < 3.0  && dxy4D < 0.02 ){
-        for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-          if (dr > minDr_ && dr < isoConeDR_[iCone]){
-            for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
-              double time_resol = timeResolutions_[iRes];
-              double extra_resol = sqrt(time_resol*time_resol - 0.03*0.03);
-              double dt = 0.;
-              time[iCone][iRes] = -999.;
-              if ( pfcand.isTimeValid() ) {
-                time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
-                dt = std::abs(time[iCone][iRes] - vtx4D.t());
-              }
-              else{
-                dt = 0;
-              }
-	      if ( dt < 3*time_resol){
-                chIso_reldZ_dT[iCone][iRes]+= pfcand.pt();
-              }
-            }// end loop over time resolutions                                                                                                                                        
-	  }
-        }// end loop over cone sizes
-      }
-
     }// end loop over tracks
         
 
-
-    // -- fill muon info
+    // -- fill muon info for each resolution scenario
     for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
       evInfo[iRes].muon_pt.push_back(muon.pt());  
       evInfo[iRes].muon_eta.push_back(muon.eta());  
@@ -431,18 +402,26 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       evInfo[iRes].muon_t.push_back(muonTime); 
       evInfo[iRes].muon_isPrompt.push_back(isPromptMu);
       evInfo[iRes].muon_isMatchedToGenJet.push_back(isMatchedGenJet);
+      evInfo[iRes].muon_isFromTauDecay.push_back(isFromTauDecay);
         
       for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
 	(evInfo[iRes].muon_chIso_simVtx[iCone]).push_back(chIso_simVtx[iCone]);
 	(evInfo[iRes].muon_chIso_dT_simVtx[iCone][iRes]).push_back(chIso_dT_simVtx[iCone][iRes]);
+
 	(evInfo[iRes].muon_chIso[iCone]).push_back(chIso[iCone]);  
 	(evInfo[iRes].muon_chIso_dT[iCone][iRes]).push_back(chIso_dT[iCone][iRes]);
+	(evInfo[iRes].muon_chIso_dTmu[iCone][iRes]).push_back(chIso_dTmu[iCone][iRes]);
+	
+	(evInfo[iRes].muon_chIso_dZ05[iCone]).push_back(chIso_dZ05[iCone]);  
+	(evInfo[iRes].muon_chIso_dZ05_dT[iCone][iRes]).push_back(chIso_dZ05_dT[iCone][iRes]);
+	(evInfo[iRes].muon_chIso_dZ2[iCone]).push_back(chIso_dZ2[iCone]);  
+	(evInfo[iRes].muon_chIso_dZ2_dT[iCone][iRes]).push_back(chIso_dZ2_dT[iCone][iRes]);
+
 	(evInfo[iRes].muon_chIso_reldZ[iCone]).push_back(chIso_reldZ[iCone]);  
 	(evInfo[iRes].muon_chIso_reldZ_dT[iCone][iRes]).push_back(chIso_reldZ_dT[iCone][iRes]);
       }
-    }
-  }// end loop over muon
-
+    } // end loop over time resolutions
+  }// end loop over muons
 
 
   // -- fill event info
@@ -501,14 +480,25 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "muon_t",          &evInfo[iRes].muon_t);  
     eventTree[iRes]->Branch( "muon_isPrompt",   &evInfo[iRes].muon_isPrompt);  
     eventTree[iRes]->Branch( "muon_isMatchedToGenJet",   &evInfo[iRes].muon_isMatchedToGenJet);  
+    eventTree[iRes]->Branch( "muon_isFromTauDecay",   &evInfo[iRes].muon_isFromTauDecay);  
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_simVtx[iCone]);  
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dT_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dT_simVtx[iCone][iRes]);  
+
       eventTree[iRes]->Branch( Form("muon_chIso%.2d",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso[iCone]);  
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dT[iCone][iRes]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dTmu",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dTmu[iCone][iRes]);  
+
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_reldZ[iCone]);  
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_reldZ_dT[iCone][iRes]);  
+
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ05[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ05_dT[iCone][iRes]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ2[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ2_dT[iCone][iRes]);  
+
+
     }
 
     if (saveTracks_){
@@ -574,12 +564,19 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes].muon_t.clear();
     evInfo[iRes].muon_isPrompt.clear();
     evInfo[iRes].muon_isMatchedToGenJet.clear();
+    evInfo[iRes].muon_isFromTauDecay.clear();
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
       evInfo[iRes].muon_chIso_simVtx[iCone].clear();
       evInfo[iRes].muon_chIso_dT_simVtx[iCone][iRes].clear();
       evInfo[iRes].muon_chIso[iCone].clear();
       evInfo[iRes].muon_chIso_dT[iCone][iRes].clear();
+      evInfo[iRes].muon_chIso_dTmu[iCone][iRes].clear();
+
+      evInfo[iRes].muon_chIso_dZ05[iCone].clear();
+      evInfo[iRes].muon_chIso_dZ05_dT[iCone][iRes].clear();
+      evInfo[iRes].muon_chIso_dZ2[iCone].clear();
+      evInfo[iRes].muon_chIso_dZ2_dT[iCone][iRes].clear();
       evInfo[iRes].muon_chIso_reldZ[iCone].clear();
       evInfo[iRes].muon_chIso_reldZ_dT[iCone][iRes].clear();
 
@@ -642,6 +639,31 @@ bool isMatchedToGenJet(const reco::Muon& muon, const edm::View<reco::GenJet>& ge
   }
   
   return isMatched;
+}
+
+
+
+// --- matching to muons from tau decays
+bool isFromTau(const reco::Muon& muon, const edm::View<reco::GenParticle>& genParticles)
+{
+  
+  bool fromTau = false;
+
+  for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
+    const reco::GenParticle& genp = genParticles[ip];
+    if ( std::abs(genp.pdgId()) != 13) continue;
+    if ( !genp.isDirectPromptTauDecayProductFinalState() ) continue;
+    double dr = deltaR(muon,genp);
+    if (dr > 0.2){
+      continue;
+    }
+    else{
+      fromTau=true;
+      break;
+    }
+  }
+
+  return fromTau;
 }
 
 
