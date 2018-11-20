@@ -106,17 +106,21 @@ struct eventInfo
 
   vector<float> muon_chIso[10];
   vector<float> muon_chIso_dT[10][10];
-  vector<float> muon_chIso_dTmu[10][10];
+
+  vector<float> muon_chIso_dZmu[10];
+  vector<float> muon_chIso_dZmu_dTmu[10][10];
 
   vector<float> muon_chIso_simVtx[10];
-  vector<float> muon_chIso_dT_simVtx[10][10];
+  vector<float> muon_chIso_simVtx_dT[10][10];
   
   vector<float> muon_chIso_dZ05[10];
-  vector<float> muon_chIso_dZ2[10];
   vector<float> muon_chIso_dZ05_dT[10][10];
+
+  vector<float> muon_chIso_dZ2[10];
   vector<float> muon_chIso_dZ2_dT[10][10];
-  vector<float> muon_chIso_reldZ[10];
+
   vector<float> muon_chIso_reldZ_dT[10][10];
+  vector<float> muon_chIso_reldZ[10];
 
 
 };

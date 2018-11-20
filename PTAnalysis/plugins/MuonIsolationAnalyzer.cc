@@ -241,10 +241,11 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     // -- compute charged isolations
     float chIso_simVtx[nCones];
-    float chIso_dT_simVtx[nCones][nResol];
+    float chIso_simVtx_dT[nCones][nResol];
     float chIso[nCones];
     float chIso_dT[nCones][nResol];
-    float chIso_dTmu[nCones][nResol];
+    float chIso_dZmu[nCones];
+    float chIso_dZmu_dTmu[nCones][nResol];
     float chIso_dZ05[nCones];
     float chIso_dZ05_dT[nCones][nResol];
     float chIso_dZ2[nCones];
@@ -257,13 +258,14 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
       chIso_simVtx[iCone] = 0.;
       chIso[iCone] = 0.;
+      chIso_dZmu[iCone] = 0.;
       chIso_dZ05[iCone] = 0.;
       chIso_dZ2[iCone] = 0.;
       chIso_reldZ[iCone] = 0.;
       for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
-	chIso_dT_simVtx[iCone][iRes] = 0.;
+	chIso_simVtx_dT[iCone][iRes] = 0.;
 	chIso_dT[iCone][iRes] = 0.;
-	chIso_dTmu[iCone][iRes] = 0.;
+	chIso_dZmu_dTmu[iCone][iRes] = 0.;
 	chIso_dZ05_dT[iCone][iRes] = 0.;
 	chIso_dZ2_dT[iCone][iRes] = 0.;
 	chIso_reldZ_dT[iCone][iRes] = 0.;
@@ -321,6 +323,11 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  // -- using reco vtx closest to the sim one   and cut on relative dz  
 	  if (dz3Drel < 3.0  && dxy3D < 0.02) { chIso_reldZ[iCone]+= pfcand.pt(); } 
 	  
+
+	  // -- dz wrt to muon
+	  if (dzmu < maxDz_) { chIso_dZmu[iCone]+= pfcand.pt(); }
+
+
 	}
       }
       
@@ -350,7 +357,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	    }
 	    
 	    // -- sim vertex
-	    if (dtsim < 3*targetTimeResol && dzsim < maxDz_  && dxysim < 0.02 ) { chIso_dT_simVtx[iCone][iRes]+= pfcand.pt();}
+	    if (dtsim < 3*targetTimeResol && dzsim < maxDz_  && dxysim < 0.02 ) { chIso_simVtx_dT[iCone][iRes]+= pfcand.pt();}
 	    
 	    // -- reco vtx closest to the sim one
 	    if (dt < 3*targetTimeResol && dz4D < maxDz_  &&  dxy4D < 0.02) { chIso_dT[iCone][iRes]+= pfcand.pt(); }
@@ -363,7 +370,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	    if (dt < 3*targetTimeResol && dz4Drel < 3.0  && dxy4D < 0.02) { chIso_reldZ_dT[iCone][iRes]+= pfcand.pt(); }
 
 	    // -- dT wrt to muon 
-	    if ( dtmu < sqrt(2)*3*targetTimeResol && dzmu < maxDz_  &&  dxymu < 0.02) { chIso_dTmu[iCone][iRes]+= pfcand.pt(); }
+	    if ( dtmu < sqrt(2)*3*targetTimeResol && dzmu < maxDz_ ) { chIso_dZmu_dTmu[iCone][iRes]+= pfcand.pt(); }
 
 	    // -- save info for tracks in the isolation cone (only for DR = 0.3)
 	    if (saveTracks_ && isoConeDR_[iCone] == 0.3 && (dz4D < 1.0 || dz3D < 1. || dzmu < 1. ) ) { // save a subset of tracks with loose dz selection
@@ -406,14 +413,17 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
         
       for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
 	(evInfo[iRes].muon_chIso_simVtx[iCone]).push_back(chIso_simVtx[iCone]);
-	(evInfo[iRes].muon_chIso_dT_simVtx[iCone][iRes]).push_back(chIso_dT_simVtx[iCone][iRes]);
+	(evInfo[iRes].muon_chIso_simVtx_dT[iCone][iRes]).push_back(chIso_simVtx_dT[iCone][iRes]);
 
 	(evInfo[iRes].muon_chIso[iCone]).push_back(chIso[iCone]);  
 	(evInfo[iRes].muon_chIso_dT[iCone][iRes]).push_back(chIso_dT[iCone][iRes]);
-	(evInfo[iRes].muon_chIso_dTmu[iCone][iRes]).push_back(chIso_dTmu[iCone][iRes]);
+
+	(evInfo[iRes].muon_chIso_dZmu[iCone]).push_back(chIso_dZmu[iCone]);
+	(evInfo[iRes].muon_chIso_dZmu_dTmu[iCone][iRes]).push_back(chIso_dZmu_dTmu[iCone][iRes]);
 	
 	(evInfo[iRes].muon_chIso_dZ05[iCone]).push_back(chIso_dZ05[iCone]);  
 	(evInfo[iRes].muon_chIso_dZ05_dT[iCone][iRes]).push_back(chIso_dZ05_dT[iCone][iRes]);
+
 	(evInfo[iRes].muon_chIso_dZ2[iCone]).push_back(chIso_dZ2[iCone]);  
 	(evInfo[iRes].muon_chIso_dZ2_dT[iCone][iRes]).push_back(chIso_dZ2_dT[iCone][iRes]);
 
@@ -484,19 +494,22 @@ MuonIsolationAnalyzer::beginJob()
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_simVtx[iCone]);  
-      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dT_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dT_simVtx[iCone][iRes]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dT_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_simVtx_dT[iCone][iRes]);  
 
       eventTree[iRes]->Branch( Form("muon_chIso%.2d",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso[iCone]);  
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dT[iCone][iRes]);  
-      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dTmu",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dTmu[iCone][iRes]);  
 
-      eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_reldZ[iCone]);  
-      eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_reldZ_dT[iCone][iRes]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZmu[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu_dTmu",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZmu_dTmu[iCone][iRes]);  
 
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ05[iCone]);  
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ05_dT[iCone][iRes]);  
+
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ2[iCone]);  
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ2_dT[iCone][iRes]);  
+
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_reldZ[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_reldZ_dT[iCone][iRes]);  
 
 
     }
@@ -568,15 +581,20 @@ MuonIsolationAnalyzer::initEventStructure()
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
       evInfo[iRes].muon_chIso_simVtx[iCone].clear();
-      evInfo[iRes].muon_chIso_dT_simVtx[iCone][iRes].clear();
+      evInfo[iRes].muon_chIso_simVtx_dT[iCone][iRes].clear();
+   
       evInfo[iRes].muon_chIso[iCone].clear();
       evInfo[iRes].muon_chIso_dT[iCone][iRes].clear();
-      evInfo[iRes].muon_chIso_dTmu[iCone][iRes].clear();
+
+      evInfo[iRes].muon_chIso_dZmu[iCone].clear();
+      evInfo[iRes].muon_chIso_dZmu_dTmu[iCone][iRes].clear();
 
       evInfo[iRes].muon_chIso_dZ05[iCone].clear();
       evInfo[iRes].muon_chIso_dZ05_dT[iCone][iRes].clear();
+
       evInfo[iRes].muon_chIso_dZ2[iCone].clear();
       evInfo[iRes].muon_chIso_dZ2_dT[iCone][iRes].clear();
+
       evInfo[iRes].muon_chIso_reldZ[iCone].clear();
       evInfo[iRes].muon_chIso_reldZ_dT[iCone][iRes].clear();
 
