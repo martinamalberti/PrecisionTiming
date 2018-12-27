@@ -49,7 +49,7 @@
 
 #include <vector>
 #include "TTree.h"
-
+#include <TRandom.h>
 //
 // class declaration
 //
@@ -75,6 +75,8 @@ struct eventInfo
   vector<float> track_phi;
   vector<float> track_dz3D;
   vector<float> track_dz4D;
+  vector<float> track_dxy3D;
+  vector<float> track_dxy4D;
   vector<float> track_t;
   vector<int> track_muIndex;
 
@@ -104,24 +106,35 @@ struct eventInfo
   vector<int> muon_isMatchedToGenJet;
   vector<int> muon_isFromTauDecay;
 
-  vector<float> muon_chIso[10];
-  vector<float> muon_chIso_dT[10][10];
+  vector<float> muon_chIso_dZ05_simVtx[1];
+  vector<float> muon_chIso_dZ05_dT_simVtx[1][5];
 
-  vector<float> muon_chIso_dZmu[10];
-  vector<float> muon_chIso_dZmu_dTmu[10][10];
+  vector<float> muon_chIso_dZ1_simVtx[1];
+  vector<float> muon_chIso_dZ1_dT_simVtx[1][5];
 
-  vector<float> muon_chIso_simVtx[10];
-  vector<float> muon_chIso_simVtx_dT[10][10];
+  vector<float> muon_chIso_dZ2_simVtx[1];
+  vector<float> muon_chIso_dZ2_dT_simVtx[1][5];
   
-  vector<float> muon_chIso_dZ05[10];
-  vector<float> muon_chIso_dZ05_dT[10][10];
+  vector<float> muon_chIso_dZ05[1];
+  vector<float> muon_chIso_dZ05_dT[1][5];
 
-  vector<float> muon_chIso_dZ2[10];
-  vector<float> muon_chIso_dZ2_dT[10][10];
+  vector<float> muon_chIso_dZ1[1];
+  vector<float> muon_chIso_dZ1_dT[1][5];
 
-  vector<float> muon_chIso_reldZ_dT[10][10];
-  vector<float> muon_chIso_reldZ[10];
+  vector<float> muon_chIso_dZ2[1];
+  vector<float> muon_chIso_dZ2_dT[1][5];
 
+  vector<float> muon_chIso_reldZ[1];
+  vector<float> muon_chIso_reldZ_dT[1][5];
+
+  vector<float> muon_chIso_dZmu05[1];
+  vector<float> muon_chIso_dZmu05_dTmu[1][5];
+
+  vector<float> muon_chIso_dZmu1[1];
+  vector<float> muon_chIso_dZmu1_dTmu[1][5];
+
+  vector<float> muon_chIso_dZmu2[1];
+  vector<float> muon_chIso_dZmu2_dTmu[1][5];
 
 };
 
@@ -138,9 +151,9 @@ public:
 
 
 private:
-  virtual void beginJob() ;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) ;
-  virtual void endJob() ;
+  virtual void beginJob() override;
+  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+  virtual void endJob() override;
     
   void initEventStructure();
 
@@ -159,8 +172,8 @@ private:
   
   //--- outputs
   edm::Service<TFileService> fs_;
-  TTree *eventTree[10];
-  eventInfo evInfo[10];
+  TTree *eventTree[5];
+  eventInfo evInfo[5];
 
   //--- options
   vector<double> timeResolutions_;
@@ -168,7 +181,12 @@ private:
   bool saveTracks_;
   float maxDz_;
   float minDr_;
+  float minTrackPt_;
   bool useVertexClosestToGen_;
+
+  // -- 
+  TRandom *gRandom;
+
 };
 
 bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);

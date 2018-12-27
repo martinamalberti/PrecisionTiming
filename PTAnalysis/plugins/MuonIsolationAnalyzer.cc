@@ -64,6 +64,7 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   saveTracks_      = iConfig.getUntrackedParameter<bool>("saveTracks");
   maxDz_           = iConfig.getUntrackedParameter<double>("maxDz");
   minDr_           = iConfig.getUntrackedParameter<double>("minDr");
+  minTrackPt_      = iConfig.getUntrackedParameter<double>("minTrackPt");
   useVertexClosestToGen_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGen");
 
   //Now do what ever initialization is needed
@@ -71,6 +72,9 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
     eventTree[iRes] = fs_->make<TTree>( Form("tree_%dps",int(timeResolutions_[iRes]*1000) ), Form("tree_%dps", int(timeResolutions_[iRes]*1000)) );
     cout << iRes << "  " << timeResolutions_[iRes] << "  " << eventTree[iRes]->GetName() <<endl;
   }
+
+
+  gRandom = new TRandom();
 
 }
 
@@ -80,7 +84,15 @@ MuonIsolationAnalyzer::~MuonIsolationAnalyzer()
  
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
+  delete gRandom;
 
+  for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
+    cout << iRes << "  " << eventTree[iRes]->GetEntries()<<endl;
+    delete eventTree[iRes];
+  }
+
+
+  cout << "CIAO CIAO" <<endl;
 }
 
 
@@ -146,12 +158,6 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   
   // -- initialize output tree
   initEventStructure();
-  
-  const int nCones = isoConeDR_.size();
-  const int nResol = timeResolutions_.size();
-
-  TRandom *gRandom = new TRandom();
-
 
   // -- number of pileup events
   int nPU = 0;
@@ -240,35 +246,54 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     bool isFromTauDecay = isFromTau(muon,genParticles);
 
     // -- compute charged isolations
-    float chIso_simVtx[nCones];
-    float chIso_simVtx_dT[nCones][nResol];
-    float chIso[nCones];
-    float chIso_dT[nCones][nResol];
-    float chIso_dZmu[nCones];
-    float chIso_dZmu_dTmu[nCones][nResol];
+    const int nCones = isoConeDR_.size();
+    const int nResol = timeResolutions_.size();
+
+    float chIso_dZ05_simVtx[nCones];
+    float chIso_dZ05_dT_simVtx[nCones][nResol];
+    float chIso_dZ1_simVtx[nCones];
+    float chIso_dZ1_dT_simVtx[nCones][nResol];
+    float chIso_dZ2_simVtx[nCones];
+    float chIso_dZ2_dT_simVtx[nCones][nResol];
     float chIso_dZ05[nCones];
     float chIso_dZ05_dT[nCones][nResol];
+    float chIso_dZ1[nCones];
+    float chIso_dZ1_dT[nCones][nResol];
     float chIso_dZ2[nCones];
     float chIso_dZ2_dT[nCones][nResol];
     float chIso_reldZ[nCones];
     float chIso_reldZ_dT[nCones][nResol];
+    float chIso_dZmu05[nCones];
+    float chIso_dZmu05_dTmu[nCones][nResol];
+    float chIso_dZmu1[nCones];
+    float chIso_dZmu1_dTmu[nCones][nResol];
+    float chIso_dZmu2[nCones];
+    float chIso_dZmu2_dTmu[nCones][nResol];
     float time[nCones][nResol]; 
     
     // -- initialize 
     for (unsigned int iCone = 0 ; iCone < isoConeDR_.size(); iCone++){
-      chIso_simVtx[iCone] = 0.;
-      chIso[iCone] = 0.;
-      chIso_dZmu[iCone] = 0.;
+      chIso_dZ05_simVtx[iCone] = 0.;
+      chIso_dZ1_simVtx[iCone] = 0.;
+      chIso_dZ2_simVtx[iCone] = 0.;
+      chIso_dZ1[iCone] = 0.;
       chIso_dZ05[iCone] = 0.;
       chIso_dZ2[iCone] = 0.;
       chIso_reldZ[iCone] = 0.;
+      chIso_dZmu05[iCone] = 0.;
+      chIso_dZmu1[iCone] = 0.;
+      chIso_dZmu2[iCone] = 0.;
       for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
-	chIso_simVtx_dT[iCone][iRes] = 0.;
-	chIso_dT[iCone][iRes] = 0.;
-	chIso_dZmu_dTmu[iCone][iRes] = 0.;
+	chIso_dZ05_dT_simVtx[iCone][iRes] = 0.;
+	chIso_dZ1_dT_simVtx[iCone][iRes]  = 0.;
+	chIso_dZ2_dT_simVtx[iCone][iRes]  = 0.;
 	chIso_dZ05_dT[iCone][iRes] = 0.;
+	chIso_dZ1_dT[iCone][iRes] = 0.;
 	chIso_dZ2_dT[iCone][iRes] = 0.;
 	chIso_reldZ_dT[iCone][iRes] = 0.;
+	chIso_dZmu05_dTmu[iCone][iRes] = 0.;
+	chIso_dZmu1_dTmu[iCone][iRes] = 0.;
+	chIso_dZmu2_dTmu[iCone][iRes] = 0.;
 	time[iCone][iRes] = 0.;
       }
     }
@@ -288,6 +313,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       if ( trackRef == muon.track() ) muonTime = pfcand.time();
       if ( trackRef == muon.track() ) continue;
 
+      //-- use tracks with pT above thtreshold
+      if ( pfcand.pt() < minTrackPt_) continue;
 
       // -- compute dz, dxy 
       float dz4D = std::abs( trackRef->dz(vtx4D.position()) );
@@ -311,23 +338,22 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	if (dr > minDr_ && dr < isoConeDR_[iCone]){
 	  
 	  // -- sim vertex 
-	  if (dzsim < maxDz_  && dxysim < 0.02) { chIso_simVtx[iCone]+= pfcand.pt(); }
+	  if (dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_simVtx[iCone]+= pfcand.pt(); }
+	  if (dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_simVtx[iCone]+= pfcand.pt(); }
+	  if (dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_simVtx[iCone]+= pfcand.pt(); }
 	  
 	  // -- reco vtx closest to the sim one
-	  if (dz3D < maxDz_  &&  dxy3D < 0.02) { chIso[iCone]+= pfcand.pt(); }
-
-	  if (dz3D < 0.05    &&  dxy3D < 0.02) { chIso_dZ05[iCone]+= pfcand.pt(); }
-	
-	  if (dz3D < 0.2     &&  dxy3D < 0.02) { chIso_dZ2[iCone]+= pfcand.pt(); }
+	  if (dz3D < 0.05  &&  dxy3D < 0.02) { chIso_dZ05[iCone]+= pfcand.pt(); }
+	  if (dz3D < 0.1   &&  dxy3D < 0.02) { chIso_dZ1[iCone]+= pfcand.pt(); }
+	  if (dz3D < 0.2   &&  dxy3D < 0.02) { chIso_dZ2[iCone]+= pfcand.pt(); }
 	  
-	  // -- using reco vtx closest to the sim one   and cut on relative dz  
+	  // -- using reco vtx closest to the sim one and cut on relative dz  
 	  if (dz3Drel < 3.0  && dxy3D < 0.02) { chIso_reldZ[iCone]+= pfcand.pt(); } 
 	  
-
 	  // -- dz wrt to muon
-	  if (dzmu < maxDz_) { chIso_dZmu[iCone]+= pfcand.pt(); }
-
-
+	  if (dzmu < 0.05) { chIso_dZmu05[iCone]+= pfcand.pt(); }
+	  if (dzmu < 0.1 ) { chIso_dZmu1[iCone]+= pfcand.pt(); }
+	  if (dzmu < 0.2 ) { chIso_dZmu2[iCone]+= pfcand.pt(); }
 	}
       }
       
@@ -337,15 +363,17 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	if (dr > minDr_ && dr < isoConeDR_[iCone]){ 	  
 	  for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
 	    double targetTimeResol = timeResolutions_[iRes];
-	    double defaultTimeResol  = 0;
-	    if ( pfcand.isTimeValid() ) defaultTimeResol  = pfcand.timeError(); 
+	    double defaultTimeResol  = 0.;
+	    if ( pfcand.isTimeValid() ) defaultTimeResol  = double(pfcand.timeError()); 
 	    double extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol);                                                                                       
 	    double dtsim = 0.;
 	    double dt = 0.;
 	    double dtmu = 0.;
 	    time[iCone][iRes] = -999.;
 	    if ( pfcand.isTimeValid() ) {
-	      time[iCone][iRes] = pfcand.time() + gRandom->Gaus(0., extra_resol);
+	      double rnd = gRandom->Gaus(0., extra_resol);
+	      //cout << "target time resol = "<< targetTimeResol << "  extra_resol = "<< extra_resol << "  rnd = " << rnd <<endl;
+	      time[iCone][iRes] = pfcand.time() + rnd;
 	      dtsim = std::abs(time[iCone][iRes] - genPV.position().t()*1000000000.);
 	      dt    = std::abs(time[iCone][iRes] - vtx4D.t());
 	      dtmu  = std::abs(time[iCone][iRes] - muonTime);
@@ -357,32 +385,36 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	    }
 	    
 	    // -- sim vertex
-	    if (dtsim < 3*targetTimeResol && dzsim < maxDz_  && dxysim < 0.02 ) { chIso_simVtx_dT[iCone][iRes]+= pfcand.pt();}
+	    if (dtsim < 3*targetTimeResol && dzsim < 0.05 && dxysim < 0.02 ) { chIso_dZ05_dT_simVtx[iCone][iRes]+= pfcand.pt();}
+	    if (dtsim < 3*targetTimeResol && dzsim < 0.1  && dxysim < 0.02 ) { chIso_dZ1_dT_simVtx[iCone][iRes]+= pfcand.pt();}
+	    if (dtsim < 3*targetTimeResol && dzsim < 0.2  && dxysim < 0.02 ) { chIso_dZ2_dT_simVtx[iCone][iRes]+= pfcand.pt();}
 	    
 	    // -- reco vtx closest to the sim one
-	    if (dt < 3*targetTimeResol && dz4D < maxDz_  &&  dxy4D < 0.02) { chIso_dT[iCone][iRes]+= pfcand.pt(); }
-
-	    if (dt < 3*targetTimeResol && dz4D < 0.05    &&  dxy4D < 0.02) { chIso_dZ05_dT[iCone][iRes]+= pfcand.pt(); }
-
-	    if (dt < 3*targetTimeResol && dz4D < 0.2     &&  dxy4D < 0.02) { chIso_dZ2_dT[iCone][iRes]+= pfcand.pt(); }
+	    if (dt < 3*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT[iCone][iRes]+= pfcand.pt(); }
+	    if (dt < 3*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT[iCone][iRes]+= pfcand.pt(); }
+	    if (dt < 3*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT[iCone][iRes]+= pfcand.pt(); }
 	    
 	    // -- using reco vtx closest to the sim one   and cut on relative dz
 	    if (dt < 3*targetTimeResol && dz4Drel < 3.0  && dxy4D < 0.02) { chIso_reldZ_dT[iCone][iRes]+= pfcand.pt(); }
 
 	    // -- dT wrt to muon 
-	    if ( dtmu < sqrt(2)*3*targetTimeResol && dzmu < maxDz_ ) { chIso_dZmu_dTmu[iCone][iRes]+= pfcand.pt(); }
+	    if ( dtmu < sqrt(2)*3*targetTimeResol && dzmu < 0.05) { chIso_dZmu05_dTmu[iCone][iRes]+= pfcand.pt(); }
+	    if ( dtmu < sqrt(2)*3*targetTimeResol && dzmu < 0.1 ) { chIso_dZmu1_dTmu[iCone][iRes]+= pfcand.pt(); }
+	    if ( dtmu < sqrt(2)*3*targetTimeResol && dzmu < 0.2 ) { chIso_dZmu2_dTmu[iCone][iRes]+= pfcand.pt(); }
+
 
 	    // -- save info for tracks in the isolation cone (only for DR = 0.3)
 	    if (saveTracks_ && isoConeDR_[iCone] == 0.3 && (dz4D < 1.0 || dz3D < 1. || dzmu < 1. ) ) { // save a subset of tracks with loose dz selection
 	      evInfo[iRes].track_t.push_back(time[iCone][iRes]); 
 	      evInfo[iRes].track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
 	      evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() )); 
+	      evInfo[iRes].track_dxy4D.push_back(trackRef->dxy( vtx4D.position() )); 
+	      evInfo[iRes].track_dxy3D.push_back(trackRef->dxy( vtx3D.position() )); 
 	      evInfo[iRes].track_pt.push_back(pfcand.pt());
 	      evInfo[iRes].track_eta.push_back(pfcand.eta());
 	      evInfo[iRes].track_phi.push_back(pfcand.phi());
 	      evInfo[iRes].track_muIndex.push_back(muonIndex);
 	    }
-	    
 
 	  }// end loop over time resolutions                                                                                                                                    
 	}
@@ -412,25 +444,39 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       evInfo[iRes].muon_isFromTauDecay.push_back(isFromTauDecay);
         
       for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
-	(evInfo[iRes].muon_chIso_simVtx[iCone]).push_back(chIso_simVtx[iCone]);
-	(evInfo[iRes].muon_chIso_simVtx_dT[iCone][iRes]).push_back(chIso_simVtx_dT[iCone][iRes]);
+	(evInfo[iRes].muon_chIso_dZ05_simVtx[iCone]).push_back(chIso_dZ05_simVtx[iCone]);
+	(evInfo[iRes].muon_chIso_dZ05_dT_simVtx[iCone][iRes]).push_back(chIso_dZ05_dT_simVtx[iCone][iRes]);
 
-	(evInfo[iRes].muon_chIso[iCone]).push_back(chIso[iCone]);  
-	(evInfo[iRes].muon_chIso_dT[iCone][iRes]).push_back(chIso_dT[iCone][iRes]);
+	(evInfo[iRes].muon_chIso_dZ1_simVtx[iCone]).push_back(chIso_dZ1_simVtx[iCone]);
+	(evInfo[iRes].muon_chIso_dZ1_dT_simVtx[iCone][iRes]).push_back(chIso_dZ1_dT_simVtx[iCone][iRes]);
 
-	(evInfo[iRes].muon_chIso_dZmu[iCone]).push_back(chIso_dZmu[iCone]);
-	(evInfo[iRes].muon_chIso_dZmu_dTmu[iCone][iRes]).push_back(chIso_dZmu_dTmu[iCone][iRes]);
-	
+	(evInfo[iRes].muon_chIso_dZ2_simVtx[iCone]).push_back(chIso_dZ2_simVtx[iCone]);
+	(evInfo[iRes].muon_chIso_dZ2_dT_simVtx[iCone][iRes]).push_back(chIso_dZ2_dT_simVtx[iCone][iRes]);
+
 	(evInfo[iRes].muon_chIso_dZ05[iCone]).push_back(chIso_dZ05[iCone]);  
 	(evInfo[iRes].muon_chIso_dZ05_dT[iCone][iRes]).push_back(chIso_dZ05_dT[iCone][iRes]);
+
+	(evInfo[iRes].muon_chIso_dZ1[iCone]).push_back(chIso_dZ1[iCone]);  
+	(evInfo[iRes].muon_chIso_dZ1_dT[iCone][iRes]).push_back(chIso_dZ1_dT[iCone][iRes]);
 
 	(evInfo[iRes].muon_chIso_dZ2[iCone]).push_back(chIso_dZ2[iCone]);  
 	(evInfo[iRes].muon_chIso_dZ2_dT[iCone][iRes]).push_back(chIso_dZ2_dT[iCone][iRes]);
 
 	(evInfo[iRes].muon_chIso_reldZ[iCone]).push_back(chIso_reldZ[iCone]);  
 	(evInfo[iRes].muon_chIso_reldZ_dT[iCone][iRes]).push_back(chIso_reldZ_dT[iCone][iRes]);
+
+	(evInfo[iRes].muon_chIso_dZmu05[iCone]).push_back(chIso_dZmu05[iCone]);
+	(evInfo[iRes].muon_chIso_dZmu05_dTmu[iCone][iRes]).push_back(chIso_dZmu05_dTmu[iCone][iRes]);
+
+	(evInfo[iRes].muon_chIso_dZmu1[iCone]).push_back(chIso_dZmu1[iCone]);
+	(evInfo[iRes].muon_chIso_dZmu1_dTmu[iCone][iRes]).push_back(chIso_dZmu1_dTmu[iCone][iRes]);
+
+	(evInfo[iRes].muon_chIso_dZmu2[iCone]).push_back(chIso_dZmu2[iCone]);
+	(evInfo[iRes].muon_chIso_dZmu2_dTmu[iCone][iRes]).push_back(chIso_dZmu2_dTmu[iCone][iRes]);
       }
+
     } // end loop over time resolutions
+
   }// end loop over muons
 
 
@@ -456,6 +502,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
   
+
 }// end analyze event
   
 
@@ -489,21 +536,24 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( "muon_dxy4D",      &evInfo[iRes].muon_dxy4D);  
     eventTree[iRes]->Branch( "muon_t",          &evInfo[iRes].muon_t);  
     eventTree[iRes]->Branch( "muon_isPrompt",   &evInfo[iRes].muon_isPrompt);  
-    eventTree[iRes]->Branch( "muon_isMatchedToGenJet",   &evInfo[iRes].muon_isMatchedToGenJet);  
+    eventTree[iRes]->Branch( "muon_isMatchedToGenJet",&evInfo[iRes].muon_isMatchedToGenJet);  
     eventTree[iRes]->Branch( "muon_isFromTauDecay",   &evInfo[iRes].muon_isFromTauDecay);  
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
-      eventTree[iRes]->Branch( Form("muon_chIso%.2d_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_simVtx[iCone]);  
-      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dT_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_simVtx_dT[iCone][iRes]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ05_simVtx[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05_dT_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ05_dT_simVtx[iCone][iRes]);  
 
-      eventTree[iRes]->Branch( Form("muon_chIso%.2d",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso[iCone]);  
-      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dT[iCone][iRes]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ1_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ1_simVtx[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ1_dT_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ1_dT_simVtx[iCone][iRes]);  
 
-      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZmu[iCone]);  
-      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu_dTmu",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZmu_dTmu[iCone][iRes]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ2_simVtx[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT_simVtx",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ2_dT_simVtx[iCone][iRes]);  
 
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ05[iCone]);  
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ05_dT[iCone][iRes]);  
+
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ1",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ1[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ1_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ1_dT[iCone][iRes]);  
 
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ2[iCone]);  
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZ2_dT[iCone][iRes]);  
@@ -511,13 +561,22 @@ MuonIsolationAnalyzer::beginJob()
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_reldZ[iCone]);  
       eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ_dT",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_reldZ_dT[iCone][iRes]);  
 
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu05",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZmu05[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu05_dTmu",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZmu05_dTmu[iCone][iRes]);  
 
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu1",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZmu1[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu1_dTmu",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZmu1_dTmu[iCone][iRes]);  
+
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu2",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZmu2[iCone]);  
+      eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu2_dTmu",int(isoConeDR_[iCone]*10) ), &evInfo[iRes].muon_chIso_dZmu2_dTmu[iCone][iRes]);  
     }
 
     if (saveTracks_){
       eventTree[iRes]->Branch( "track_t",      &evInfo[iRes].track_t);
       eventTree[iRes]->Branch( "track_dz4D",   &evInfo[iRes].track_dz4D);
       eventTree[iRes]->Branch( "track_dz3D",   &evInfo[iRes].track_dz3D);
+      eventTree[iRes]->Branch( "track_dxy4D",  &evInfo[iRes].track_dxy4D);
+      eventTree[iRes]->Branch( "track_dxy3D",  &evInfo[iRes].track_dxy3D);
       eventTree[iRes]->Branch( "track_pt",     &evInfo[iRes].track_pt);
       eventTree[iRes]->Branch( "track_eta",    &evInfo[iRes].track_eta);
       eventTree[iRes]->Branch( "track_phi",    &evInfo[iRes].track_phi);
@@ -532,6 +591,8 @@ MuonIsolationAnalyzer::beginJob()
 void 
 MuonIsolationAnalyzer::endJob() 
 {
+
+  cout << "Analysis finished " <<endl;
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
@@ -580,17 +641,21 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes].muon_isFromTauDecay.clear();
 
     for (unsigned int iCone = 0; iCone < isoConeDR_.size(); iCone++){
-      evInfo[iRes].muon_chIso_simVtx[iCone].clear();
-      evInfo[iRes].muon_chIso_simVtx_dT[iCone][iRes].clear();
-   
-      evInfo[iRes].muon_chIso[iCone].clear();
-      evInfo[iRes].muon_chIso_dT[iCone][iRes].clear();
 
-      evInfo[iRes].muon_chIso_dZmu[iCone].clear();
-      evInfo[iRes].muon_chIso_dZmu_dTmu[iCone][iRes].clear();
+      evInfo[iRes].muon_chIso_dZ05_simVtx[iCone].clear();
+      evInfo[iRes].muon_chIso_dZ05_dT_simVtx[iCone][iRes].clear();
+
+      evInfo[iRes].muon_chIso_dZ1_simVtx[iCone].clear();
+      evInfo[iRes].muon_chIso_dZ1_dT_simVtx[iCone][iRes].clear();
+
+      evInfo[iRes].muon_chIso_dZ2_simVtx[iCone].clear();
+      evInfo[iRes].muon_chIso_dZ2_dT_simVtx[iCone][iRes].clear();
 
       evInfo[iRes].muon_chIso_dZ05[iCone].clear();
       evInfo[iRes].muon_chIso_dZ05_dT[iCone][iRes].clear();
+
+      evInfo[iRes].muon_chIso_dZ1[iCone].clear();
+      evInfo[iRes].muon_chIso_dZ1_dT[iCone][iRes].clear();
 
       evInfo[iRes].muon_chIso_dZ2[iCone].clear();
       evInfo[iRes].muon_chIso_dZ2_dT[iCone][iRes].clear();
@@ -598,12 +663,22 @@ MuonIsolationAnalyzer::initEventStructure()
       evInfo[iRes].muon_chIso_reldZ[iCone].clear();
       evInfo[iRes].muon_chIso_reldZ_dT[iCone][iRes].clear();
 
+      evInfo[iRes].muon_chIso_dZmu05[iCone].clear();
+      evInfo[iRes].muon_chIso_dZmu05_dTmu[iCone][iRes].clear();
+
+      evInfo[iRes].muon_chIso_dZmu1[iCone].clear();
+      evInfo[iRes].muon_chIso_dZmu1_dTmu[iCone][iRes].clear();
+    
+      evInfo[iRes].muon_chIso_dZmu2[iCone].clear();
+      evInfo[iRes].muon_chIso_dZmu2_dTmu[iCone][iRes].clear();
     }
 
     if (saveTracks_){
       evInfo[iRes].track_t.clear();
       evInfo[iRes].track_dz4D.clear();
       evInfo[iRes].track_dz3D.clear();
+      evInfo[iRes].track_dxy4D.clear();
+      evInfo[iRes].track_dxy3D.clear();
       evInfo[iRes].track_pt.clear();
       evInfo[iRes].track_eta.clear();
       evInfo[iRes].track_phi.clear();
