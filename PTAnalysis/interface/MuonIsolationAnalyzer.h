@@ -106,35 +106,35 @@ struct eventInfo
   vector<int> muon_isMatchedToGenJet;
   vector<int> muon_isFromTauDecay;
 
-  vector<float> muon_chIso_dZ05_simVtx[1];
-  vector<float> muon_chIso_dZ05_dT_simVtx[1][5];
+  vector<float> muon_chIso_dZ05_simVtx;
+  vector<float> muon_chIso_dZ05_dT_simVtx;
 
-  vector<float> muon_chIso_dZ1_simVtx[1];
-  vector<float> muon_chIso_dZ1_dT_simVtx[1][5];
+  vector<float> muon_chIso_dZ1_simVtx;
+  vector<float> muon_chIso_dZ1_dT_simVtx;
 
-  vector<float> muon_chIso_dZ2_simVtx[1];
-  vector<float> muon_chIso_dZ2_dT_simVtx[1][5];
+  vector<float> muon_chIso_dZ2_simVtx;
+  vector<float> muon_chIso_dZ2_dT_simVtx;
   
-  vector<float> muon_chIso_dZ05[1];
-  vector<float> muon_chIso_dZ05_dT[1][5];
+  vector<float> muon_chIso_dZ05;
+  vector<float> muon_chIso_dZ05_dT;
 
-  vector<float> muon_chIso_dZ1[1];
-  vector<float> muon_chIso_dZ1_dT[1][5];
+  vector<float> muon_chIso_dZ1;
+  vector<float> muon_chIso_dZ1_dT;
 
-  vector<float> muon_chIso_dZ2[1];
-  vector<float> muon_chIso_dZ2_dT[1][5];
+  vector<float> muon_chIso_dZ2;
+  vector<float> muon_chIso_dZ2_dT;
 
-  vector<float> muon_chIso_reldZ[1];
-  vector<float> muon_chIso_reldZ_dT[1][5];
+  vector<float> muon_chIso_reldZ;
+  vector<float> muon_chIso_reldZ_dT;
 
-  vector<float> muon_chIso_dZmu05[1];
-  vector<float> muon_chIso_dZmu05_dTmu[1][5];
+  vector<float> muon_chIso_dZmu05;
+  vector<float> muon_chIso_dZmu05_dTmu;
 
-  vector<float> muon_chIso_dZmu1[1];
-  vector<float> muon_chIso_dZmu1_dTmu[1][5];
+  vector<float> muon_chIso_dZmu1;
+  vector<float> muon_chIso_dZmu1_dTmu;
 
-  vector<float> muon_chIso_dZmu2[1];
-  vector<float> muon_chIso_dZmu2_dTmu[1][5];
+  vector<float> muon_chIso_dZmu2;
+  vector<float> muon_chIso_dZmu2_dTmu;
 
 };
 
@@ -151,9 +151,9 @@ public:
 
 
 private:
-  virtual void beginJob() override;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-  virtual void endJob() override;
+  virtual void beginJob();
+  virtual void analyze(const edm::Event&, const edm::EventSetup&);
+  virtual void endJob();
     
   void initEventStructure();
 
@@ -177,11 +177,11 @@ private:
 
   //--- options
   vector<double> timeResolutions_;
-  vector<double> isoConeDR_;
+  double isoConeDR_;
   bool saveTracks_;
-  float maxDz_;
-  float minDr_;
-  float minTrackPt_;
+  double maxDz_;
+  double minDr_;
+  double minTrackPt_;
   bool useVertexClosestToGen_;
 
   // -- 
