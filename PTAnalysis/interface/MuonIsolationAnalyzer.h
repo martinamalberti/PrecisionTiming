@@ -183,9 +183,12 @@ private:
   double minDr_;
   double minTrackPt_;
   bool useVertexClosestToGen_;
+  double btlEfficiency_;
+  double etlEfficiency_;
 
   // -- 
   TRandom *gRandom;
+  TRandom *gRandom2;
 
 };
 

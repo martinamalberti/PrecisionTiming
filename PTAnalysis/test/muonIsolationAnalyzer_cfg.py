@@ -48,7 +48,9 @@ process.analysis = cms.EDAnalyzer(
     maxDz = cms.untracked.double(0.1),
     minDr = cms.untracked.double(0.0),
     minTrackPt = cms.untracked.double(0.0),
-    useVertexClosestToGen = cms.untracked.bool(True)
+    useVertexClosestToGen = cms.untracked.bool(True),
+    btlEfficiency = cms.untracked.double(1.0),
+    etlEfficiency = cms.untracked.double(1.0)
 )
 
 # Output TFile
