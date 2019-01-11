@@ -4,7 +4,7 @@ process = cms.Process("Analysis")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 10 )
 
 process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
@@ -22,10 +22,12 @@ process.source = cms.Source("PoolSource",
         #'/store/mc/PhaseIITDRFall17DR/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2-v1/00000/8ACC70B3-4AB0-E711-B53C-003048FFD71C.root',         
         #'/store/mc/PhaseIITDRFall17DR/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2-v1/00000/8A430CA9-38B0-E711-A1DC-3417EBE2F0DF.root', 
 
-        '/store/mc/PhaseIITDRFall17DR/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2-v1/00000/0C84DC5A-01BC-E711-8786-48D539F38892.root',
+        #'/store/mc/PhaseIITDRFall17DR/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2-v1/00000/0C84DC5A-01BC-E711-8786-48D539F38892.root',
         #'/store/mc/PhaseIITDRFall17DR/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2-v1/30003/A6B64058-09BD-E711-AE05-90B11CBCFFA9.root',
         #'/store/mc/PhaseIITDRFall17DR/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2-v1/30003/A8EA1BB6-FEBC-E711-974A-0025905C53B2.root' 
- 
+
+        '/store/mc/PhaseIITDRFall17DR/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/GEN-SIM-RECO/noPU_93X_upgrade2023_realistic_v2-v1/00000/167250C7-90AE-E711-AAC9-008CFA197CF0.root'  
+        #'/store/mc/PhaseIITDRFall17DR/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/GEN-SIM-RECO/noPU_93X_upgrade2023_realistic_v2-v1/00000/1465E5AC-C6AD-E711-BDAE-002590DE6C48.root' 
         #'/store/mc/PhaseIISpr18AODMiniAOD/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/AODSIM/PU200_93X_upgrade2023_realistic_v5-v1/90000/FEA5A761-EE47-E811-9C32-0CC47A4C8E38.root' 
  )
 )
@@ -42,7 +44,8 @@ process.analysis = cms.EDAnalyzer(
     genXYZTag = cms.untracked.InputTag("genParticles", "xyz0", "HLT"),
     genT0Tag = cms.untracked.InputTag("genParticles", "t0", "HLT"),
     genJetsTag = cms.untracked.InputTag("ak4GenJets", "", "HLT"),
-    timeResolutions = cms.untracked.vdouble(0.030, 0.040, 0.050, 0.060, 0.070),
+    #timeResolutions = cms.untracked.vdouble(0.030, 0.040, 0.050, 0.060, 0.070),
+    timeResolutions = cms.untracked.vdouble(0.030),
     isoConeDR = cms.untracked.double(0.3),
     saveTracks = cms.untracked.bool(False),
     maxDz = cms.untracked.double(0.1),
