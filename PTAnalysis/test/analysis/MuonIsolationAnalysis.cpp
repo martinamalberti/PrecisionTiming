@@ -99,12 +99,10 @@ int main(int argc, char** argv)
   vector<int>   *muon_isFromTauDecay;
 
   vector<float> *muon_chIso03_dZ05_simVtx;
-  //  vector<float> *muon_chIso03_dZ05_dT_simVtx;
   vector<float> *muon_chIso03_dZ05_dT2s_simVtx;
   vector<float> *muon_chIso03_dZ05_dT3s_simVtx;
   vector<float> *muon_chIso03_dZ05_dT5s_simVtx;
   vector<float> *muon_chIso03_dZ1_simVtx;
-  //  vector<float> *muon_chIso03_dZ1_dT_simVtx;
   vector<float> *muon_chIso03_dZ1_dT2s_simVtx;
   vector<float> *muon_chIso03_dZ1_dT3s_simVtx;
   vector<float> *muon_chIso03_dZ1_dT5s_simVtx;
@@ -114,17 +112,14 @@ int main(int argc, char** argv)
   vector<float> *muon_chIso03_dZ2_dT5s_simVtx;
 
   vector<float> *muon_chIso03_dZ05;
-  //  vector<float> *muon_chIso03_dZ05_dT;
   vector<float> *muon_chIso03_dZ05_dT2s;
   vector<float> *muon_chIso03_dZ05_dT3s;
   vector<float> *muon_chIso03_dZ05_dT5s;
   vector<float> *muon_chIso03_dZ1;
-  //  vector<float> *muon_chIso03_dZ1_dT;
   vector<float> *muon_chIso03_dZ1_dT2s;
   vector<float> *muon_chIso03_dZ1_dT3s;
   vector<float> *muon_chIso03_dZ1_dT5s;
   vector<float> *muon_chIso03_dZ2;
-  //  vector<float> *muon_chIso03_dZ2_dT;
   vector<float> *muon_chIso03_dZ2_dT2s;
   vector<float> *muon_chIso03_dZ2_dT3s;
   vector<float> *muon_chIso03_dZ2_dT5s;
@@ -160,33 +155,27 @@ int main(int argc, char** argv)
   muon_isFromTauDecay = 0;
 
   muon_chIso03_dZ05_simVtx = 0;
-  //muon_chIso03_dZ05_dT_simVtx = 0;
   muon_chIso03_dZ05_dT2s_simVtx = 0;
   muon_chIso03_dZ05_dT3s_simVtx = 0;
   muon_chIso03_dZ05_dT5s_simVtx = 0;
   muon_chIso03_dZ1_simVtx = 0;
-  //  muon_chIso03_dZ1_dT_simVtx = 0;
   muon_chIso03_dZ1_dT2s_simVtx = 0;
   muon_chIso03_dZ1_dT3s_simVtx = 0;
   muon_chIso03_dZ1_dT5s_simVtx = 0;
   muon_chIso03_dZ2_simVtx = 0;
-  //  muon_chIso03_dZ2_dT_simVtx = 0;
   muon_chIso03_dZ2_dT2s_simVtx = 0;
   muon_chIso03_dZ2_dT3s_simVtx = 0;
   muon_chIso03_dZ2_dT5s_simVtx = 0;
 
   muon_chIso03_dZ05 = 0;
-  //muon_chIso03_dZ05_dT = 0;
   muon_chIso03_dZ05_dT2s = 0;
   muon_chIso03_dZ05_dT3s = 0;
   muon_chIso03_dZ05_dT5s = 0;
   muon_chIso03_dZ1 = 0;
-  //muon_chIso03_dZ1_dT = 0;
   muon_chIso03_dZ1_dT2s = 0;
   muon_chIso03_dZ1_dT3s = 0;
   muon_chIso03_dZ1_dT5s = 0;
   muon_chIso03_dZ2 = 0;
-  // muon_chIso03_dZ2_dT = 0;
   muon_chIso03_dZ2_dT2s = 0;
   muon_chIso03_dZ2_dT3s = 0;
   muon_chIso03_dZ2_dT5s = 0;
@@ -236,37 +225,31 @@ int main(int argc, char** argv)
   chain->SetBranchStatus("muon_isFromTauDecay",1);     chain->SetBranchAddress("muon_isFromTauDecay",  &muon_isFromTauDecay);
 
   chain->SetBranchStatus("muon_chIso03_dZ05_simVtx",1);    chain->SetBranchAddress("muon_chIso03_dZ05_simVtx",   &muon_chIso03_dZ05_simVtx);
-  //  chain->SetBranchStatus("muon_chIso03_dZ05_dT_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ05_dT_simVtx",&muon_chIso03_dZ05_dT_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ05_dT2s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ05_dT2s_simVtx",&muon_chIso03_dZ05_dT2s_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ05_dT3s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ05_dT3s_simVtx",&muon_chIso03_dZ05_dT3s_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ05_dT5s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ05_dT5s_simVtx",&muon_chIso03_dZ05_dT5s_simVtx);
 
   chain->SetBranchStatus("muon_chIso03_dZ1_simVtx",1);     chain->SetBranchAddress("muon_chIso03_dZ1_simVtx",    &muon_chIso03_dZ1_simVtx);
-  //chain->SetBranchStatus("muon_chIso03_dZ1_dT_simVtx",1);  chain->SetBranchAddress("muon_chIso03_dZ1_dT_simVtx", &muon_chIso03_dZ1_dT_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ1_dT2s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ1_dT2s_simVtx",&muon_chIso03_dZ1_dT2s_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ1_dT3s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ1_dT3s_simVtx",&muon_chIso03_dZ1_dT3s_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ1_dT5s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ1_dT5s_simVtx",&muon_chIso03_dZ1_dT5s_simVtx);
 
   chain->SetBranchStatus("muon_chIso03_dZ2_simVtx",1);     chain->SetBranchAddress("muon_chIso03_dZ2_simVtx",    &muon_chIso03_dZ2_simVtx);
-  //  chain->SetBranchStatus("muon_chIso03_dZ2_dT_simVtx",1);  chain->SetBranchAddress("muon_chIso03_dZ2_dT_simVtx", &muon_chIso03_dZ2_dT_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ2_dT2s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ2_dT2s_simVtx",&muon_chIso03_dZ2_dT2s_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ2_dT3s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ2_dT3s_simVtx",&muon_chIso03_dZ2_dT3s_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ2_dT5s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ2_dT5s_simVtx",&muon_chIso03_dZ2_dT5s_simVtx);
 
   chain->SetBranchStatus("muon_chIso03_dZ05",1);      chain->SetBranchAddress("muon_chIso03_dZ05",   &muon_chIso03_dZ05);
-  //chain->SetBranchStatus("muon_chIso03_dZ05_dT",1);   chain->SetBranchAddress("muon_chIso03_dZ05_dT",&muon_chIso03_dZ05_dT);
   chain->SetBranchStatus("muon_chIso03_dZ05_dT2s",1);   chain->SetBranchAddress("muon_chIso03_dZ05_dT2s",&muon_chIso03_dZ05_dT2s);
   chain->SetBranchStatus("muon_chIso03_dZ05_dT3s",1);   chain->SetBranchAddress("muon_chIso03_dZ05_dT3s",&muon_chIso03_dZ05_dT3s);
   chain->SetBranchStatus("muon_chIso03_dZ05_dT5s",1);   chain->SetBranchAddress("muon_chIso03_dZ05_dT5s",&muon_chIso03_dZ05_dT5s);
 
   chain->SetBranchStatus("muon_chIso03_dZ1",1);       chain->SetBranchAddress("muon_chIso03_dZ1",    &muon_chIso03_dZ1);
-  //  chain->SetBranchStatus("muon_chIso03_dZ1_dT",1);    chain->SetBranchAddress("muon_chIso03_dZ1_dT", &muon_chIso03_dZ1_dT);
   chain->SetBranchStatus("muon_chIso03_dZ1_dT2s",1);   chain->SetBranchAddress("muon_chIso03_dZ1_dT2s",&muon_chIso03_dZ1_dT2s);
   chain->SetBranchStatus("muon_chIso03_dZ1_dT3s",1);   chain->SetBranchAddress("muon_chIso03_dZ1_dT3s",&muon_chIso03_dZ1_dT3s);
   chain->SetBranchStatus("muon_chIso03_dZ1_dT5s",1);   chain->SetBranchAddress("muon_chIso03_dZ1_dT5s",&muon_chIso03_dZ1_dT5s);
 
   chain->SetBranchStatus("muon_chIso03_dZ2",1);       chain->SetBranchAddress("muon_chIso03_dZ2",    &muon_chIso03_dZ2);
-  //  chain->SetBranchStatus("muon_chIso03_dZ2_dT",1);    chain->SetBranchAddress("muon_chIso03_dZ2_dT", &muon_chIso03_dZ2_dT);
   chain->SetBranchStatus("muon_chIso03_dZ2_dT2s",1);   chain->SetBranchAddress("muon_chIso03_dZ2_dT2s",&muon_chIso03_dZ2_dT2s);
   chain->SetBranchStatus("muon_chIso03_dZ2_dT3s",1);   chain->SetBranchAddress("muon_chIso03_dZ2_dT3s",&muon_chIso03_dZ2_dT3s);
   chain->SetBranchStatus("muon_chIso03_dZ2_dT5s",1);   chain->SetBranchAddress("muon_chIso03_dZ2_dT5s",&muon_chIso03_dZ2_dT5s);
@@ -679,7 +662,16 @@ int main(int argc, char** argv)
   h_muon_relChIso03_ratio_endcap->GetXaxis()->SetTitle("relChIso_{ZTcut}/relChIso_{Zcut}");
 
 
+  // line density
+  TH1F *h_linedensity_noRelChIsoZCut = new TH1F("h_linedensity_noRelChIsoZCut","h_linedensity_noRelChIsoZCut", 100, 0, 2);
+  TH1F *h_linedensity_noRelChIsoZTCut = new TH1F("h_linedensity_noRelChIsoZTCut","h_linedensity_noRelChIsoZTCut", 100, 0, 2);
 
+  TH1F *h_linedensity_RelChIsoZCut = new TH1F("h_linedensity_RelChIsoZCut ","h_linedensity_RelChIsoZCut ", 100, 0, 2);
+  TH1F *h_linedensity_RelChIsoZTCut  = new TH1F("h_linedensity_RelChIsoZTCut","h_linedensity_RelChIsoZTCut", 100, 0, 2);
+
+  TH1F *h_linedensity_RelChIsoZCut_simVtx = new TH1F("h_linedensity_RelChIsoZCut_simVtx","h_linedensity_RelChIsoZCut_simVtx", 100, 0, 2);
+  TH1F *h_linedensity_RelChIsoZTCut_simVtx  = new TH1F("h_linedensity_RelChIsoZTCut_simVtx","h_linedensity_RelChIsoZTCut_simVtx", 100, 0, 2);
+  
 
 
   // -- loop over events
@@ -709,7 +701,6 @@ int main(int argc, char** argv)
       pt = muon_pt->at(imu);
       
       if ( pt < 20. )  continue;
-      //if ( pt < 5. )  continue;
       if ( muon_isLoose->at(imu) == 0 ) continue;
 
       // -- pt/eta reweighting
@@ -919,6 +910,30 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZmu5_dTmu_endcap -> Fill(muon_chIso03_dZmu5_dTmu->at(imu)/pt, w);
       }
               
+
+      // -- line density
+      float linedensity = 200.*TMath::Gaus(fabs(10*vtxGen_z), 0, 42., 1);
+      if (pass3D){
+	h_linedensity_noRelChIsoZCut->Fill(linedensity,w); 
+	if ( (muon_chIso03_dZ1->at(imu)/muon_pt->at(imu)) < 0.05 ) {
+	  h_linedensity_RelChIsoZCut->Fill(linedensity,w); 
+	}
+	if ( (muon_chIso03_dZ1_simVtx->at(imu)/muon_pt->at(imu)) < 0.05 ) {
+	  h_linedensity_RelChIsoZCut_simVtx->Fill(linedensity,w); 
+	}
+      }
+      if (pass4D){
+	h_linedensity_noRelChIsoZTCut->Fill(linedensity,w);
+	if ( (muon_chIso03_dZ1_dT3s->at(imu)/muon_pt->at(imu)) < 0.05 ) {
+	  h_linedensity_RelChIsoZTCut->Fill(linedensity,w); 
+	}
+	if ( (muon_chIso03_dZ1_dT3s_simVtx->at(imu)/muon_pt->at(imu)) < 0.05 ) {
+	  h_linedensity_RelChIsoZTCut_simVtx->Fill(linedensity,w); 
+	}
+
+      }
+    
+
     }// end loop over muons
   }// end loop over events
 
@@ -1112,6 +1127,15 @@ int main(int argc, char** argv)
   h_muon_relChIso03_dZmu5_dTmu_endcap->Write();
 
 
+
+  h_linedensity_noRelChIsoZCut->Write();
+  h_linedensity_noRelChIsoZTCut->Write();
+
+  h_linedensity_RelChIsoZCut->Write();
+  h_linedensity_RelChIsoZTCut->Write();
+
+  h_linedensity_RelChIsoZCut_simVtx->Write();
+  h_linedensity_RelChIsoZTCut_simVtx->Write();
 
   fout->Close();
   

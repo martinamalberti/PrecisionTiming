@@ -212,11 +212,14 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
   // -- if PV index == -1, use highest ranked vertex 
-  if (pv_index_3D==-1) pv_index_3D = 0;
-  if (pv_index_4D==-1) pv_index_4D = 0;
-
-  //cout << "pv_index_3D = " << pv_index_3D <<endl;
-  //cout << "pv_index_4D = " << pv_index_4D <<endl;
+  if (pv_index_3D==-1) {
+    cout << "pv_index_3D = " << pv_index_3D <<endl;
+    pv_index_3D = 0;
+  }
+  if (pv_index_4D==-1) {
+    cout << "pv_index_4D = " << pv_index_4D <<endl;
+    pv_index_4D = 0;
+  }
 
 
   // -- get isolation around a candidate photon 
@@ -373,14 +376,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	if (dzmu < 0.5 ) { chIso_dZmu5+= pfcand.pt(); }
       }
       
-
       // --- with timing
       if (dr > minDr_ && dr < isoConeDR_){ 	  
-
-	// -- emulate BTL and ETL efficiency
-	double rndEff = gRandom2->Uniform(0.,1.); 
-	if ( std::abs(pfcand.eta()) < 1.5 && rndEff > btlEfficiency_ ) continue; 	
-	if ( std::abs(pfcand.eta()) > 1.5 && rndEff > etlEfficiency_ ) continue; 	
 
 	for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
 	  double targetTimeResol = timeResolutions_[iRes];
@@ -392,17 +389,30 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  double dtmu = 0.;
 	  time[iRes] = -999.;
 	  if ( pfcand.isTimeValid() && !isnan( pfcand.time() )) {
-	    double rnd   = gRandom->Gaus(0., extra_resol);
-	    double rndmu = gRandom->Gaus(0., extra_resol);
-	    //cout << "target time resol = "<< targetTimeResol << "  extra_resol = "<< extra_resol << "  rnd = " << rnd <<endl;
-	    time[iRes] = pfcand.time() + rnd;
-	    dtsim = std::abs(time[iRes] - genPV.position().t()*1000000000.);
-	    dt    = std::abs(time[iRes] - vtx4D.t());
-	    if ( muonTime > -999. && !isnan(muonTime) ){
-	      dtmu  = std::abs(time[iRes] - muonTime + rndmu);
+	    // -- emulate BTL and ETL efficiency
+	    bool keepTrack = true;
+	    double rndEff = gRandom2->Uniform(0.,1.); 
+	    if ( std::abs(pfcand.eta()) < 1.5 && rndEff > btlEfficiency_ ) keepTrack = false; 	
+	    if ( std::abs(pfcand.eta()) > 1.5 && rndEff > etlEfficiency_ ) keepTrack = false; 	
+	    if (keepTrack) {
+	      // -- extra smearing to emulate different time resolution
+	      double rnd   = gRandom->Gaus(0., extra_resol);
+	      double rndmu = gRandom->Gaus(0., extra_resol);
+	      //cout << "target time resol = "<< targetTimeResol << "  extra_resol = "<< extra_resol << "  rnd = " << rnd <<endl;
+	      time[iRes] = pfcand.time() + rnd;
+	      dtsim = std::abs(time[iRes] - genPV.position().t()*1000000000.);
+	      dt    = std::abs(time[iRes] - vtx4D.t());
+	      if ( muonTime > -999. && !isnan(muonTime) ){
+		dtmu  = std::abs(time[iRes] - muonTime + rndmu);
+	      }
+	      else {
+		dtmu = 0;
+	      }
 	    }
-	    else {
-	      dtmu = 0;
+	    else{
+	      dtsim = 0.;
+	      dt    = 0.;
+	      dtmu  = 0.;
 	    }
 	  }
 	  else{
@@ -410,19 +420,19 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	    dt    = 0.;
 	    dtmu  = 0.;
 	  }
-	    
+	   
 	  // -- sim vertex
-	  if (dtsim < 2.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02 ) { chIso_dZ05_dT2s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 2.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02 ) { chIso_dZ1_dT2s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 2.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02 ) { chIso_dZ2_dT2s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 2.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT2s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 2.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT2s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 2.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT2s_simVtx[iRes]+= pfcand.pt();}
 
-	  if (dtsim < 3.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02 ) { chIso_dZ05_dT3s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 3.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02 ) { chIso_dZ1_dT3s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 3.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02 ) { chIso_dZ2_dT3s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 3.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT3s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 3.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT3s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 3.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT3s_simVtx[iRes]+= pfcand.pt();}
 
-	  if (dtsim < 5.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02 ) { chIso_dZ05_dT5s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 5.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02 ) { chIso_dZ1_dT5s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 5.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02 ) { chIso_dZ2_dT5s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 5.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT5s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 5.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT5s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 5.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT5s_simVtx[iRes]+= pfcand.pt();}
 	  
 	  // -- reco vtx closest to the sim one
 	  if (dt < 2.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT2s[iRes]+= pfcand.pt(); }

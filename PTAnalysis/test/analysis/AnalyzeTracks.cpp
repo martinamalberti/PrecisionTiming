@@ -36,25 +36,30 @@ using namespace std;
 int main(int argc, char** argv){
 
   float maxDzVtx = 0.1;
-  float maxDzMu  = 0.1;
+  float maxDzMu  = 0.5;
   
   string process = argv[1];
   bool prompt = false;
+
+  string pu = argv[2];
   
   // -- get TChain
   TChain* chain = new TChain("analysis/tree_30ps","tree");
   if (process.find("DYToLL") != std::string::npos) {
-    chain->Add("/eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso/181117_083340/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso/190111_164118/0000/muonIsolation_*.root");
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_noPU_muIso/190111_164205/0000/muonIsolation_*.root");
     prompt = true;
   }
   
   if (process.find("TTbar") != std::string::npos) {
-    chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso/181117_083704/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso/190111_164134/0000/muonIsolation_*.root");
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_noPU_muIso/190111_164224/0000/muonIsolation_*.root");
     prompt = false;
   }
   
   if (process.find("QCD") != std::string::npos) {
-    chain->Add("/eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_muIso/181119_120017/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_muIso/190111_164150/0000/muonIsolation_*.root");
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_noPU_muIso/190111_164240/0000/muonIsolation_*.root");
     prompt = false; 
   }
   
@@ -65,6 +70,7 @@ int main(int argc, char** argv){
   float vtx3D_z;
   float vtx4D_z;
   float vtx4D_t;
+  float vtx4D_tErr;
   int vtx4D_isFake;
   float vtxGen_t;
   float vtxGen_z;
@@ -77,6 +83,9 @@ int main(int argc, char** argv){
   vector<float> *muon_t;
   vector<float> *muon_dz3D;
   vector<float> *muon_dz4D;
+  vector<float> *muon_dxy3D;
+  vector<float> *muon_dxy4D;
+  vector<float> *muon_chIso03_dZ1_simVtx;
   vector<float> *track_pt;
   vector<float> *track_eta;
   vector<float> *track_phi;
@@ -90,10 +99,13 @@ int main(int argc, char** argv){
   muon_phi = 0;
   muon_dz3D = 0;
   muon_dz4D = 0;
+  muon_dxy3D = 0;
+  muon_dxy4D = 0;
   muon_t = 0;
   muon_isLoose= 0;
   muon_isMatchedToGenJet = 0;
   muon_isPrompt = 0;
+  muon_chIso03_dZ1_simVtx = 0;
   track_pt = 0;
   track_eta = 0;
   track_phi = 0;
@@ -106,6 +118,7 @@ int main(int argc, char** argv){
   chain->SetBranchStatus("vtx3D_z",1);                chain->SetBranchAddress("vtx3D_z",        &vtx3D_z);
   chain->SetBranchStatus("vtx4D_z",1);                chain->SetBranchAddress("vtx4D_z",        &vtx4D_z);
   chain->SetBranchStatus("vtx4D_t",1);                chain->SetBranchAddress("vtx4D_t",        &vtx4D_t);
+  chain->SetBranchStatus("vtx4D_tErr",1);             chain->SetBranchAddress("vtx4D_tErr",     &vtx4D_tErr);
   chain->SetBranchStatus("vtx4D_isFake",1);           chain->SetBranchAddress("vtx4D_isFake",   &vtx4D_isFake);
   chain->SetBranchStatus("vtxGen_z",1);               chain->SetBranchAddress("vtxGen_z",       &vtxGen_z);
   chain->SetBranchStatus("vtxGen_t",1);               chain->SetBranchAddress("vtxGen_t",       &vtxGen_t);
@@ -115,10 +128,13 @@ int main(int argc, char** argv){
   chain->SetBranchStatus("muon_t",1);                 chain->SetBranchAddress("muon_t",         &muon_t);
   chain->SetBranchStatus("muon_dz3D",1);              chain->SetBranchAddress("muon_dz3D",      &muon_dz3D);
   chain->SetBranchStatus("muon_dz4D",1);              chain->SetBranchAddress("muon_dz4D",      &muon_dz4D);
+  chain->SetBranchStatus("muon_dxy3D",1);             chain->SetBranchAddress("muon_dxy3D",     &muon_dxy3D);
+  chain->SetBranchStatus("muon_dxy4D",1);             chain->SetBranchAddress("muon_dxy4D",     &muon_dxy4D);
   chain->SetBranchStatus("muon_isLoose",1);           chain->SetBranchAddress("muon_isLoose",   &muon_isLoose);
   chain->SetBranchStatus("muon_isPrompt",1);          chain->SetBranchAddress("muon_isPrompt",  &muon_isPrompt);
   chain->SetBranchStatus("muon_isMatchedToGenJet",1); chain->SetBranchAddress("muon_isMatchedToGenJet", &muon_isMatchedToGenJet);
-  
+  chain->SetBranchStatus("muon_chIso03_dZ1_simVtx",1);     chain->SetBranchAddress("muon_chIso03_dZ1_simVtx",    &muon_chIso03_dZ1_simVtx);
+
   chain->SetBranchStatus("track_pt",1);               chain->SetBranchAddress("track_pt",       &track_pt);
   chain->SetBranchStatus("track_eta",1);              chain->SetBranchAddress("track_eta",      &track_eta);
   chain->SetBranchStatus("track_phi",1);              chain->SetBranchAddress("track_phi",      &track_phi);
@@ -141,7 +157,7 @@ int main(int argc, char** argv){
   
   TH1F *h_vtx_dz3D_sim = new TH1F("h_vtx_dz3D_sim","h_vtx_dz3D_sim",1000, -0.2, 0.2);
   TH1F *h_vtx_dz4D_sim = new TH1F("h_vtx_dz4D_sim","h_vtx_dz4D_sim",1000, -0.2, 0.2);
-  TH1F *h_vtx_dt4D_sim = new TH1F("h_vtx_dt4D_sim","h_vtx_dt4D_sim",1000, -0.5, 0.5);
+  TH1F *h_vtx_dt4D_sim = new TH1F("h_vtx_dt4D_sim","h_vtx_dt4D_sim",10000, -1.0, 1.0);
   
   TH1F *h_tracks_dt_vtx_barrel = new TH1F("h_tracks_dt_vtx_barrel","h_tracks_dt_vtx_barrel",500, -1.0, 1.0);
   TH1F *h_tracks_dz_vtx_barrel = new TH1F("h_tracks_dz_vtx_barrel","h_tracks_dz_vtx_barrel",500, -1.0, 1.0);
@@ -188,6 +204,17 @@ int main(int argc, char** argv){
   TH2F *h2_tracks_dzmu_dtmu_endcap = new TH2F("h2_tracks_dzmu_dtmu_endcap","h2_tracks_dzmu_dtmu_endcap",1000,-1,1, 1000, -1, 1);
 
 
+  TH1F *h_muon_time_PV = new TH1F("h_muon_time_PV","h_muon_time_PV",100, -0.5, 0.5);
+  TH1F *h_muon_time_PU = new TH1F("h_muon_time_PU","h_muon_time_PU",100, -0.5, 0.5);
+  TH2F *h2_muon_time_vs_dtmu = new TH2F("h2_muon_time_vs_dtmu","h2_muon_time_vs_dtmu",1000, -0.5, 0.5, 1000, -0.5, 0.5);
+
+
+  TH2F *h2_tracks_dt_vtx_vs_tErr = new TH2F("h2_tracks_dt_vtx_vs_tErr","h2_tracks_dt_vtx_vs_tErr", 500, 0, 0.1, 1000, -1, 1);
+  TH2F *h2_tracks_dt_vtx_vs_dtvtxsimreco = new TH2F("h2_tracks_dt_vtx_vs_dtvtxsimreco","h2_tracks_dt_vtx_vs_dtvtxsimreco", 1000, -1., 1., 1000, -1, 1);
+  TH2F *h2_tracks_dtsim_vtx_vs_dtvtxsimreco = new TH2F("h2_tracks_dtsim_vtx_vs_dtvtxsimreco","h2_tracks_dtsim_vtx_vs_dtvtxsimreco", 1000, -1., 1., 1000, -1, 1);
+
+  TH1F *h_tracksTime_minus_vtxGenTime_all = new TH1F("h_tracksTime_minus_vtxGenTime_all","h_tracksTime_minus_vtxGenTime_all",1000, -0.5, 0.5);
+  TH1F *h_tracksTime_minus_vtxGenTime_badVtxReco = new TH1F("h_tracksTime_minus_vtxGenTime_badVtxReco","h_tracksTime_minus_vtxGenTime_badVtxReco",1000, -0.5, 0.5);
 
   cout << "Analyzing " << chain->GetEntries() << "  events" <<endl;
   
@@ -203,8 +230,11 @@ int main(int argc, char** argv){
     for (unsigned int imu = 0; imu < muon_pt->size(); imu++){
       if (muon_pt->at(imu)< 20 ) continue;
       if (!muon_isLoose->at(imu) ) continue;
-     
-      bool isBarrel = fabs(muon_eta->at(imu)) < 1.5;
+      if (fabs(muon_dz4D->at(imu)) > 0.5 ) continue;
+      if (fabs(muon_dxy4D->at(imu)) > 0.2 ) continue;
+      if (vtx4D_isFake) continue;
+
+      bool isBarrel = fabs(muon_eta->at(imu)) < 1.48;
 
       bool pass = false;
       if ( prompt) pass = muon_isPrompt->at(imu);
@@ -219,15 +249,12 @@ int main(int argc, char** argv){
       h_vtx_dz4D_sim -> Fill( vtx4D_z - vtxGen_z);
       h_vtx_dt4D_sim -> Fill( vtx4D_t - vtxGen_t*1000000000.);
 
-
-
-
+      // select reco vtx very close to sim vtx both in space and time
       //if (fabs(vtx4D_z - vtxGen_z) > 0.005 ) continue;
       //if (fabs(vtx4D_t - vtxGen_t*1000000000) > 0.015 ) continue;
 
-
       // test
-      if (fabs(vtx4D_z - vtxGen_z) < 0.01 && fabs(vtx4D_t - vtxGen_t*1000000000) < 0.02) continue;
+      // if (fabs(vtx4D_z - vtxGen_z) < 0.01 && fabs(vtx4D_t - vtxGen_t*1000000000) < 0.02) continue;
 
       
       if ( isBarrel) h_muon_pt_barrel   -> Fill(muon_pt->at(imu));
@@ -241,6 +268,8 @@ int main(int argc, char** argv){
 	// -- exclude tracks corresponding to the isolation cone of the other muon(s)
 	if (track_muIndex ->at(itk) != int(imu)) continue;
 	
+	if (isnan(track_t->at(itk))) cout << " track time = " << track_t->at(itk) <<endl;
+
 	float deta = fabs(muon_eta->at(imu) - track_eta->at(itk));
 	float dphi = fabs(muon_phi->at(imu) - track_phi->at(itk));
 	if (dphi > TMath::Pi()) dphi = 2*TMath::Pi()- dphi;
@@ -251,16 +280,22 @@ int main(int argc, char** argv){
 	
 	float dz = track_dz4D->at(itk);
 	float dt = track_t->at(itk) - vtx4D_t;
-	if ( isBarrel) h_tracks_dz_vtx_barrel -> Fill(dz);
-        if (!isBarrel) h_tracks_dz_vtx_endcap-> Fill(dz);
+	float dtsim = track_t->at(itk) - vtxGen_t*1000000000.;
 
+	if ( isBarrel) h_tracks_dz_vtx_barrel -> Fill(dz);
+	if (!isBarrel) h_tracks_dz_vtx_endcap-> Fill(dz);
+	
 	if (fabs(dz) < maxDzVtx) {
+
 	  // -- barrel
           if (isBarrel){
 	    // if timing info available
-	    if (track_t->at(itk) > -99){
+	    if (track_t->at(itk) != -999){
 	      h_tracks_dt_vtx_barrel->Fill(dt);
 	      h2_tracks_dzvtx_dtvtx_barrel->Fill(dz, dt);
+	      h2_tracks_dt_vtx_vs_tErr->Fill(vtx4D_tErr, dt);
+	      h2_tracks_dt_vtx_vs_dtvtxsimreco->Fill(vtx4D_t-vtxGen_t*1000000000.,dt);
+	      h2_tracks_dtsim_vtx_vs_dtvtxsimreco->Fill(vtx4D_t-vtxGen_t*1000000000.,dtsim);
 	      if ( fabs(dt) > 0.030 * 3) {
 		h_tracks_pt_timing_PU_barrel->Fill(track_pt->at(itk));
                 h_tracks_eta_timing_PU_barrel->Fill(track_eta->at(itk));
@@ -283,7 +318,7 @@ int main(int argc, char** argv){
           // -- endcap
           else {
             // if timing info available
-            if (track_t->at(itk) > -99){
+            if (track_t->at(itk) != -999){
               h_tracks_dt_vtx_endcap->Fill(dt);
               h2_tracks_dzvtx_dtvtx_endcap->Fill(dz, dt);
               if ( fabs(dt) > 0.030 * 3) {
@@ -310,14 +345,24 @@ int main(int argc, char** argv){
 	// wrt to muon
 	float dtmu = track_t->at(itk) - muon_t->at(imu);
 	float dzmu = muon_dz4D->at(imu) - track_dz4D->at(itk) ;
+
 	if ( isBarrel) h_tracks_dz_mu_barrel -> Fill(dzmu);
 	if (!isBarrel) h_tracks_dz_mu_endcap-> Fill(dzmu);
-	
+
 	if (fabs(dzmu) < maxDzMu){
+
 	  // -- barrel
 	  if (isBarrel){
 	    // if timing info available
-	    if (track_t->at(itk) > -99){	
+	    if (track_t->at(itk) != -999){	
+	      h2_muon_time_vs_dtmu ->Fill(dtmu, muon_t->at(imu));
+	      if ( fabs(dtmu) > sqrt(2)*3*0.030) {
+		//cout << ientry << "muon time = " << muon_t->at(imu) << " track time = " << track_t->at(itk) <<endl;
+		h_muon_time_PU->Fill( muon_t->at(imu) );
+	      }
+	      else{
+		h_muon_time_PV->Fill( muon_t->at(imu) );
+	      }
 	      h_tracks_dt_mu_barrel->Fill(dtmu);
 	      h2_tracks_dzmu_dtmu_barrel->Fill(dzmu, dtmu);
 	      /*
@@ -346,7 +391,7 @@ int main(int argc, char** argv){
 	  // -- endcap
 	  else {
 	    // if timing info available 
-	    if (track_t->at(itk) > -99){
+	    if (track_t->at(itk) != -999){
               h_tracks_dt_mu_endcap->Fill(dtmu);
               h2_tracks_dzmu_dtmu_endcap->Fill(dzmu, dtmu);
 	      /*
@@ -417,7 +462,7 @@ int main(int argc, char** argv){
   h_tracks_dt_mu_endcap->Fit("fitfun2_endcap","QR");
   
   
-  std::string foutName = "testTracks_" + process + ".root";
+  std::string foutName = "testTracks_" + process + "_" + pu + ".root";
   TFile *fout = new TFile(foutName.c_str(),"recreate");
 
   hsimvtx_z->Write();
@@ -442,6 +487,9 @@ int main(int argc, char** argv){
   h_tracks_dz_mu_barrel->Write();
   h_tracks_dt_mu_barrel->Write();
   
+  h_tracks_dz_mu_endcap->Write();
+  h_tracks_dt_mu_endcap->Write();
+  
   h_tracks_pt_notiming_barrel->Write();
   h_tracks_pt_timing_PU_barrel->Write();
   h_tracks_pt_timing_PV_barrel->Write();
@@ -453,14 +501,6 @@ int main(int argc, char** argv){
   h_tracks_dr_notiming_barrel->Write();
   h_tracks_dr_timing_PU_barrel->Write();
   h_tracks_dr_timing_PV_barrel->Write();
-  
-
-  
-  h_tracks_dt_vtx_endcap->Write();
-  h_tracks_dt_vtx_endcap->Write();
-  
-  h_tracks_dz_mu_endcap->Write();
-  h_tracks_dt_mu_endcap->Write();
   
   h_tracks_pt_notiming_endcap->Write();
   h_tracks_pt_timing_PU_endcap->Write();
@@ -479,7 +519,16 @@ int main(int argc, char** argv){
 
   h2_tracks_dzmu_dtmu_barrel->Write();  
   h2_tracks_dzmu_dtmu_endcap->Write();
-  
+
+  h_muon_time_PV->Write();
+  h_muon_time_PU->Write();
+  h2_muon_time_vs_dtmu -> Write();
+
+
+  h2_tracks_dt_vtx_vs_tErr->Write();
+  h2_tracks_dt_vtx_vs_dtvtxsimreco->Write();
+  h2_tracks_dtsim_vtx_vs_dtvtxsimreco->Write();
+
   fout->Close();
   
 }
