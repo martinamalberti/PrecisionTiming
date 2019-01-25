@@ -139,6 +139,9 @@ int main(int argc, char** argv)
   vector<float> *muon_chIso03_dZmu5;
   vector<float> *muon_chIso03_dZmu5_dTmu;
 
+  vector<float> *muon_chIso03_dZmu10;
+  vector<float> *muon_chIso03_dZmu10_dTmu;
+
   muon_t = 0;
   muon_pt = 0;
   muon_eta = 0;
@@ -191,6 +194,9 @@ int main(int argc, char** argv)
 
   muon_chIso03_dZmu5 = 0;
   muon_chIso03_dZmu5_dTmu = 0;
+
+  muon_chIso03_dZmu10 = 0;
+  muon_chIso03_dZmu10_dTmu = 0;
 
   muon_chIso03_reldZ = 0;
   muon_chIso03_reldZ_dT = 0;
@@ -269,16 +275,19 @@ int main(int argc, char** argv)
   chain->SetBranchStatus("muon_chIso03_dZmu5",1);       chain->SetBranchAddress("muon_chIso03_dZmu5",&muon_chIso03_dZmu5);
   chain->SetBranchStatus("muon_chIso03_dZmu5_dTmu",1);  chain->SetBranchAddress("muon_chIso03_dZmu5_dTmu",&muon_chIso03_dZmu5_dTmu);
 
+  chain->SetBranchStatus("muon_chIso03_dZmu10",1);       chain->SetBranchAddress("muon_chIso03_dZmu10",&muon_chIso03_dZmu10);
+  chain->SetBranchStatus("muon_chIso03_dZmu10_dTmu",1);  chain->SetBranchAddress("muon_chIso03_dZmu10_dTmu",&muon_chIso03_dZmu10_dTmu);
+
 
   // -- book histograms
   TH1F *h_npu   = new TH1F("h_npu","h_npu",200,50,250);
   h_npu->GetXaxis()->SetTitle("number of pileup vertices");
 
   TH1F *h_vtx_dz3D = new TH1F("h_vtx_dz3D","h_vtx_dz3D",1000, -0.2, 0.2);
-  h_vtx_dz3D -> GetXaxis()->SetTitle("z_{3Dvtx} - z_{gen} (mm)");
+  h_vtx_dz3D -> GetXaxis()->SetTitle("z_{3Dvtx} - z_{gen} (cm)");
 
   TH1F *h_vtx_dz4D = new TH1F("h_vtx_dz4D","h_vtx_dz4D",1000, -0.2, 0.2);
-  h_vtx_dz4D -> GetXaxis()->SetTitle("z_{4Dvtx} - z_{gen} (mm)");
+  h_vtx_dz4D -> GetXaxis()->SetTitle("z_{4Dvtx} - z_{gen} (cm)");
 
   TH1F *h_vtx_dt4D = new TH1F("h_vtx_dt4D","h_vtx_dt4D",1000, -0.5, 0.5);
   h_vtx_dt4D -> GetXaxis()->SetTitle("t_{4Dvtx} - t_{gen} (ns)");
@@ -649,6 +658,25 @@ int main(int argc, char** argv)
   h_muon_relChIso03_dZmu5_dTmu_endcap->GetXaxis()->SetTitle("relative charged isolation");
 
 
+  TH1F *h_muon_relChIso03_dZmu10 = new TH1F("h_muon_relChIso03_dZmu10","h_muon_relChIso03_dZmu10",5000,0,5);
+  h_muon_relChIso03_dZmu10->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZmu10_dTmu = new TH1F("h_muon_relChIso03_dZmu10_dTmu","h_muon_relChIso03_dZmu10_dTmu",5000,0,5);
+  h_muon_relChIso03_dZmu10_dTmu->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZmu10_barrel = new TH1F("h_muon_relChIso03_dZmu10_barrel","h_muon_relChIso03_dZmu10_barrel",5000,0,5);
+  h_muon_relChIso03_dZmu10_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZmu10_dTmu_barrel = new TH1F("h_muon_relChIso03_dZmu10_dTmu_barrel","h_muon_relChIso03_dZmu10_dTmu_barrel",5000,0,5);
+  h_muon_relChIso03_dZmu10_dTmu_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZmu10_endcap = new TH1F("h_muon_relChIso03_dZmu10_endcap","h_muon_relChIso03_dZmu10_endcap",5000,0,5);
+  h_muon_relChIso03_dZmu10_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZmu10_dTmu_endcap = new TH1F("h_muon_relChIso03_dZmu10_dTmu_endcap","h_muon_relChIso03_dZmu10_dTmu_endcap",5000,0,5);
+  h_muon_relChIso03_dZmu10_dTmu_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+
 
 
   // ratio iso
@@ -889,6 +917,8 @@ int main(int argc, char** argv)
       h_muon_relChIso03_dZmu2_dTmu -> Fill(muon_chIso03_dZmu2_dTmu->at(imu)/pt, w);
       h_muon_relChIso03_dZmu5 -> Fill(muon_chIso03_dZmu5->at(imu)/pt, w);
       h_muon_relChIso03_dZmu5_dTmu -> Fill(muon_chIso03_dZmu5_dTmu->at(imu)/pt, w);
+      h_muon_relChIso03_dZmu10 -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
+      h_muon_relChIso03_dZmu10_dTmu -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
       if (fabs(muon_eta->at(imu))<1.5){ 
 	h_muon_relChIso03_dZmu05_barrel -> Fill(muon_chIso03_dZmu05->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu05_dTmu_barrel -> Fill(muon_chIso03_dZmu05_dTmu->at(imu)/pt, w);
@@ -898,6 +928,8 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZmu2_dTmu_barrel -> Fill(muon_chIso03_dZmu2_dTmu->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_barrel -> Fill(muon_chIso03_dZmu5->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_dTmu_barrel -> Fill(muon_chIso03_dZmu5_dTmu->at(imu)/pt, w);
+	h_muon_relChIso03_dZmu10_barrel -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
+	h_muon_relChIso03_dZmu10_dTmu_barrel -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
       }
       else{
 	h_muon_relChIso03_dZmu05_endcap -> Fill(muon_chIso03_dZmu05->at(imu)/pt, w);
@@ -908,6 +940,8 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZmu2_dTmu_endcap -> Fill(muon_chIso03_dZmu2_dTmu->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_endcap -> Fill(muon_chIso03_dZmu5->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_dTmu_endcap -> Fill(muon_chIso03_dZmu5_dTmu->at(imu)/pt, w);
+	h_muon_relChIso03_dZmu10_endcap -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
+	h_muon_relChIso03_dZmu10_dTmu_endcap -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
       }
               
 
@@ -1125,6 +1159,14 @@ int main(int argc, char** argv)
   h_muon_relChIso03_dZmu5_dTmu->Write();
   h_muon_relChIso03_dZmu5_dTmu_barrel->Write();
   h_muon_relChIso03_dZmu5_dTmu_endcap->Write();
+
+  h_muon_relChIso03_dZmu10->Write();
+  h_muon_relChIso03_dZmu10_barrel->Write();
+  h_muon_relChIso03_dZmu10_endcap->Write();
+
+  h_muon_relChIso03_dZmu10_dTmu->Write();
+  h_muon_relChIso03_dZmu10_dTmu_barrel->Write();
+  h_muon_relChIso03_dZmu10_dTmu_endcap->Write();
 
 
 

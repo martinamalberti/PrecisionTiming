@@ -209,12 +209,17 @@ int main(int argc, char** argv){
   TH2F *h2_muon_time_vs_dtmu = new TH2F("h2_muon_time_vs_dtmu","h2_muon_time_vs_dtmu",1000, -0.5, 0.5, 1000, -0.5, 0.5);
 
 
+  // control plots for cases in which reco vertex is not the correct one (in time)
   TH2F *h2_tracks_dt_vtx_vs_tErr = new TH2F("h2_tracks_dt_vtx_vs_tErr","h2_tracks_dt_vtx_vs_tErr", 500, 0, 0.1, 1000, -1, 1);
   TH2F *h2_tracks_dt_vtx_vs_dtvtxsimreco = new TH2F("h2_tracks_dt_vtx_vs_dtvtxsimreco","h2_tracks_dt_vtx_vs_dtvtxsimreco", 1000, -1., 1., 1000, -1, 1);
   TH2F *h2_tracks_dtsim_vtx_vs_dtvtxsimreco = new TH2F("h2_tracks_dtsim_vtx_vs_dtvtxsimreco","h2_tracks_dtsim_vtx_vs_dtvtxsimreco", 1000, -1., 1., 1000, -1, 1);
-
-  TH1F *h_tracksTime_minus_vtxGenTime_all = new TH1F("h_tracksTime_minus_vtxGenTime_all","h_tracksTime_minus_vtxGenTime_all",1000, -0.5, 0.5);
   TH1F *h_tracksTime_minus_vtxGenTime_badVtxReco = new TH1F("h_tracksTime_minus_vtxGenTime_badVtxReco","h_tracksTime_minus_vtxGenTime_badVtxReco",1000, -0.5, 0.5);
+  TH1F *h_tracksTime_minus_vtxRecoTime_badVtxReco = new TH1F("h_tracksTime_minus_vtxRecoTime_badVtxReco","h_tracksTime_minus_vtxRecoTime_badVtxReco",1000, -0.5, 0.5);
+
+  TH1F *h_vtx4D_t = new TH1F("h_vtx4D_t","h_vtx4D_t",1000, -1,1);
+  TH1F *h_vtxGen_t = new TH1F("h_vtxGen_t","h_vtxGen_t",1000, -1,1);
+  TH1F *h_vtx4D_z = new TH1F("h_vtx4D_z","h_vtx4D_z",1000, -10,10);
+
 
   cout << "Analyzing " << chain->GetEntries() << "  events" <<endl;
   
@@ -293,9 +298,17 @@ int main(int argc, char** argv){
 	    if (track_t->at(itk) != -999){
 	      h_tracks_dt_vtx_barrel->Fill(dt);
 	      h2_tracks_dzvtx_dtvtx_barrel->Fill(dz, dt);
-	      h2_tracks_dt_vtx_vs_tErr->Fill(vtx4D_tErr, dt);
+	      //h2_tracks_dt_vtx_vs_tErr->Fill(vtx4D_tErr, dt);
 	      h2_tracks_dt_vtx_vs_dtvtxsimreco->Fill(vtx4D_t-vtxGen_t*1000000000.,dt);
 	      h2_tracks_dtsim_vtx_vs_dtvtxsimreco->Fill(vtx4D_t-vtxGen_t*1000000000.,dtsim);
+	      if (fabs(vtx4D_t-vtxGen_t*1000000000.) > 0.020 ) {
+		h_tracksTime_minus_vtxGenTime_badVtxReco ->Fill(dtsim); 
+		h_tracksTime_minus_vtxRecoTime_badVtxReco ->Fill(dt); 
+		h2_tracks_dt_vtx_vs_tErr->Fill(vtx4D_tErr, dt);
+		h_vtx4D_t->Fill(vtx4D_t);
+		h_vtxGen_t->Fill(vtxGen_t*1000000000.);
+		h_vtx4D_z->Fill(vtx4D_z);
+	      }
 	      if ( fabs(dt) > 0.030 * 3) {
 		h_tracks_pt_timing_PU_barrel->Fill(track_pt->at(itk));
                 h_tracks_eta_timing_PU_barrel->Fill(track_eta->at(itk));
@@ -528,6 +541,11 @@ int main(int argc, char** argv){
   h2_tracks_dt_vtx_vs_tErr->Write();
   h2_tracks_dt_vtx_vs_dtvtxsimreco->Write();
   h2_tracks_dtsim_vtx_vs_dtvtxsimreco->Write();
+  h_tracksTime_minus_vtxGenTime_badVtxReco -> Write();
+  h_tracksTime_minus_vtxRecoTime_badVtxReco -> Write();
+  h_vtx4D_t->Write();
+  h_vtxGen_t->Write();
+  h_vtx4D_z->Write();
 
   fout->Close();
   

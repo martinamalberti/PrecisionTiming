@@ -1,7 +1,16 @@
+./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_vtxClosestZT/190124_225632/ 200 1 0 output_muIso_DYToLL_200ps_prompt_ZTClosestVtx.root
+./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_vtxClosestZT/190124_225652/ 200 0 0 output_muIso_TTbar_200ps_fake_ZTClosestVtx.root
+
+# VERTEX CLOSEST TO GEN IN ZT
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_vtxClosestZT/190124_225632/ 30 1 0 output_muIso_DYToLL_30ps_prompt_ZTClosestVtx.root
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_vtxClosestZT/190124_225652/ 30 0 0 output_muIso_TTbar_30ps_fake_ZTClosestVtx.root
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_muIso_vtxClosestZT/190124_225715/ 30 0 0 output_muIso_QCD_30ps_fake_ZTClosestVtx.root
+
+
 # eff 90%
-./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_eff90/190115_214148/ 30 1 0 output_muIso_DYToLL_30ps_prompt_eff90.root
-./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_eff90/190115_154712/ 30 0 0 output_muIso_TTbar_30ps_fake_eff90.root           
-./MuonIsolationAnalysis /eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_muIso_eff90/190115_154730/ 30 0 0 output_muIso_QCD_30ps_fake_eff90.root  
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_eff90/190115_214148/ 30 1 0 output_muIso_DYToLL_30ps_prompt_eff90.root
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_eff90/190115_154712/ 30 0 0 output_muIso_TTbar_30ps_fake_eff90.root           
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_muIso_eff90/190115_154730/ 30 0 0 output_muIso_QCD_30ps_fake_eff90.root  
 
 
 # eff 100%

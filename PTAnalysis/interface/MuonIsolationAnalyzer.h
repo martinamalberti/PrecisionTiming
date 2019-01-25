@@ -153,6 +153,9 @@ struct eventInfo
   vector<float> muon_chIso_dZmu5;
   vector<float> muon_chIso_dZmu5_dTmu;
 
+  vector<float> muon_chIso_dZmu10;
+  vector<float> muon_chIso_dZmu10_dTmu;
+
 };
 
 
@@ -190,8 +193,8 @@ private:
   
   //--- outputs
   edm::Service<TFileService> fs_;
-  TTree *eventTree[5];
-  eventInfo *evInfo[5];
+  TTree *eventTree[6];
+  eventInfo *evInfo[6];
   
   //--- options
   vector<double> timeResolutions_;
@@ -200,7 +203,8 @@ private:
   double maxDz_;
   double minDr_;
   double minTrackPt_;
-  bool useVertexClosestToGen_;
+  bool useVertexClosestToGenZ_;
+  bool useVertexClosestToGenZT_;
   double btlEfficiency_;
   double etlEfficiency_;
 

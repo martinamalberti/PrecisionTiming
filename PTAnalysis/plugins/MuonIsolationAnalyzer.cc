@@ -27,6 +27,8 @@
 #include <TRandom.h>
 #include "DataFormats/Math/interface/deltaR.h"
 
+#include <limits>
+
 //
 // class declaration
 //
@@ -58,7 +60,8 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   maxDz_           = iConfig.getUntrackedParameter<double>("maxDz");
   minDr_           = iConfig.getUntrackedParameter<double>("minDr");
   minTrackPt_      = iConfig.getUntrackedParameter<double>("minTrackPt");
-  useVertexClosestToGen_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGen");
+  useVertexClosestToGenZ_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZ");
+  useVertexZTClosestToGenZT_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZT");
   btlEfficiency_ = iConfig.getUntrackedParameter<double>("btlEfficiency");
   etlEfficiency_ = iConfig.getUntrackedParameter<double>("etlEfficiency");
 
@@ -182,11 +185,11 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     genPV = SimVertex(v, t);
   }
   
-  float mindz = 999999.;
+  float mindz = std::numeric_limits<float>::max();
   int pv_index_3D = -1;
   int pv_index_4D = -1;
 
-  if (useVertexClosestToGen_){
+  if (useVertexClosestToGenZ_){
     // -- find the reco vertex closest to the gen vertex (3D)
     for(unsigned int ivtx=0; ivtx < vertices3D.size(); ivtx++ ){
       const reco::Vertex& vtx = vertices3D[ivtx];
@@ -197,9 +200,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  pv_index_3D = ivtx;
 	}
     }
-    
     // -- find the reco vertex closest to the gen vertex (4D)
-    mindz = 999999.;
+    mindz = std::numeric_limits<float>::max();
     for(unsigned int ivtx=0; ivtx < vertices4D.size(); ivtx++ ){
       const reco::Vertex& vtx = vertices4D[ivtx];
       float dz = std::abs(vtx.z() - genPV.position().z());
@@ -210,6 +212,37 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	}
     }
   }
+
+
+  if (useVertexClosestToGenZT_){
+    // -- find the reco vertex closest to the gen vertex (3D)
+    mindz = std::numeric_limits<float>::max();
+    for(unsigned int ivtx=0; ivtx < vertices3D.size(); ivtx++ ){
+      const reco::Vertex& vtx = vertices3D[ivtx];
+      float dz = std::abs(vtx.z() - genPV.position().z())/vtx.zError() ;
+      if( dz < mindz )
+        {
+          mindz = dz;
+          pv_index_3D = ivtx;
+        }
+    }
+    // -- find the reco vertex closest to the gen vertex (4D)
+    float mindist = std::numeric_limits<float>::max();
+    for(unsigned int ivtx=0; ivtx < vertices4D.size(); ivtx++ ){
+      const reco::Vertex& vtx = vertices4D[ivtx];
+      float dz = std::abs(vtx.z() - genPV.position().z()) / vtx.zError();
+      if ( vtx.tError() <=0 ) continue;
+      float dt = std::abs(vtx.t() - genPV.position().t()*1000000000.) / vtx.tError();
+      float dist = sqrt(dz*dz+dt*dt);
+      //cout << ivtx << "dist = " << dist << "   dz = "<< dz <<  "   dt = "<< dt << "vtx time = " << vtx.t() << "  tErr = " << vtx.tError() <<endl;
+      if( dist < mindist )
+        {
+          mindist = dist;
+          pv_index_4D = ivtx;
+        }
+    }
+  }
+
 
   // -- if PV index == -1, use highest ranked vertex 
   if (pv_index_3D==-1) {
@@ -259,6 +292,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float chIso_dZmu1 = 0.;
     float chIso_dZmu2 = 0.;
     float chIso_dZmu5 = 0.;
+    float chIso_dZmu10 = 0.;
 
     float chIso_dZ05_dT2s_simVtx[nResol];
     float chIso_dZ1_dT2s_simVtx[nResol];
@@ -286,6 +320,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float chIso_dZmu1_dTmu[nResol];
     float chIso_dZmu2_dTmu[nResol];
     float chIso_dZmu5_dTmu[nResol];
+    float chIso_dZmu10_dTmu[nResol];
     float time[nResol]; 
     
     // -- initialize 
@@ -316,6 +351,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       chIso_dZmu1_dTmu[iRes] = 0.;
       chIso_dZmu2_dTmu[iRes] = 0.;
       chIso_dZmu5_dTmu[iRes] = 0.;
+      chIso_dZmu10_dTmu[iRes] = 0.;
       time[iRes] = 0.;
     }
 
@@ -374,6 +410,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	if (dzmu < 0.1 ) { chIso_dZmu1+= pfcand.pt(); }
 	if (dzmu < 0.2 ) { chIso_dZmu2+= pfcand.pt(); }
 	if (dzmu < 0.5 ) { chIso_dZmu5+= pfcand.pt(); }
+	if (dzmu < 1.0 ) { chIso_dZmu10+= pfcand.pt(); }
       }
       
       // --- with timing
@@ -383,7 +420,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  double targetTimeResol = timeResolutions_[iRes];
 	  double defaultTimeResol  = 0.;
 	  if ( pfcand.isTimeValid() ) defaultTimeResol  = double(pfcand.timeError()); 
-	  double extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol);                                                                                       
+	  double extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol);                 
 	  double dtsim = 0.;
 	  double dt = 0.;
 	  double dtmu = 0.;
@@ -455,6 +492,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  if ( dtmu < sqrt(2)*3.*targetTimeResol && dzmu < 0.1 ) { chIso_dZmu1_dTmu[iRes]+= pfcand.pt(); }
 	  if ( dtmu < sqrt(2)*3.*targetTimeResol && dzmu < 0.2 ) { chIso_dZmu2_dTmu[iRes]+= pfcand.pt(); }
 	  if ( dtmu < sqrt(2)*3.*targetTimeResol && dzmu < 0.5 ) { chIso_dZmu5_dTmu[iRes]+= pfcand.pt(); }
+	  if ( dtmu < sqrt(2)*3.*targetTimeResol && dzmu < 1.0 ) { chIso_dZmu10_dTmu[iRes]+= pfcand.pt(); }
 	  
 	  
 	  // -- save info for tracks in the isolation cone (only for DR = 0.3)
@@ -540,6 +578,9 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
       evInfo[iRes]->muon_chIso_dZmu5.push_back(chIso_dZmu5);
       evInfo[iRes]->muon_chIso_dZmu5_dTmu.push_back(chIso_dZmu5_dTmu[iRes]);
+
+      evInfo[iRes]->muon_chIso_dZmu10.push_back(chIso_dZmu10);
+      evInfo[iRes]->muon_chIso_dZmu10_dTmu.push_back(chIso_dZmu10_dTmu[iRes]);
       
     } // end loop over time resolutions
 
@@ -652,6 +693,9 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu5",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZmu5);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu5_dTmu",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZmu5_dTmu);  
 
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu10",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZmu10);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZmu10_dTmu",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZmu10_dTmu);  
+
 
     if (saveTracks_){
       eventTree[iRes]->Branch( "track_t",      &evInfo[iRes]->track_t);
@@ -762,6 +806,8 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes]->muon_chIso_dZmu2_dTmu.clear();
     evInfo[iRes]->muon_chIso_dZmu5.clear();
     evInfo[iRes]->muon_chIso_dZmu5_dTmu.clear();
+    evInfo[iRes]->muon_chIso_dZmu10.clear();
+    evInfo[iRes]->muon_chIso_dZmu10_dTmu.clear();
 
 
     if (saveTracks_){
