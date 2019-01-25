@@ -61,7 +61,7 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   minDr_           = iConfig.getUntrackedParameter<double>("minDr");
   minTrackPt_      = iConfig.getUntrackedParameter<double>("minTrackPt");
   useVertexClosestToGenZ_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZ");
-  useVertexZTClosestToGenZT_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZT");
+  useVertexClosestToGenZT_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZT");
   btlEfficiency_ = iConfig.getUntrackedParameter<double>("btlEfficiency");
   etlEfficiency_ = iConfig.getUntrackedParameter<double>("etlEfficiency");
 
