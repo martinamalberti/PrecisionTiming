@@ -81,6 +81,7 @@ struct eventInfo
   vector<float> track_dxy4D;
   vector<float> track_t;
   vector<int> track_muIndex;
+  vector<int> track_isMatchedToGenParticle;
 
   float vtxGen_z;
   float vtxGen_t;
@@ -193,8 +194,8 @@ private:
   
   //--- outputs
   edm::Service<TFileService> fs_;
-  TTree *eventTree[6];
-  eventInfo *evInfo[6];
+  TTree *eventTree[10];
+  eventInfo *evInfo[10];
   
   //--- options
   vector<double> timeResolutions_;
@@ -217,3 +218,4 @@ private:
 bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenJet(const reco::Muon &muon, const edm::View<reco::GenJet>& genJet);
 bool isFromTau(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
+bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);
