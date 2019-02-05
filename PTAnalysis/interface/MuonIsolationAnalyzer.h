@@ -80,8 +80,10 @@ struct eventInfo
   vector<float> track_dxy3D;
   vector<float> track_dxy4D;
   vector<float> track_t;
+  vector<float> track_dRmu;
   vector<int> track_muIndex;
   vector<int> track_isMatchedToGenParticle;
+  vector<int> track_isUnmatchedToGenParticle;
 
   float vtxGen_z;
   float vtxGen_t;
@@ -219,3 +221,4 @@ bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& ge
 bool isMatchedToGenJet(const reco::Muon &muon, const edm::View<reco::GenJet>& genJet);
 bool isFromTau(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);
+bool isUnmatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);

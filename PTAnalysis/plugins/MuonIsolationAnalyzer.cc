@@ -499,6 +499,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  if (saveTracks_ && (dz4D < 1.0 || dz3D < 1. || dzmu < 1. ) ) { // save a subset of tracks with loose dz selection
 
 	    bool genMatching  = isMatchedToGenParticle(pfcand, genParticles);
+	    bool genUnmatching  = isUnmatchedToGenParticle(pfcand, genParticles);
 
 	    evInfo[iRes]->track_t.push_back(time[iRes]); 
 	    evInfo[iRes]->track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
@@ -508,8 +509,10 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	    evInfo[iRes]->track_pt.push_back(pfcand.pt());
 	    evInfo[iRes]->track_eta.push_back(pfcand.eta());
 	    evInfo[iRes]->track_phi.push_back(pfcand.phi());
+	    evInfo[iRes]->track_dRmu.push_back(dr);
 	    evInfo[iRes]->track_muIndex.push_back(muonIndex);
 	    evInfo[iRes]->track_isMatchedToGenParticle.push_back(genMatching);
+	    evInfo[iRes]->track_isUnmatchedToGenParticle.push_back(genUnmatching);
 	  }
 	  
 	}// end loop over time resolutions                                                                                                                                    
@@ -710,8 +713,10 @@ MuonIsolationAnalyzer::beginJob()
       eventTree[iRes]->Branch( "track_pt",     &evInfo[iRes]->track_pt);
       eventTree[iRes]->Branch( "track_eta",    &evInfo[iRes]->track_eta);
       eventTree[iRes]->Branch( "track_phi",    &evInfo[iRes]->track_phi);
+      eventTree[iRes]->Branch( "track_dRmu",    &evInfo[iRes]->track_dRmu);
       eventTree[iRes]->Branch( "track_muIndex",&evInfo[iRes]->track_muIndex);
       eventTree[iRes]->Branch( "track_isMatchedToGenParticle",&evInfo[iRes]->track_isMatchedToGenParticle);
+      eventTree[iRes]->Branch( "track_isUnmatchedToGenParticle",&evInfo[iRes]->track_isUnmatchedToGenParticle);
     }
   
   }
@@ -824,8 +829,10 @@ MuonIsolationAnalyzer::initEventStructure()
       evInfo[iRes]->track_pt.clear();
       evInfo[iRes]->track_eta.clear();
       evInfo[iRes]->track_phi.clear();
+      evInfo[iRes]->track_dRmu.clear();
       evInfo[iRes]->track_muIndex.clear();
       evInfo[iRes]->track_isMatchedToGenParticle.clear();
+      evInfo[iRes]->track_isUnmatchedToGenParticle.clear();
     }
   }
 }
@@ -916,8 +923,8 @@ bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<rec
     // -- charged particle 
     if (genp.charge()==0) continue;
     // -- pt matching
-    //float dpt = std::abs((pfcand.pt()-genp.pt())/genp.pt());
-    //if ( dpt > 0.1) continue;
+    float dpt = std::abs((pfcand.pt()-genp.pt())/genp.pt());
+    if ( dpt > 0.1) continue;
     // -- deltaR matching
     double dr = deltaR(pfcand,genp);
     if (dr > 0.05){
@@ -932,8 +939,38 @@ bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<rec
 
   return isMatched;
 
+}
 
 
+// -- not matching to gen particles (looser deltaR)
+bool isUnmatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles){
+  
+  bool isUnmatched = true;
+
+  for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
+    const reco::GenParticle& genp = genParticles[ip];
+    // -- stable particle
+    if (genp.status() !=1 ) continue;
+    // -- charged particle 
+    if (genp.charge()==0) continue;
+    // -- not a muon 
+    if (genp.pdgId() == 13 ) continue;
+    // -- pt matching
+    //float dpt = std::abs((pfcand.pt()-genp.pt())/genp.pt());
+    //if ( dpt > 0.2) continue;
+    // -- deltaR matching
+    double dr = deltaR(pfcand,genp);
+    if (dr > 0.15){
+      continue;
+    }
+    else{
+      isUnmatched=false;
+      break;
+    }
+  }
+
+
+  return isUnmatched;
 
 }
 
