@@ -18,8 +18,8 @@ config.Data.splitting = 'FileBased'
 config.Data.unitsPerJob = 30
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True
-#config.Data.outputDatasetTag = 'test_QCD_muIso'
-config.Data.outputDatasetTag = 'test_QCD_muIso_vtxClosestZT'
+config.Data.outputDatasetTag = 'test_QCD_muIso'
+#config.Data.outputDatasetTag = 'test_QCD_muIso_vtxClosestZT'
 
 config.Site.storageSite = 'T2_CH_CERN'
 

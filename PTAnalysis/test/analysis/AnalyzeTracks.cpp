@@ -35,7 +35,11 @@ using namespace std;
 
 int main(int argc, char** argv){
 
-  float maxDzVtx = 0.1;
+  float timeResolution = 0.030;
+  int nsigma = 3;
+
+  float maxDz = 0.1;
+  float maxDxy = 0.02;
   float maxDzMu  = 0.5;
   
   string process = argv[1];
@@ -67,6 +71,7 @@ int main(int argc, char** argv){
   
   
   // -- tree vars
+  int npu;
   float vtx3D_z;
   float vtx4D_z;
   float vtx4D_t;
@@ -77,6 +82,7 @@ int main(int argc, char** argv){
   vector<int> *muon_isLoose;
   vector<int> *muon_isPrompt;
   vector<int> *muon_isMatchedToGenJet;
+  vector<int>   *muon_isFromTauDecay;
   vector<float> *muon_pt;
   vector<float> *muon_eta;
   vector<float> *muon_phi;
@@ -91,6 +97,8 @@ int main(int argc, char** argv){
   vector<float> *track_phi;
   vector<float> *track_dz3D;
   vector<float> *track_dz4D;
+  vector<float> *track_dxy3D;
+  vector<float> *track_dxy4D;
   vector<float> *track_t;
   vector<int> *track_muIndex;
   
@@ -105,16 +113,20 @@ int main(int argc, char** argv){
   muon_isLoose= 0;
   muon_isMatchedToGenJet = 0;
   muon_isPrompt = 0;
+  muon_isFromTauDecay = 0;
   muon_chIso03_dZ1_simVtx = 0;
   track_pt = 0;
   track_eta = 0;
   track_phi = 0;
   track_dz3D = 0;
   track_dz4D = 0;
+  track_dxy3D = 0;
+  track_dxy4D = 0;
   track_t = 0;
   track_muIndex = 0;
-  
+
   chain->SetBranchStatus("*",0);
+  chain->SetBranchStatus("npu",1);                    chain->SetBranchAddress("npu",            &npu);
   chain->SetBranchStatus("vtx3D_z",1);                chain->SetBranchAddress("vtx3D_z",        &vtx3D_z);
   chain->SetBranchStatus("vtx4D_z",1);                chain->SetBranchAddress("vtx4D_z",        &vtx4D_z);
   chain->SetBranchStatus("vtx4D_t",1);                chain->SetBranchAddress("vtx4D_t",        &vtx4D_t);
@@ -133,21 +145,22 @@ int main(int argc, char** argv){
   chain->SetBranchStatus("muon_isLoose",1);           chain->SetBranchAddress("muon_isLoose",   &muon_isLoose);
   chain->SetBranchStatus("muon_isPrompt",1);          chain->SetBranchAddress("muon_isPrompt",  &muon_isPrompt);
   chain->SetBranchStatus("muon_isMatchedToGenJet",1); chain->SetBranchAddress("muon_isMatchedToGenJet", &muon_isMatchedToGenJet);
+  chain->SetBranchStatus("muon_isFromTauDecay",1); chain->SetBranchAddress("muon_isFromTauDecay", &muon_isFromTauDecay);
   chain->SetBranchStatus("muon_chIso03_dZ1_simVtx",1);     chain->SetBranchAddress("muon_chIso03_dZ1_simVtx",    &muon_chIso03_dZ1_simVtx);
-
+  
   chain->SetBranchStatus("track_pt",1);               chain->SetBranchAddress("track_pt",       &track_pt);
   chain->SetBranchStatus("track_eta",1);              chain->SetBranchAddress("track_eta",      &track_eta);
   chain->SetBranchStatus("track_phi",1);              chain->SetBranchAddress("track_phi",      &track_phi);
   chain->SetBranchStatus("track_dz3D",1);             chain->SetBranchAddress("track_dz3D",     &track_dz3D);
   chain->SetBranchStatus("track_dz4D",1);             chain->SetBranchAddress("track_dz4D",     &track_dz4D);
+  chain->SetBranchStatus("track_dxy3D",1);            chain->SetBranchAddress("track_dxy3D",    &track_dxy3D);
+  chain->SetBranchStatus("track_dxy4D",1);            chain->SetBranchAddress("track_dxy4D",    &track_dxy4D);
   chain->SetBranchStatus("track_t",1);                chain->SetBranchAddress("track_t",        &track_t);
   chain->SetBranchStatus("track_muIndex",1);          chain->SetBranchAddress("track_muIndex",  &track_muIndex);
-  
 
   TH1F *hsimvtx_z = new TH1F("hsimvtx_z","hsimvtx_z", 500,-25,25);
   TH1F *hsimvtx_t = new TH1F("hsimvtx_t","hsimvtx_t", 1000,-1,1);
 
-  
   TH1F *h_muon_pt_barrel = new TH1F("h_muon_pt_barrel","h_muon_pt_barrel",100,0,100);
   TH1F *h_muon_pt_endcap = new TH1F("h_muon_pt_endcap","h_muon_pt_endcap",100,0,100);
 
@@ -164,38 +177,12 @@ int main(int argc, char** argv){
   
   TH1F *h_tracks_dt_mu_barrel = new TH1F("h_tracks_dt_mu_barrel","h_tracks_dt_mu_barrel",500, -1.0, 1.0);
   TH1F *h_tracks_dz_mu_barrel = new TH1F("h_tracks_dz_mu_barrel","h_tracks_dz_mu_barrel",500, -1.0, 1.0);
-  
-
-  TH1F *h_tracks_pt_notiming_barrel = new TH1F("h_tracks_pt_notiming_barrel","h_tracks_pt_notiming_barrel",1000, 0, 20);
-  TH1F *h_tracks_pt_timing_PV_barrel = new TH1F("h_tracks_pt_timing_PV_barrel","h_tracks_pt_timing_PV_barrel",1000, 0, 20);
-  TH1F *h_tracks_pt_timing_PU_barrel = new TH1F("h_tracks_pt_timing_PU_barrel","h_tracks_pt_timing_PU_barrel",1000, 0, 20);
-  
-  TH1F *h_tracks_eta_notiming_barrel = new TH1F("h_tracks_eta_notiming_barrel","h_tracks_eta_notiming_barrel",300, -3, 3);
-  TH1F *h_tracks_eta_timing_PV_barrel = new TH1F("h_tracks_eta_timing_PV_barrel","h_tracks_eta_timing_PV_barrel",300, -3, 3);
-  TH1F *h_tracks_eta_timing_PU_barrel = new TH1F("h_tracks_eta_timing_PU_barrel","h_tracks_eta_timing_PU_barrel",300, -3, 3);
-  
-  TH1F *h_tracks_dr_notiming_barrel = new TH1F("h_tracks_dr_notiming_barrel","h_tracks_dr_notiming_barrel",1000, 0, 1);
-  TH1F *h_tracks_dr_timing_PV_barrel = new TH1F("h_tracks_dr_timing_PV_barrel","h_tracks_dr_timing_PV_barrel",1000, 0, 1);
-  TH1F *h_tracks_dr_timing_PU_barrel = new TH1F("h_tracks_dr_timing_PU_barrel","h_tracks_dr_timing_PU_barrel",1000, 0, 1);
-
 
   TH1F *h_tracks_dt_vtx_endcap = new TH1F("h_tracks_dt_vtx_endcap","h_tracks_dt_vtx_endcap",500, -1.0, 1.0);
   TH1F *h_tracks_dz_vtx_endcap = new TH1F("h_tracks_dz_vtx_endcap","h_tracks_dz_vtx_endcap",500, -1.0, 1.0);
   
   TH1F *h_tracks_dt_mu_endcap = new TH1F("h_tracks_dt_mu_endcap","h_tracks_dt_mu_endcap",500, -1.0, 1.0);
   TH1F *h_tracks_dz_mu_endcap = new TH1F("h_tracks_dz_mu_endcap","h_tracks_dz_mu_endcap",500, -1.0, 1.0);
-  
-  TH1F *h_tracks_pt_notiming_endcap = new TH1F("h_tracks_pt_notiming_endcap","h_tracks_pt_notiming_endcap",1000, 0, 20);
-  TH1F *h_tracks_pt_timing_PV_endcap = new TH1F("h_tracks_pt_timing_PV_endcap","h_tracks_pt_timing_PV_endcap",1000, 0, 20);
-  TH1F *h_tracks_pt_timing_PU_endcap = new TH1F("h_tracks_pt_timing_PU_endcap","h_tracks_pt_timing_PU_endcap",1000, 0, 20);
-  
-  TH1F *h_tracks_eta_notiming_endcap = new TH1F("h_tracks_eta_notiming_endcap","h_tracks_eta_notiming_endcap",300, -3, 3);
-  TH1F *h_tracks_eta_timing_PV_endcap = new TH1F("h_tracks_eta_timing_PV_endcap","h_tracks_eta_timing_PV_endcap",300, -3, 3);
-  TH1F *h_tracks_eta_timing_PU_endcap = new TH1F("h_tracks_eta_timing_PU_endcap","h_tracks_eta_timing_PU_endcap",300, -3, 3);
-  
-  TH1F *h_tracks_dr_notiming_endcap = new TH1F("h_tracks_dr_notiming_endcap","h_tracks_dr_notiming_endcap",1000, 0, 1);
-  TH1F *h_tracks_dr_timing_PV_endcap = new TH1F("h_tracks_dr_timing_PV_endcap","h_tracks_dr_timing_PV_endcap",1000, 0, 1);
-  TH1F *h_tracks_dr_timing_PU_endcap = new TH1F("h_tracks_dr_timing_PU_endcap","h_tracks_dr_timing_PU_endcap",1000, 0, 1);
   
   TH2F *h2_tracks_dzvtx_dtvtx_barrel = new TH2F("h2_tracks_dzvtx_dtvtx_barrel","h2_tracks_dzvtx_dtvtx_barrel",1000,-1,1, 1000, -1, 1);
   TH2F *h2_tracks_dzvtx_dtvtx_endcap = new TH2F("h2_tracks_dzvtx_dtvtx_endcap","h2_tracks_dzvtx_dtvtx_endcap",1000,-1,1, 1000, -1, 1);
@@ -204,71 +191,110 @@ int main(int argc, char** argv){
   TH2F *h2_tracks_dzmu_dtmu_endcap = new TH2F("h2_tracks_dzmu_dtmu_endcap","h2_tracks_dzmu_dtmu_endcap",1000,-1,1, 1000, -1, 1);
 
 
-  TH1F *h_muon_time_PV = new TH1F("h_muon_time_PV","h_muon_time_PV",100, -0.5, 0.5);
-  TH1F *h_muon_time_PU = new TH1F("h_muon_time_PU","h_muon_time_PU",100, -0.5, 0.5);
-  TH2F *h2_muon_time_vs_dtmu = new TH2F("h2_muon_time_vs_dtmu","h2_muon_time_vs_dtmu",1000, -0.5, 0.5, 1000, -0.5, 0.5);
+  // -- to debug tracks in cone 
+  TH1F *h_tracks_pt_barrel = new TH1F("h_tracks_pt_barrel","h_tracks_pt_barrel",400,0.,20.);
+  TH1F *h_tracks_removed_pt_barrel = new TH1F("h_tracks_removed_pt_barrel","h_tracks_removed_pt_barrel",400,0.,20.);
+  TH1F *h_tracks_kept_pt_barrel = new TH1F("h_tracks_kept_pt_barrel","h_tracks_kept_pt_barrel",400,0.,20.);
+
+  TH1F *h_tracks_n_barrel = new TH1F("h_tracks_n_barrel","h_ntracks_pt_barrel",50,0.,50.);
+  TH1F *h_tracks_removed_n_barrel = new TH1F("h_tracks_removed_n_barrel","h_tracks_removed_n_barrel",50,0.,50.);
+  TH1F *h_tracks_kept_n_barrel = new TH1F("h_tracks_kept_n_barrel","h_tracks_kept_n_barrel",50,0.,50.);
+
+  TH1F *h_tracks_sumpt_barrel = new TH1F("h_tracks_sumpt_barrel","h_tracks_sumpt_barrel",1000,0.,100.);
+  TH1F *h_tracks_removed_sumpt_barrel = new TH1F("h_tracks_removed_sumpt_barrel","h_tracks_removed_sumpt_barrel",1000,0.,100.);
+  TH1F *h_tracks_kept_sumpt_barrel = new TH1F("h_tracks_kept_sumpt_barrel","h_tracks_kept_sumpt_barrel",1000,0.,100.);
+
+  TProfile *p_tracks_pt_vs_linedensity_barrel = new TProfile("p_tracks_pt_vs_linedensity_barrel","p_tracks_pt_vs_linedensity_barrel",22,-0.1,2.1);
+  TProfile *p_tracks_removed_pt_vs_linedensity_barrel = new TProfile("p_tracks_removed_pt_vs_linedensity_barrel","p_tracks_removed_pt_vs_linedensity_barrel",22,-0.1,2.1);
+  TProfile *p_tracks_kept_pt_vs_linedensity_barrel = new TProfile("p_tracks_kept_pt_vs_linedensity_barrel","p_tracks_kept_pt_vs_linedensity_barrel",22,-0.1,2.1);
+
+  TProfile *p_tracks_n_vs_linedensity_barrel = new TProfile("p_tracks_n_vs_linedensity_barrel","p_tracks_n_vs_linedensity_barrel",22,-0.1,2.1);
+  TProfile *p_tracks_removed_n_vs_linedensity_barrel = new TProfile("p_tracks_removed_n_vs_linedensity_barrel","p_tracks_removed_n_vs_linedensity_barrel",22,-0.1,2.1);
+  TProfile *p_tracks_kept_n_vs_linedensity_barrel = new TProfile("p_tracks_kept_n_vs_linedensity_barrel","p_tracks_kept_n_vs_linedensity_barrel",22,-0.1,2.1);
+  
+  TProfile *p_tracks_sumpt_vs_linedensity_barrel = new TProfile("p_tracks_sumpt_vs_linedensity_barrel","p_tracks_sumpt_vs_linedensity_barrel",22,-0.1,2.1);
+  TProfile *p_tracks_removed_sumpt_vs_linedensity_barrel = new TProfile("p_tracks_removed_sumpt_vs_linedensity_barrel","p_tracks_removed_sumpt_vs_linedensity_barrel",22,-0.1,2.1);
+  TProfile *p_tracks_kept_sumpt_vs_linedensity_barrel = new TProfile("p_tracks_kept_sumpt_vs_linedensity_barrel","p_tracks_kept_sumpt_vs_linedensity_barrel",22,-0.1,2.1);
 
 
-  // control plots for cases in which reco vertex is not the correct one (in time)
-  TH2F *h2_tracks_dt_vtx_vs_tErr = new TH2F("h2_tracks_dt_vtx_vs_tErr","h2_tracks_dt_vtx_vs_tErr", 500, 0, 0.1, 1000, -1, 1);
-  TH2F *h2_tracks_dt_vtx_vs_dtvtxsimreco = new TH2F("h2_tracks_dt_vtx_vs_dtvtxsimreco","h2_tracks_dt_vtx_vs_dtvtxsimreco", 1000, -1., 1., 1000, -1, 1);
-  TH2F *h2_tracks_dtsim_vtx_vs_dtvtxsimreco = new TH2F("h2_tracks_dtsim_vtx_vs_dtvtxsimreco","h2_tracks_dtsim_vtx_vs_dtvtxsimreco", 1000, -1., 1., 1000, -1, 1);
-  TH1F *h_tracksTime_minus_vtxGenTime_badVtxReco = new TH1F("h_tracksTime_minus_vtxGenTime_badVtxReco","h_tracksTime_minus_vtxGenTime_badVtxReco",1000, -0.5, 0.5);
-  TH1F *h_tracksTime_minus_vtxRecoTime_badVtxReco = new TH1F("h_tracksTime_minus_vtxRecoTime_badVtxReco","h_tracksTime_minus_vtxRecoTime_badVtxReco",1000, -0.5, 0.5);
+  TH1F *h_tracks_pt_endcap = new TH1F("h_tracks_pt_endcap","h_tracks_pt_endcap",400,0.,20.);
+  TH1F *h_tracks_removed_pt_endcap = new TH1F("h_tracks_removed_pt_endcap","h_tracks_removed_pt_endcap",400,0.,20.);
+  TH1F *h_tracks_kept_pt_endcap = new TH1F("h_tracks_kept_pt_endcap","h_tracks_kept_pt_endcap",400,0.,20.);
 
-  TH1F *h_vtx4D_t = new TH1F("h_vtx4D_t","h_vtx4D_t",1000, -1,1);
-  TH1F *h_vtxGen_t = new TH1F("h_vtxGen_t","h_vtxGen_t",1000, -1,1);
-  TH1F *h_vtx4D_z = new TH1F("h_vtx4D_z","h_vtx4D_z",1000, -10,10);
+  TH1F *h_tracks_n_endcap = new TH1F("h_tracks_n_endcap","h_ntracks_pt_endcap",50,0.,50.);
+  TH1F *h_tracks_removed_n_endcap = new TH1F("h_tracks_removed_n_endcap","h_tracks_removed_n_endcap",50,0.,50.);
+  TH1F *h_tracks_kept_n_endcap = new TH1F("h_tracks_kept_n_endcap","h_tracks_kept_n_endcap",50,0.,50.);
+
+  TH1F *h_tracks_sumpt_endcap = new TH1F("h_tracks_sumpt_endcap","h_tracks_sumpt_endcap",1000,0.,100.);
+  TH1F *h_tracks_removed_sumpt_endcap = new TH1F("h_tracks_removed_sumpt_endcap","h_tracks_removed_sumpt_endcap",1000,0.,100.);
+  TH1F *h_tracks_kept_sumpt_endcap = new TH1F("h_tracks_kept_sumpt_endcap","h_tracks_kept_sumpt_endcap",1000,0.,100.);
+
+  TProfile *p_tracks_pt_vs_linedensity_endcap = new TProfile("p_tracks_pt_vs_linedensity_endcap","p_tracks_pt_vs_linedensity_endcap",22,-0.1,2.1);
+  TProfile *p_tracks_removed_pt_vs_linedensity_endcap = new TProfile("p_tracks_removed_pt_vs_linedensity_endcap","p_tracks_removed_pt_vs_linedensity_endcap",22,-0.1,2.1);
+  TProfile *p_tracks_kept_pt_vs_linedensity_endcap = new TProfile("p_tracks_kept_pt_vs_linedensity_endcap","p_tracks_kept_pt_vs_linedensity_endcap",22,-0.1,2.1);
+
+  TProfile *p_tracks_n_vs_linedensity_endcap = new TProfile("p_tracks_n_vs_linedensity_endcap","p_tracks_n_vs_linedensity_endcap",22,-0.1,2.1);
+  TProfile *p_tracks_removed_n_vs_linedensity_endcap = new TProfile("p_tracks_removed_n_vs_linedensity_endcap","p_tracks_removed_n_vs_linedensity_endcap",22,-0.1,2.1);
+  TProfile *p_tracks_kept_n_vs_linedensity_endcap = new TProfile("p_tracks_kept_n_vs_linedensity_endcap","p_tracks_kept_n_vs_linedensity_endcap",22,-0.1,2.1);
+  
+  TProfile *p_tracks_sumpt_vs_linedensity_endcap = new TProfile("p_tracks_sumpt_vs_linedensity_endcap","p_tracks_sumpt_vs_linedensity_endcap",22,-0.1,2.1);
+  TProfile *p_tracks_removed_sumpt_vs_linedensity_endcap = new TProfile("p_tracks_removed_sumpt_vs_linedensity_endcap","p_tracks_removed_sumpt_vs_linedensity_endcap",22,-0.1,2.1);
+  TProfile *p_tracks_kept_sumpt_vs_linedensity_endcap = new TProfile("p_tracks_kept_sumpt_vs_linedensity_endcap","p_tracks_kept_sumpt_vs_linedensity_endcap",22,-0.1,2.1);
+
 
 
   cout << "Analyzing " << chain->GetEntries() << "  events" <<endl;
   
   
-  //int maxEntries = 500000;
   int maxEntries = chain->GetEntries();
+  //  maxEntries = 500000;
   for (int ientry = 0; ientry< maxEntries; ientry++) {
     
     chain -> GetEntry(ientry);
     
     if (ientry%1000==0) cout << "Analyzing event " << ientry << "\r" << flush;
+
+
+    hsimvtx_z  -> Fill(vtxGen_z);    
+    hsimvtx_t  -> Fill(vtxGen_t*1000000000.);    
     
+    float linedensity = npu*TMath::Gaus(fabs(10.*vtxGen_z), 0, 42., 1);
+
     for (unsigned int imu = 0; imu < muon_pt->size(); imu++){
-      if (muon_pt->at(imu)< 20 ) continue;
+      if (muon_pt->at(imu)< 20. ) continue;
       if (!muon_isLoose->at(imu) ) continue;
       if (fabs(muon_dz4D->at(imu)) > 0.5 ) continue;
       if (fabs(muon_dxy4D->at(imu)) > 0.2 ) continue;
       if (vtx4D_isFake) continue;
 
-      bool isBarrel = fabs(muon_eta->at(imu)) < 1.48;
+      bool isBarrel = fabs(muon_eta->at(imu)) < 1.5;
 
       bool pass = false;
       if ( prompt) pass = muon_isPrompt->at(imu);
-      if (!prompt) pass = !muon_isPrompt->at(imu) && muon_isMatchedToGenJet->at(imu);
+      if (!prompt) pass = !muon_isPrompt->at(imu) && muon_isMatchedToGenJet->at(imu) && !muon_isFromTauDecay->at(imu);
       
       if (!pass) continue;
-
-      hsimvtx_z  -> Fill(vtxGen_z);    
-      hsimvtx_t  -> Fill(vtxGen_t*1000000000.);    
 
       h_vtx_dz3D_sim -> Fill( vtx3D_z - vtxGen_z);
       h_vtx_dz4D_sim -> Fill( vtx4D_z - vtxGen_z);
       h_vtx_dt4D_sim -> Fill( vtx4D_t - vtxGen_t*1000000000.);
 
-      // select reco vtx very close to sim vtx both in space and time
-      //if (fabs(vtx4D_z - vtxGen_z) > 0.005 ) continue;
-      //if (fabs(vtx4D_t - vtxGen_t*1000000000) > 0.015 ) continue;
-
-      // test
-      // if (fabs(vtx4D_z - vtxGen_z) < 0.01 && fabs(vtx4D_t - vtxGen_t*1000000000) < 0.02) continue;
-
-      
       if ( isBarrel) h_muon_pt_barrel   -> Fill(muon_pt->at(imu));
       if ( !isBarrel) h_muon_pt_endcap   -> Fill(muon_pt->at(imu));
       h_muon_dz3D -> Fill(muon_dz3D->at(imu));
       h_muon_dz4D -> Fill(muon_dz4D->at(imu));
       h_muon_dt4D -> Fill(muon_t->at(imu) -  vtx4D_t);
-      
-      for (unsigned int itk = 0; itk < track_eta->size(); itk++){
+       
+
+      int ntracks = 0;
+      int ntracks_removed = 0;
+      int ntracks_kept = 0;
+      float sumpt = 0.;
+      float sumpt_removed = 0.;
+      float sumpt_kept = 0.;
+
+      // start loop over tracks in isolation cone
+      for (unsigned int itk = 0; itk < track_pt->size(); itk++){
 	
 	// -- exclude tracks corresponding to the isolation cone of the other muon(s)
 	if (track_muIndex ->at(itk) != int(imu)) continue;
@@ -284,155 +310,138 @@ int main(int argc, char** argv){
 	if ( dr > 0.3 ) continue;
 	
 	float dz = track_dz4D->at(itk);
+	float dxy = track_dxy4D->at(itk);
 	float dt = track_t->at(itk) - vtx4D_t;
+	float dzsim = track_dz4D->at(itk) + vtx4D_z - vtxGen_z;
 	float dtsim = track_t->at(itk) - vtxGen_t*1000000000.;
-
-	if ( isBarrel) h_tracks_dz_vtx_barrel -> Fill(dz);
-	if (!isBarrel) h_tracks_dz_vtx_endcap-> Fill(dz);
 	
-	if (fabs(dz) < maxDzVtx) {
+	dz = dzsim;
+	dt = dtsim;
+
+	// ---only tracks within dz < 0.1 cm from PV
+	if (fabs(dz) < maxDz && fabs(dxy) < maxDxy) {
 
 	  // -- barrel
           if (isBarrel){
-	    // if timing info available
+	    h_tracks_dz_vtx_barrel -> Fill(dz);
 	    if (track_t->at(itk) != -999){
 	      h_tracks_dt_vtx_barrel->Fill(dt);
 	      h2_tracks_dzvtx_dtvtx_barrel->Fill(dz, dt);
-	      //h2_tracks_dt_vtx_vs_tErr->Fill(vtx4D_tErr, dt);
-	      h2_tracks_dt_vtx_vs_dtvtxsimreco->Fill(vtx4D_t-vtxGen_t*1000000000.,dt);
-	      h2_tracks_dtsim_vtx_vs_dtvtxsimreco->Fill(vtx4D_t-vtxGen_t*1000000000.,dtsim);
-	      if (fabs(vtx4D_t-vtxGen_t*1000000000.) > 0.020 ) {
-		h_tracksTime_minus_vtxGenTime_badVtxReco ->Fill(dtsim); 
-		h_tracksTime_minus_vtxRecoTime_badVtxReco ->Fill(dt); 
-		h2_tracks_dt_vtx_vs_tErr->Fill(vtx4D_tErr, dt);
-		h_vtx4D_t->Fill(vtx4D_t);
-		h_vtxGen_t->Fill(vtxGen_t*1000000000.);
-		h_vtx4D_z->Fill(vtx4D_z);
-	      }
-	      if ( fabs(dt) > 0.030 * 3) {
-		h_tracks_pt_timing_PU_barrel->Fill(track_pt->at(itk));
-                h_tracks_eta_timing_PU_barrel->Fill(track_eta->at(itk));
-                h_tracks_dr_timing_PU_barrel->Fill(dr);
-	      }
-	      else {
-	        h_tracks_pt_timing_PV_barrel->Fill(track_pt->at(itk));
-                h_tracks_eta_timing_PV_barrel->Fill(track_eta->at(itk));
-                h_tracks_dr_timing_PV_barrel->Fill(dr);
-	      }
 	    }
-	    // if timing info not available
-            else{
-	      h_tracks_pt_notiming_barrel->Fill(track_pt->at(itk));
-              h_tracks_eta_notiming_barrel->Fill(track_eta->at(itk));
-              h_tracks_dr_notiming_barrel->Fill(dr); 
+	    
+	    // -- all tracks
+	    h_tracks_pt_barrel -> Fill( track_pt->at(itk) );
+	    p_tracks_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
+	    ntracks++;
+	    sumpt+=track_pt->at(itk);
+	    // -- removed tracks
+	    if ( track_t->at(itk) != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
+	      h_tracks_removed_pt_barrel -> Fill( track_pt->at(itk) );
+	      p_tracks_removed_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
+	      ntracks_removed++;
+	      sumpt_removed+=track_pt->at(itk);
+	    }
+	    else{
+	      h_tracks_kept_pt_barrel -> Fill( track_pt->at(itk) );
+	      p_tracks_kept_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
+	      ntracks_kept++;
+	      sumpt_kept+=track_pt->at(itk);
 	    }
 	  }// end if barrel
-	  
-          // -- endcap
-          else {
-            // if timing info available
+	  // -- endcap
+          else{
+	    h_tracks_dz_vtx_endcap -> Fill(dz);
             if (track_t->at(itk) != -999){
               h_tracks_dt_vtx_endcap->Fill(dt);
               h2_tracks_dzvtx_dtvtx_endcap->Fill(dz, dt);
-              if ( fabs(dt) > 0.030 * 3) {
-                h_tracks_pt_timing_PU_endcap->Fill(track_pt->at(itk));
-                h_tracks_eta_timing_PU_endcap->Fill(track_eta->at(itk));
-                h_tracks_dr_timing_PU_endcap->Fill(dr);
-              }
-              else {
-                h_tracks_pt_timing_PV_endcap->Fill(track_pt->at(itk));
-                h_tracks_eta_timing_PV_endcap->Fill(track_eta->at(itk));
-                h_tracks_dr_timing_PV_endcap->Fill(dr);
-              }
             }
-            // if timing info not available
-            else{
-              h_tracks_pt_notiming_endcap->Fill(track_pt->at(itk));
-              h_tracks_eta_notiming_endcap->Fill(track_eta->at(itk));
-              h_tracks_dr_notiming_endcap->Fill(dr);
+            // -- all tracks
+            h_tracks_pt_endcap -> Fill( track_pt->at(itk) );
+            p_tracks_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
+            ntracks++;
+            sumpt+=track_pt->at(itk);
+            // -- removed tracks
+            if ( track_t->at(itk) != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
+              h_tracks_removed_pt_endcap -> Fill( track_pt->at(itk) );
+              p_tracks_removed_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
+              ntracks_removed++;
+              sumpt_removed+=track_pt->at(itk);
             }
-          }
+	    else{
+	      h_tracks_kept_pt_endcap -> Fill( track_pt->at(itk) );
+              p_tracks_kept_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
+              ntracks_kept++;
+              sumpt_kept+=track_pt->at(itk);
+	    }
+	  }// end endcap
 	}
-      
 
-	// wrt to muon
+
+	// --- dz wrt to muon
 	float dtmu = track_t->at(itk) - muon_t->at(imu);
 	float dzmu = muon_dz4D->at(imu) - track_dz4D->at(itk) ;
-
-	if ( isBarrel) h_tracks_dz_mu_barrel -> Fill(dzmu);
-	if (!isBarrel) h_tracks_dz_mu_endcap-> Fill(dzmu);
-
 	if (fabs(dzmu) < maxDzMu){
-
 	  // -- barrel
 	  if (isBarrel){
+	    h_tracks_dz_mu_barrel -> Fill(dzmu);
 	    // if timing info available
 	    if (track_t->at(itk) != -999){	
-	      h2_muon_time_vs_dtmu ->Fill(dtmu, muon_t->at(imu));
-	      if ( fabs(dtmu) > sqrt(2)*3*0.030) {
-		//cout << ientry << "muon time = " << muon_t->at(imu) << " track time = " << track_t->at(itk) <<endl;
-		h_muon_time_PU->Fill( muon_t->at(imu) );
-	      }
-	      else{
-		h_muon_time_PV->Fill( muon_t->at(imu) );
-	      }
 	      h_tracks_dt_mu_barrel->Fill(dtmu);
 	      h2_tracks_dzmu_dtmu_barrel->Fill(dzmu, dtmu);
-	      /*
-	      if ( fabs(dtmu) > 0.030 * sqrt(2) * 3) { 
-		h_tracks_pt_timing_PU_barrel->Fill(track_pt->at(itk));
-		h_tracks_eta_timing_PU_barrel->Fill(track_eta->at(itk));
-		h_tracks_dr_timing_PU_barrel->Fill(dr);
-	      }
-	      else { 
-		h_tracks_pt_timing_PV_barrel->Fill(track_pt->at(itk));
-		h_tracks_eta_timing_PV_barrel->Fill(track_eta->at(itk));
-		h_tracks_dr_timing_PV_barrel->Fill(dr);
-	      }
-	      */
 	    }
-	    // if timing info not available    
-	    /*
-	    else{
-	      h_tracks_pt_notiming_barrel->Fill(track_pt->at(itk));
-	      h_tracks_eta_notiming_barrel->Fill(track_eta->at(itk));
-	      h_tracks_dr_notiming_barrel->Fill(dr);
-	    }
-	    */
 	  }
-
 	  // -- endcap
 	  else {
+	    h_tracks_dz_mu_endcap-> Fill(dzmu);
 	    // if timing info available 
 	    if (track_t->at(itk) != -999){
               h_tracks_dt_mu_endcap->Fill(dtmu);
               h2_tracks_dzmu_dtmu_endcap->Fill(dzmu, dtmu);
-	      /*
-	      if ( fabs(dtmu) > 0.030 * sqrt(2) * 3) {
-		h_tracks_pt_timing_PU_endcap->Fill(track_pt->at(itk));
-		h_tracks_eta_timing_PU_endcap->Fill(track_eta->at(itk));
-		h_tracks_dr_timing_PU_endcap->Fill(dr);
-	      }
-	      else {
-		h_tracks_pt_timing_PV_endcap->Fill(track_pt->at(itk));
-		h_tracks_eta_timing_PV_endcap->Fill(track_eta->at(itk));
-		h_tracks_dr_timing_PV_endcap->Fill(dr);
-	      }
-	      */
-            }
-            // if timing info not available
-            /*
-	    else{
-	      h_tracks_pt_notiming_endcap->Fill(track_pt->at(itk));
-	      h_tracks_eta_notiming_endcap->Fill(track_eta->at(itk));
-              h_tracks_dr_notiming_endcap->Fill(dr);
 	    }
-	    */
 	  }
 	}
-
+	
       }// end loop over tracks
+
+      
+      if (isBarrel){
+	// -- all tracks in isolation cone
+	h_tracks_n_barrel -> Fill( ntracks );
+	h_tracks_sumpt_barrel -> Fill( sumpt );
+	p_tracks_n_vs_linedensity_barrel -> Fill( linedensity, ntracks );
+	p_tracks_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt );
+
+	// -- tracks removed from isolation cone
+	h_tracks_removed_n_barrel -> Fill( ntracks_removed );
+	h_tracks_removed_sumpt_barrel -> Fill( sumpt_removed );
+	p_tracks_removed_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_removed );
+	p_tracks_removed_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_removed );
+
+	// -- tracks kept from isolation cone
+	h_tracks_kept_n_barrel -> Fill( ntracks_kept );
+	h_tracks_kept_sumpt_barrel -> Fill( sumpt_kept );
+	p_tracks_kept_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_kept );
+	p_tracks_kept_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_kept );
+      }
+      else{
+	h_tracks_n_endcap -> Fill( ntracks );
+	h_tracks_sumpt_endcap -> Fill( sumpt );
+	p_tracks_n_vs_linedensity_endcap -> Fill( linedensity, ntracks );
+	p_tracks_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt );
+
+	h_tracks_removed_n_endcap -> Fill( ntracks_removed );
+	h_tracks_removed_sumpt_endcap -> Fill( sumpt_removed );
+	p_tracks_removed_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_removed );
+	p_tracks_removed_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_removed );
+
+	h_tracks_kept_n_endcap -> Fill( ntracks_kept );
+	h_tracks_kept_sumpt_endcap -> Fill( sumpt_kept );
+	p_tracks_kept_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_kept );
+	p_tracks_kept_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_kept );
+      }
+
     }// end loop over muons
+
   }//end loop over events
   
   
@@ -475,12 +484,11 @@ int main(int argc, char** argv){
   h_tracks_dt_mu_endcap->Fit("fitfun2_endcap","QR");
   
   
-  std::string foutName = "testTracks_" + process + "_" + pu + ".root";
+  std::string foutName = "testTracks_" + process + "_" + pu + "_dT"+ std::to_string(nsigma)+"sigma.root";
   TFile *fout = new TFile(foutName.c_str(),"recreate");
 
   hsimvtx_z->Write();
   hsimvtx_t->Write();
-
 
   h_vtx_dz3D_sim->Write();
   h_vtx_dz4D_sim->Write();
@@ -503,49 +511,64 @@ int main(int argc, char** argv){
   h_tracks_dz_mu_endcap->Write();
   h_tracks_dt_mu_endcap->Write();
   
-  h_tracks_pt_notiming_barrel->Write();
-  h_tracks_pt_timing_PU_barrel->Write();
-  h_tracks_pt_timing_PV_barrel->Write();
-  
-  h_tracks_eta_notiming_barrel->Write();
-  h_tracks_eta_timing_PU_barrel->Write();
-  h_tracks_eta_timing_PV_barrel->Write();
-  
-  h_tracks_dr_notiming_barrel->Write();
-  h_tracks_dr_timing_PU_barrel->Write();
-  h_tracks_dr_timing_PV_barrel->Write();
-  
-  h_tracks_pt_notiming_endcap->Write();
-  h_tracks_pt_timing_PU_endcap->Write();
-  h_tracks_pt_timing_PV_endcap->Write();
-  
-  h_tracks_eta_notiming_endcap->Write();
-  h_tracks_eta_timing_PU_endcap->Write();
-  h_tracks_eta_timing_PV_endcap->Write();
-  
-  h_tracks_dr_notiming_endcap->Write();
-  h_tracks_dr_timing_PU_endcap->Write();
-  h_tracks_dr_timing_PV_endcap->Write();
-
-  h2_tracks_dzvtx_dtvtx_barrel->Write();  
-  h2_tracks_dzvtx_dtvtx_endcap->Write();
+  h2_tracks_dzvtx_dtvtx_barrel-> Write();
+  h2_tracks_dzvtx_dtvtx_endcap-> Write();
 
   h2_tracks_dzmu_dtmu_barrel->Write();  
   h2_tracks_dzmu_dtmu_endcap->Write();
 
-  h_muon_time_PV->Write();
-  h_muon_time_PU->Write();
-  h2_muon_time_vs_dtmu -> Write();
 
 
-  h2_tracks_dt_vtx_vs_tErr->Write();
-  h2_tracks_dt_vtx_vs_dtvtxsimreco->Write();
-  h2_tracks_dtsim_vtx_vs_dtvtxsimreco->Write();
-  h_tracksTime_minus_vtxGenTime_badVtxReco -> Write();
-  h_tracksTime_minus_vtxRecoTime_badVtxReco -> Write();
-  h_vtx4D_t->Write();
-  h_vtxGen_t->Write();
-  h_vtx4D_z->Write();
+  h_tracks_pt_barrel ->Write();
+  h_tracks_removed_pt_barrel ->Write();
+  h_tracks_kept_pt_barrel ->Write();
+
+  h_tracks_n_barrel ->Write();
+  h_tracks_removed_n_barrel ->Write();
+  h_tracks_kept_n_barrel ->Write();
+
+  h_tracks_sumpt_barrel ->Write();
+  h_tracks_removed_sumpt_barrel ->Write();
+  h_tracks_kept_sumpt_barrel ->Write();
+
+  p_tracks_pt_vs_linedensity_barrel -> Write();
+  p_tracks_removed_pt_vs_linedensity_barrel -> Write();
+  p_tracks_kept_pt_vs_linedensity_barrel -> Write();
+
+  p_tracks_n_vs_linedensity_barrel -> Write();
+  p_tracks_removed_n_vs_linedensity_barrel -> Write();
+  p_tracks_kept_n_vs_linedensity_barrel -> Write();
+
+  p_tracks_sumpt_vs_linedensity_barrel -> Write();
+  p_tracks_removed_sumpt_vs_linedensity_barrel -> Write();
+  p_tracks_kept_sumpt_vs_linedensity_barrel -> Write();
+
+
+  h_tracks_pt_endcap ->Write();
+  h_tracks_removed_pt_endcap ->Write();
+  h_tracks_kept_pt_endcap ->Write();
+
+  h_tracks_n_endcap ->Write();
+  h_tracks_removed_n_endcap ->Write();
+  h_tracks_kept_n_endcap ->Write();
+
+  h_tracks_sumpt_endcap ->Write();
+  h_tracks_removed_sumpt_endcap ->Write();
+  h_tracks_kept_sumpt_endcap ->Write();
+
+  p_tracks_pt_vs_linedensity_endcap -> Write();
+  p_tracks_removed_pt_vs_linedensity_endcap -> Write();
+  p_tracks_kept_pt_vs_linedensity_endcap -> Write();
+
+  p_tracks_n_vs_linedensity_endcap -> Write();
+  p_tracks_removed_n_vs_linedensity_endcap -> Write();
+  p_tracks_kept_n_vs_linedensity_endcap -> Write();
+
+  p_tracks_sumpt_vs_linedensity_endcap -> Write();
+  p_tracks_removed_sumpt_vs_linedensity_endcap -> Write();
+  p_tracks_kept_sumpt_vs_linedensity_endcap -> Write();
+
+
 
   fout->Close();
   

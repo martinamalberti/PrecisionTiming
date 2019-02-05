@@ -275,8 +275,8 @@ int main(int argc, char** argv)
   chain->SetBranchStatus("muon_chIso03_dZmu5",1);       chain->SetBranchAddress("muon_chIso03_dZmu5",&muon_chIso03_dZmu5);
   chain->SetBranchStatus("muon_chIso03_dZmu5_dTmu",1);  chain->SetBranchAddress("muon_chIso03_dZmu5_dTmu",&muon_chIso03_dZmu5_dTmu);
 
-  chain->SetBranchStatus("muon_chIso03_dZmu10",1);       chain->SetBranchAddress("muon_chIso03_dZmu10",&muon_chIso03_dZmu10);
-  chain->SetBranchStatus("muon_chIso03_dZmu10_dTmu",1);  chain->SetBranchAddress("muon_chIso03_dZmu10_dTmu",&muon_chIso03_dZmu10_dTmu);
+  //chain->SetBranchStatus("muon_chIso03_dZmu10",1);       chain->SetBranchAddress("muon_chIso03_dZmu10",&muon_chIso03_dZmu10);
+  //chain->SetBranchStatus("muon_chIso03_dZmu10_dTmu",1);  chain->SetBranchAddress("muon_chIso03_dZmu10_dTmu",&muon_chIso03_dZmu10_dTmu);
 
 
   // -- book histograms
@@ -694,11 +694,33 @@ int main(int argc, char** argv)
   TH1F *h_linedensity_noRelChIsoZCut = new TH1F("h_linedensity_noRelChIsoZCut","h_linedensity_noRelChIsoZCut", 100, 0, 2);
   TH1F *h_linedensity_noRelChIsoZTCut = new TH1F("h_linedensity_noRelChIsoZTCut","h_linedensity_noRelChIsoZTCut", 100, 0, 2);
 
-  TH1F *h_linedensity_RelChIsoZCut = new TH1F("h_linedensity_RelChIsoZCut ","h_linedensity_RelChIsoZCut ", 100, 0, 2);
+  TH1F *h_linedensity_RelChIsoZCut = new TH1F("h_linedensity_RelChIsoZCut","h_linedensity_RelChIsoZCut ", 100, 0, 2);
   TH1F *h_linedensity_RelChIsoZTCut  = new TH1F("h_linedensity_RelChIsoZTCut","h_linedensity_RelChIsoZTCut", 100, 0, 2);
 
   TH1F *h_linedensity_RelChIsoZCut_simVtx = new TH1F("h_linedensity_RelChIsoZCut_simVtx","h_linedensity_RelChIsoZCut_simVtx", 100, 0, 2);
   TH1F *h_linedensity_RelChIsoZTCut_simVtx  = new TH1F("h_linedensity_RelChIsoZTCut_simVtx","h_linedensity_RelChIsoZTCut_simVtx", 100, 0, 2);
+
+
+  TH1F *h_linedensity_noRelChIsoZCut_barrel = new TH1F("h_linedensity_noRelChIsoZCut_barrel","h_linedensity_noRelChIsoZCut_barrel", 100, 0, 2);
+  TH1F *h_linedensity_noRelChIsoZTCut_barrel = new TH1F("h_linedensity_noRelChIsoZTCut_barrel","h_linedensity_noRelChIsoZTCut_barrel", 100, 0, 2);
+
+  TH1F *h_linedensity_RelChIsoZCut_barrel = new TH1F("h_linedensity_RelChIsoZCut_barrel","h_linedensity_RelChIsoZCut_barrel", 100, 0, 2);
+  TH1F *h_linedensity_RelChIsoZTCut_barrel  = new TH1F("h_linedensity_RelChIsoZTCut_barrel","h_linedensity_RelChIsoZTCut_barrel", 100, 0, 2);
+
+  TH1F *h_linedensity_RelChIsoZCut_simVtx_barrel = new TH1F("h_linedensity_RelChIsoZCut_simVtx_barrel","h_linedensity_RelChIsoZCut_simVtx_barrel", 100, 0, 2);
+  TH1F *h_linedensity_RelChIsoZTCut_simVtx_barrel  = new TH1F("h_linedensity_RelChIsoZTCut_simVtx_barrel","h_linedensity_RelChIsoZTCut_simVtx_barrel", 100, 0, 2);
+
+
+  TH1F *h_linedensity_noRelChIsoZCut_endcap = new TH1F("h_linedensity_noRelChIsoZCut_endcap","h_linedensity_noRelChIsoZCut_endcap", 100, 0, 2);
+  TH1F *h_linedensity_noRelChIsoZTCut_endcap = new TH1F("h_linedensity_noRelChIsoZTCut_endcap","h_linedensity_noRelChIsoZTCut_endcap", 100, 0, 2);
+
+  TH1F *h_linedensity_RelChIsoZCut_endcap = new TH1F("h_linedensity_RelChIsoZCut_endcap","h_linedensity_RelChIsoZCut_endcap", 100, 0, 2);
+  TH1F *h_linedensity_RelChIsoZTCut_endcap  = new TH1F("h_linedensity_RelChIsoZTCut_endcap","h_linedensity_RelChIsoZTCut_endcap", 100, 0, 2);
+
+  TH1F *h_linedensity_RelChIsoZCut_simVtx_endcap = new TH1F("h_linedensity_RelChIsoZCut_simVtx_endcap","h_linedensity_RelChIsoZCut_simVtx_endcap", 100, 0, 2);
+  TH1F *h_linedensity_RelChIsoZTCut_simVtx_endcap  = new TH1F("h_linedensity_RelChIsoZTCut_simVtx_endcap","h_linedensity_RelChIsoZTCut_simVtx_endcap", 100, 0, 2);
+
+
   
 
 
@@ -917,8 +939,8 @@ int main(int argc, char** argv)
       h_muon_relChIso03_dZmu2_dTmu -> Fill(muon_chIso03_dZmu2_dTmu->at(imu)/pt, w);
       h_muon_relChIso03_dZmu5 -> Fill(muon_chIso03_dZmu5->at(imu)/pt, w);
       h_muon_relChIso03_dZmu5_dTmu -> Fill(muon_chIso03_dZmu5_dTmu->at(imu)/pt, w);
-      h_muon_relChIso03_dZmu10 -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
-      h_muon_relChIso03_dZmu10_dTmu -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
+      //h_muon_relChIso03_dZmu10 -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
+      //h_muon_relChIso03_dZmu10_dTmu -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
       if (fabs(muon_eta->at(imu))<1.5){ 
 	h_muon_relChIso03_dZmu05_barrel -> Fill(muon_chIso03_dZmu05->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu05_dTmu_barrel -> Fill(muon_chIso03_dZmu05_dTmu->at(imu)/pt, w);
@@ -928,8 +950,8 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZmu2_dTmu_barrel -> Fill(muon_chIso03_dZmu2_dTmu->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_barrel -> Fill(muon_chIso03_dZmu5->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_dTmu_barrel -> Fill(muon_chIso03_dZmu5_dTmu->at(imu)/pt, w);
-	h_muon_relChIso03_dZmu10_barrel -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
-	h_muon_relChIso03_dZmu10_dTmu_barrel -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
+	//h_muon_relChIso03_dZmu10_barrel -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
+	//h_muon_relChIso03_dZmu10_dTmu_barrel -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
       }
       else{
 	h_muon_relChIso03_dZmu05_endcap -> Fill(muon_chIso03_dZmu05->at(imu)/pt, w);
@@ -940,8 +962,8 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZmu2_dTmu_endcap -> Fill(muon_chIso03_dZmu2_dTmu->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_endcap -> Fill(muon_chIso03_dZmu5->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_dTmu_endcap -> Fill(muon_chIso03_dZmu5_dTmu->at(imu)/pt, w);
-	h_muon_relChIso03_dZmu10_endcap -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
-	h_muon_relChIso03_dZmu10_dTmu_endcap -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
+	//h_muon_relChIso03_dZmu10_endcap -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
+	//h_muon_relChIso03_dZmu10_dTmu_endcap -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
       }
               
 
@@ -949,20 +971,32 @@ int main(int argc, char** argv)
       float linedensity = 200.*TMath::Gaus(fabs(10*vtxGen_z), 0, 42., 1);
       if (pass3D){
 	h_linedensity_noRelChIsoZCut->Fill(linedensity,w); 
+	if (fabs(muon_eta->at(imu)) <1.5){ h_linedensity_noRelChIsoZCut_barrel->Fill(linedensity,w);}
+	else{ h_linedensity_noRelChIsoZCut_endcap->Fill(linedensity,w); }
 	if ( (muon_chIso03_dZ1->at(imu)/muon_pt->at(imu)) < 0.05 ) {
 	  h_linedensity_RelChIsoZCut->Fill(linedensity,w); 
+	  if (fabs(muon_eta->at(imu)) <1.5){ h_linedensity_RelChIsoZCut_barrel->Fill(linedensity,w);}
+	  else {h_linedensity_RelChIsoZCut_endcap->Fill(linedensity,w);}
 	}
 	if ( (muon_chIso03_dZ1_simVtx->at(imu)/muon_pt->at(imu)) < 0.05 ) {
 	  h_linedensity_RelChIsoZCut_simVtx->Fill(linedensity,w); 
+	  if (fabs(muon_eta->at(imu)) <1.5){ h_linedensity_RelChIsoZCut_simVtx_barrel->Fill(linedensity,w);}
+	  else {h_linedensity_RelChIsoZCut_simVtx_endcap->Fill(linedensity,w);}
 	}
       }
       if (pass4D){
 	h_linedensity_noRelChIsoZTCut->Fill(linedensity,w);
+	if (fabs(muon_eta->at(imu)) <1.5){ h_linedensity_noRelChIsoZTCut_barrel->Fill(linedensity,w);}
+        else{ h_linedensity_noRelChIsoZTCut_endcap->Fill(linedensity,w); }
 	if ( (muon_chIso03_dZ1_dT3s->at(imu)/muon_pt->at(imu)) < 0.05 ) {
 	  h_linedensity_RelChIsoZTCut->Fill(linedensity,w); 
+	  if (fabs(muon_eta->at(imu)) <1.5){ h_linedensity_RelChIsoZTCut_barrel->Fill(linedensity,w); }
+	  else {h_linedensity_RelChIsoZTCut_endcap->Fill(linedensity,w);}
 	}
 	if ( (muon_chIso03_dZ1_dT3s_simVtx->at(imu)/muon_pt->at(imu)) < 0.05 ) {
 	  h_linedensity_RelChIsoZTCut_simVtx->Fill(linedensity,w); 
+	  if (fabs(muon_eta->at(imu)) <1.5){ h_linedensity_RelChIsoZTCut_simVtx_barrel->Fill(linedensity,w); }
+          else {h_linedensity_RelChIsoZTCut_simVtx_endcap->Fill(linedensity,w);}
 	}
 
       }
@@ -1178,6 +1212,26 @@ int main(int argc, char** argv)
 
   h_linedensity_RelChIsoZCut_simVtx->Write();
   h_linedensity_RelChIsoZTCut_simVtx->Write();
+
+
+  h_linedensity_noRelChIsoZCut_barrel->Write();
+  h_linedensity_noRelChIsoZTCut_barrel->Write();
+
+  h_linedensity_RelChIsoZCut_barrel->Write();
+  h_linedensity_RelChIsoZTCut_barrel->Write();
+
+  h_linedensity_RelChIsoZCut_simVtx_barrel->Write();
+  h_linedensity_RelChIsoZTCut_simVtx_barrel->Write();
+
+
+  h_linedensity_noRelChIsoZCut_endcap->Write();
+  h_linedensity_noRelChIsoZTCut_endcap->Write();
+
+  h_linedensity_RelChIsoZCut_endcap->Write();
+  h_linedensity_RelChIsoZTCut_endcap->Write();
+
+  h_linedensity_RelChIsoZCut_simVtx_endcap->Write();
+  h_linedensity_RelChIsoZTCut_simVtx_endcap->Write();
 
   fout->Close();
   
