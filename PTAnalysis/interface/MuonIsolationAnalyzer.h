@@ -24,13 +24,14 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+//#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Framework/interface/Event.h"
 
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
@@ -48,6 +49,7 @@
 #include "DataFormats/Common/interface/View.h"
 
 #include <vector>
+#include <map>
 #include "TTree.h"
 #include <TRandom.h>
 //
@@ -79,6 +81,7 @@ struct eventInfo
   vector<float> track_dxy4D;
   vector<float> track_t;
   vector<int> track_muIndex;
+  vector<int> track_isMatchedToGenParticle;
 
   float vtxGen_z;
   float vtxGen_t;
@@ -107,22 +110,34 @@ struct eventInfo
   vector<int> muon_isFromTauDecay;
 
   vector<float> muon_chIso_dZ05_simVtx;
-  vector<float> muon_chIso_dZ05_dT_simVtx;
+  vector<float> muon_chIso_dZ05_dT2s_simVtx;
+  vector<float> muon_chIso_dZ05_dT3s_simVtx;
+  vector<float> muon_chIso_dZ05_dT5s_simVtx;
 
   vector<float> muon_chIso_dZ1_simVtx;
-  vector<float> muon_chIso_dZ1_dT_simVtx;
+  vector<float> muon_chIso_dZ1_dT2s_simVtx;
+  vector<float> muon_chIso_dZ1_dT3s_simVtx;
+  vector<float> muon_chIso_dZ1_dT5s_simVtx;
 
   vector<float> muon_chIso_dZ2_simVtx;
-  vector<float> muon_chIso_dZ2_dT_simVtx;
-  
+  vector<float> muon_chIso_dZ2_dT2s_simVtx;
+  vector<float> muon_chIso_dZ2_dT3s_simVtx;
+  vector<float> muon_chIso_dZ2_dT5s_simVtx;
+
   vector<float> muon_chIso_dZ05;
-  vector<float> muon_chIso_dZ05_dT;
+  vector<float> muon_chIso_dZ05_dT2s;
+  vector<float> muon_chIso_dZ05_dT3s;
+  vector<float> muon_chIso_dZ05_dT5s;
 
   vector<float> muon_chIso_dZ1;
-  vector<float> muon_chIso_dZ1_dT;
+  vector<float> muon_chIso_dZ1_dT2s;
+  vector<float> muon_chIso_dZ1_dT3s;
+  vector<float> muon_chIso_dZ1_dT5s;
 
   vector<float> muon_chIso_dZ2;
-  vector<float> muon_chIso_dZ2_dT;
+  vector<float> muon_chIso_dZ2_dT2s;
+  vector<float> muon_chIso_dZ2_dT3s;
+  vector<float> muon_chIso_dZ2_dT5s;
 
   vector<float> muon_chIso_reldZ;
   vector<float> muon_chIso_reldZ_dT;
@@ -136,10 +151,17 @@ struct eventInfo
   vector<float> muon_chIso_dZmu2;
   vector<float> muon_chIso_dZmu2_dTmu;
 
+  vector<float> muon_chIso_dZmu5;
+  vector<float> muon_chIso_dZmu5_dTmu;
+
+  vector<float> muon_chIso_dZmu10;
+  vector<float> muon_chIso_dZmu10_dTmu;
+
 };
 
 
-class MuonIsolationAnalyzer : public edm::EDAnalyzer  
+//class MuonIsolationAnalyzer : public edm::EDAnalyzer  
+class MuonIsolationAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 {
 public:
   explicit MuonIsolationAnalyzer(const edm::ParameterSet&);
@@ -151,9 +173,9 @@ public:
 
 
 private:
-  virtual void beginJob();
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  virtual void endJob();
+  virtual void beginJob() override;
+  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+  virtual void endJob() override;
     
   void initEventStructure();
 
@@ -172,9 +194,9 @@ private:
   
   //--- outputs
   edm::Service<TFileService> fs_;
-  TTree *eventTree[5];
-  eventInfo evInfo[5];
-
+  TTree *eventTree[10];
+  eventInfo *evInfo[10];
+  
   //--- options
   vector<double> timeResolutions_;
   double isoConeDR_;
@@ -182,7 +204,8 @@ private:
   double maxDz_;
   double minDr_;
   double minTrackPt_;
-  bool useVertexClosestToGen_;
+  bool useVertexClosestToGenZ_;
+  bool useVertexClosestToGenZT_;
   double btlEfficiency_;
   double etlEfficiency_;
 
@@ -195,3 +218,4 @@ private:
 bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenJet(const reco::Muon &muon, const edm::View<reco::GenJet>& genJet);
 bool isFromTau(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
+bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);

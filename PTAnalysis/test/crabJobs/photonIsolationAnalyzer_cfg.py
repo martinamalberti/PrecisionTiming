@@ -4,8 +4,8 @@ process = cms.Process("Analysis")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1 )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 100 )
 
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
@@ -29,12 +29,12 @@ process.analysis = cms.EDAnalyzer(
     genJetsTag = cms.untracked.InputTag("ak4GenJets", "", "HLT"),
     timeResolutions = cms.untracked.vdouble(0.030, 0.040, 0.050, 0.060, 0.070, 0.200),
     isoConeDR = cms.untracked.double(0.3),
-    saveTracks = cms.untracked.bool(False),
+    saveTracks = cms.untracked.bool(True),
     maxDz = cms.untracked.double(0.1),
     minDr = cms.untracked.double(0.01),
     minTrackPt = cms.untracked.double(0.0),
-    useVertexClosestToGenZ = cms.untracked.bool(False),
-    useVertexClosestToGenZT = cms.untracked.bool(True),
+    useVertexClosestToGenZ = cms.untracked.bool(True),
+    useVertexClosestToGenZT = cms.untracked.bool(False),
     btlEfficiency = cms.untracked.double(1.0),
     etlEfficiency = cms.untracked.double(1.0)
     #btlEfficiency = cms.untracked.double(0.90),

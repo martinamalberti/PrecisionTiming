@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    PrecisionTiming/PhotonIsolationAnalyzer
-// Class:      PhotonIsolationAnalyzer
+// Package:    PrecisionTiming/MuonIsolationAnalyzer
+// Class:      MuonIsolationAnalyzer
 // 
-/**\class PhotonIsolationAnalyzer PhotonIsolationAnalyzer.cc PrecisionTiming/PhotonIsolationAnalyzer/plugins/PhotonIsolationAnalyzer.cc
+/**\class MuonIsolationAnalyzer MuonIsolationAnalyzer.cc PrecisionTiming/MuonIsolationAnalyzer/plugins/MuonIsolationAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -19,16 +19,19 @@
 
 // system include files
 #include <memory>
+#include <cstdlib>
+#include <cmath>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
+//#include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Framework/interface/Event.h"
 
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
@@ -44,10 +47,10 @@
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 
 #include "DataFormats/Common/interface/View.h"
-#include "DataFormats/Common/interface/ValueMap.h"
 
 #include <vector>
 #include "TTree.h"
+#include <TRandom.h>
 
 //
 // class declaration
@@ -73,44 +76,83 @@ struct eventInfo
   vector<float> track_eta;
   vector<float> track_phi;
   vector<float> track_dz3D;
-  vector<float> track_dz;
+  vector<float> track_dz4D;
+  vector<float> track_dxy3D;
+  vector<float> track_dxy4D;
   vector<float> track_t;
+  vector<int> track_phoIndex;
 
   float vtxGen_z;
   float vtxGen_t;
-  float vtx_z;
-  float vtx_t;
+  float vtx4D_z;
   float vtx3D_z;
+  float vtx3D_zErr;
+  float vtx4D_t;
+  float vtx4D_tErr;
+  float vtx4D_zErr;
+  int vtx3D_isFake;
+  int vtx4D_isFake;
   vector<float> photon_pt;
   vector<float> photon_eta;
   vector<float> photon_phi;
-  vector<float> photon_isPrompt;
-  vector<float> photon_isMatchedToGenJet;
+  vector<float> photon_t;
   vector<float> photon_hasConversionTracks;
   vector<float> photon_hasPixelSeed;
   vector<float> photon_sigmaIetaIeta;
   vector<float> photon_r9;
-  vector<float> photon_chIso[10];
-  vector<float> photon_chIso_dT[10][10];
+  vector<int> photon_isPrompt;
+  vector<int> photon_isMatchedToGenJet;
+
+  vector<float> photon_chIso_dZ05_simVtx;
+  vector<float> photon_chIso_dZ05_dT2s_simVtx;
+  vector<float> photon_chIso_dZ05_dT3s_simVtx;
+  vector<float> photon_chIso_dZ05_dT5s_simVtx;
+
+  vector<float> photon_chIso_dZ1_simVtx;
+  vector<float> photon_chIso_dZ1_dT2s_simVtx;
+  vector<float> photon_chIso_dZ1_dT3s_simVtx;
+  vector<float> photon_chIso_dZ1_dT5s_simVtx;
+
+  vector<float> photon_chIso_dZ2_simVtx;
+  vector<float> photon_chIso_dZ2_dT2s_simVtx;
+  vector<float> photon_chIso_dZ2_dT3s_simVtx;
+  vector<float> photon_chIso_dZ2_dT5s_simVtx;
+
+  vector<float> photon_chIso_dZ05;
+  vector<float> photon_chIso_dZ05_dT2s;
+  vector<float> photon_chIso_dZ05_dT3s;
+  vector<float> photon_chIso_dZ05_dT5s;
+
+  vector<float> photon_chIso_dZ1;
+  vector<float> photon_chIso_dZ1_dT2s;
+  vector<float> photon_chIso_dZ1_dT3s;
+  vector<float> photon_chIso_dZ1_dT5s;
+
+  vector<float> photon_chIso_dZ2;
+  vector<float> photon_chIso_dZ2_dT2s;
+  vector<float> photon_chIso_dZ2_dT3s;
+  vector<float> photon_chIso_dZ2_dT5s;
+
+
 };
 
 
-class PhotonIsolationAnalyzer : public edm::EDAnalyzer  
+//class PhotonIsolationAnalyzer : public edm::EDAnalyzer  
+class PhotonIsolationAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  
 {
 public:
   explicit PhotonIsolationAnalyzer(const edm::ParameterSet&);
   ~PhotonIsolationAnalyzer();
 
+  typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>,ROOT::Math::DefaultCoordinateSystemTag> genXYZ;
+
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 
 private:
-  //virtual void beginJob() override;
-  //virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-  //virtual void endJob() override;
-  virtual void beginJob() ;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) ;
-  virtual void endJob() ;
+  virtual void beginJob() override;
+  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+  virtual void endJob() override;
     
   void initEventStructure();
 
@@ -122,23 +164,34 @@ private:
   EDGetTokenT<edm::View<reco::PFCandidate> >      pfcandToken_;
   EDGetTokenT<View<reco::GenParticle> > genPartToken_;
   EDGetTokenT<vector<SimVertex> >  genVertexToken_;
+  EDGetTokenT<genXYZ> genXYZToken_;
+  EDGetTokenT<float>  genT0Token_;
   EDGetTokenT<View<reco::GenJet> > genJetsToken_;
-  EDGetTokenT<View<reco::Photon> > barrelPhotonsToken_; 
-  EDGetTokenT<View<reco::Photon> > endcapPhotonsToken_; 
+  EDGetTokenT<View<reco::Photon> > barrelPhotonsToken_;
+  EDGetTokenT<View<reco::Photon> > endcapPhotonsToken_;
   
   //--- outputs
   edm::Service<TFileService> fs_;
-  TTree *eventTree[10];
-  eventInfo evInfo[10];
-
+  TTree *eventTree[6];
+  eventInfo *evInfo[6];
+  
   //--- options
   vector<double> timeResolutions_;
-  vector<double> isoConeDR_;
+  double isoConeDR_;
   bool saveTracks_;
-  float maxDz_;
-  float minDr_;
+  double maxDz_;
+  double minDr_;
+  double minTrackPt_;
+  bool useVertexClosestToGenZ_;
+  bool useVertexClosestToGenZT_;
+  double btlEfficiency_;
+  double etlEfficiency_;
+
+  // -- 
+  TRandom *gRandom;
+  TRandom *gRandom2;
+
 };
 
 bool isPromptPhoton(const reco::Photon &photon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenJet(const reco::Photon &photon, const edm::View<reco::GenJet>& genJet);
-math::XYZTLorentzVector correctP4(const reco::Photon &photon, const reco::Vertex& vtx);
