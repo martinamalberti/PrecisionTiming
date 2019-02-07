@@ -19,5 +19,6 @@ config.Data.unitsPerJob = 60
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True
 config.Data.outputDatasetTag = 'test_DYToLL_muIso'
+config.Data.allowNonValidInputDataset = True
 
 config.Site.storageSite = 'T2_CH_CERN'

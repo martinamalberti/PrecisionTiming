@@ -38,9 +38,13 @@ int main(int argc, char** argv){
   float timeResolution = 0.030;
   int nsigma = 3;
 
+  float minMuonPt = 20.;
+  float maxMuonPt = 9999.;
   float maxDz = 0.1;
   float maxDxy = 0.02;
   float maxDzMu  = 0.5;
+  float btlMinTrackPt = 0.7;
+  float etlMinTrackPt = 0.4;
   
   string process = argv[1];
   bool prompt = false;
@@ -50,19 +54,19 @@ int main(int argc, char** argv){
   // -- get TChain
   TChain* chain = new TChain("analysis/tree_30ps","tree");
   if (process.find("DYToLL") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso/190111_164118/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190206_095318/0000/muonIsolation_*.root");
     if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_noPU_muIso/190111_164205/0000/muonIsolation_*.root");
     prompt = true;
   }
   
   if (process.find("TTbar") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso/190111_164134/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190206_095332/0000/muonIsolation_*.root");
     if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_noPU_muIso/190111_164224/0000/muonIsolation_*.root");
     prompt = false;
   }
   
   if (process.find("QCD") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_muIso/190111_164150/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Pt-15To7000_TuneCP5_Flat_14TeV-pythia8/test_QCD_muIso/190206_095346/0000/muonIsolation_*.root");
     if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_noPU_muIso/190111_164240/0000/muonIsolation_*.root");
     prompt = false; 
   }
@@ -204,17 +208,17 @@ int main(int argc, char** argv){
   TH1F *h_tracks_removed_sumpt_barrel = new TH1F("h_tracks_removed_sumpt_barrel","h_tracks_removed_sumpt_barrel",1000,0.,100.);
   TH1F *h_tracks_kept_sumpt_barrel = new TH1F("h_tracks_kept_sumpt_barrel","h_tracks_kept_sumpt_barrel",1000,0.,100.);
 
-  TProfile *p_tracks_pt_vs_linedensity_barrel = new TProfile("p_tracks_pt_vs_linedensity_barrel","p_tracks_pt_vs_linedensity_barrel",22,-0.1,2.1);
-  TProfile *p_tracks_removed_pt_vs_linedensity_barrel = new TProfile("p_tracks_removed_pt_vs_linedensity_barrel","p_tracks_removed_pt_vs_linedensity_barrel",22,-0.1,2.1);
-  TProfile *p_tracks_kept_pt_vs_linedensity_barrel = new TProfile("p_tracks_kept_pt_vs_linedensity_barrel","p_tracks_kept_pt_vs_linedensity_barrel",22,-0.1,2.1);
+  TProfile *p_tracks_pt_vs_linedensity_barrel = new TProfile("p_tracks_pt_vs_linedensity_barrel","p_tracks_pt_vs_linedensity_barrel",22,-0.05,2.05);
+  TProfile *p_tracks_removed_pt_vs_linedensity_barrel = new TProfile("p_tracks_removed_pt_vs_linedensity_barrel","p_tracks_removed_pt_vs_linedensity_barrel",22,-0.05,2.05);
+  TProfile *p_tracks_kept_pt_vs_linedensity_barrel = new TProfile("p_tracks_kept_pt_vs_linedensity_barrel","p_tracks_kept_pt_vs_linedensity_barrel",22,-0.05,2.05);
 
-  TProfile *p_tracks_n_vs_linedensity_barrel = new TProfile("p_tracks_n_vs_linedensity_barrel","p_tracks_n_vs_linedensity_barrel",22,-0.1,2.1);
-  TProfile *p_tracks_removed_n_vs_linedensity_barrel = new TProfile("p_tracks_removed_n_vs_linedensity_barrel","p_tracks_removed_n_vs_linedensity_barrel",22,-0.1,2.1);
-  TProfile *p_tracks_kept_n_vs_linedensity_barrel = new TProfile("p_tracks_kept_n_vs_linedensity_barrel","p_tracks_kept_n_vs_linedensity_barrel",22,-0.1,2.1);
+  TProfile *p_tracks_n_vs_linedensity_barrel = new TProfile("p_tracks_n_vs_linedensity_barrel","p_tracks_n_vs_linedensity_barrel",22,-0.05,2.05);
+  TProfile *p_tracks_removed_n_vs_linedensity_barrel = new TProfile("p_tracks_removed_n_vs_linedensity_barrel","p_tracks_removed_n_vs_linedensity_barrel",22,-0.05,2.05);
+  TProfile *p_tracks_kept_n_vs_linedensity_barrel = new TProfile("p_tracks_kept_n_vs_linedensity_barrel","p_tracks_kept_n_vs_linedensity_barrel",22,-0.05,2.05);
   
-  TProfile *p_tracks_sumpt_vs_linedensity_barrel = new TProfile("p_tracks_sumpt_vs_linedensity_barrel","p_tracks_sumpt_vs_linedensity_barrel",22,-0.1,2.1);
-  TProfile *p_tracks_removed_sumpt_vs_linedensity_barrel = new TProfile("p_tracks_removed_sumpt_vs_linedensity_barrel","p_tracks_removed_sumpt_vs_linedensity_barrel",22,-0.1,2.1);
-  TProfile *p_tracks_kept_sumpt_vs_linedensity_barrel = new TProfile("p_tracks_kept_sumpt_vs_linedensity_barrel","p_tracks_kept_sumpt_vs_linedensity_barrel",22,-0.1,2.1);
+  TProfile *p_tracks_sumpt_vs_linedensity_barrel = new TProfile("p_tracks_sumpt_vs_linedensity_barrel","p_tracks_sumpt_vs_linedensity_barrel",22,-0.05,2.05);
+  TProfile *p_tracks_removed_sumpt_vs_linedensity_barrel = new TProfile("p_tracks_removed_sumpt_vs_linedensity_barrel","p_tracks_removed_sumpt_vs_linedensity_barrel",22,-0.05,2.05);
+  TProfile *p_tracks_kept_sumpt_vs_linedensity_barrel = new TProfile("p_tracks_kept_sumpt_vs_linedensity_barrel","p_tracks_kept_sumpt_vs_linedensity_barrel",22,-0.05,2.05);
 
 
   TH1F *h_tracks_pt_endcap = new TH1F("h_tracks_pt_endcap","h_tracks_pt_endcap",400,0.,20.);
@@ -229,23 +233,44 @@ int main(int argc, char** argv){
   TH1F *h_tracks_removed_sumpt_endcap = new TH1F("h_tracks_removed_sumpt_endcap","h_tracks_removed_sumpt_endcap",1000,0.,100.);
   TH1F *h_tracks_kept_sumpt_endcap = new TH1F("h_tracks_kept_sumpt_endcap","h_tracks_kept_sumpt_endcap",1000,0.,100.);
 
-  TProfile *p_tracks_pt_vs_linedensity_endcap = new TProfile("p_tracks_pt_vs_linedensity_endcap","p_tracks_pt_vs_linedensity_endcap",22,-0.1,2.1);
-  TProfile *p_tracks_removed_pt_vs_linedensity_endcap = new TProfile("p_tracks_removed_pt_vs_linedensity_endcap","p_tracks_removed_pt_vs_linedensity_endcap",22,-0.1,2.1);
-  TProfile *p_tracks_kept_pt_vs_linedensity_endcap = new TProfile("p_tracks_kept_pt_vs_linedensity_endcap","p_tracks_kept_pt_vs_linedensity_endcap",22,-0.1,2.1);
+  TProfile *p_tracks_pt_vs_linedensity_endcap = new TProfile("p_tracks_pt_vs_linedensity_endcap","p_tracks_pt_vs_linedensity_endcap",22,-0.05,2.05);
+  TProfile *p_tracks_removed_pt_vs_linedensity_endcap = new TProfile("p_tracks_removed_pt_vs_linedensity_endcap","p_tracks_removed_pt_vs_linedensity_endcap",22,-0.05,2.05);
+  TProfile *p_tracks_kept_pt_vs_linedensity_endcap = new TProfile("p_tracks_kept_pt_vs_linedensity_endcap","p_tracks_kept_pt_vs_linedensity_endcap",22,-0.05,2.05);
 
-  TProfile *p_tracks_n_vs_linedensity_endcap = new TProfile("p_tracks_n_vs_linedensity_endcap","p_tracks_n_vs_linedensity_endcap",22,-0.1,2.1);
-  TProfile *p_tracks_removed_n_vs_linedensity_endcap = new TProfile("p_tracks_removed_n_vs_linedensity_endcap","p_tracks_removed_n_vs_linedensity_endcap",22,-0.1,2.1);
-  TProfile *p_tracks_kept_n_vs_linedensity_endcap = new TProfile("p_tracks_kept_n_vs_linedensity_endcap","p_tracks_kept_n_vs_linedensity_endcap",22,-0.1,2.1);
+  TProfile *p_tracks_n_vs_linedensity_endcap = new TProfile("p_tracks_n_vs_linedensity_endcap","p_tracks_n_vs_linedensity_endcap",22,-0.05,2.05);
+  TProfile *p_tracks_removed_n_vs_linedensity_endcap = new TProfile("p_tracks_removed_n_vs_linedensity_endcap","p_tracks_removed_n_vs_linedensity_endcap",22,-0.05,2.05);
+  TProfile *p_tracks_kept_n_vs_linedensity_endcap = new TProfile("p_tracks_kept_n_vs_linedensity_endcap","p_tracks_kept_n_vs_linedensity_endcap",22,-0.05,2.05);
   
-  TProfile *p_tracks_sumpt_vs_linedensity_endcap = new TProfile("p_tracks_sumpt_vs_linedensity_endcap","p_tracks_sumpt_vs_linedensity_endcap",22,-0.1,2.1);
-  TProfile *p_tracks_removed_sumpt_vs_linedensity_endcap = new TProfile("p_tracks_removed_sumpt_vs_linedensity_endcap","p_tracks_removed_sumpt_vs_linedensity_endcap",22,-0.1,2.1);
-  TProfile *p_tracks_kept_sumpt_vs_linedensity_endcap = new TProfile("p_tracks_kept_sumpt_vs_linedensity_endcap","p_tracks_kept_sumpt_vs_linedensity_endcap",22,-0.1,2.1);
+  TProfile *p_tracks_sumpt_vs_linedensity_endcap = new TProfile("p_tracks_sumpt_vs_linedensity_endcap","p_tracks_sumpt_vs_linedensity_endcap",22,-0.05,2.05);
+  TProfile *p_tracks_removed_sumpt_vs_linedensity_endcap = new TProfile("p_tracks_removed_sumpt_vs_linedensity_endcap","p_tracks_removed_sumpt_vs_linedensity_endcap",22,-0.05,2.05);
+  TProfile *p_tracks_kept_sumpt_vs_linedensity_endcap = new TProfile("p_tracks_kept_sumpt_vs_linedensity_endcap","p_tracks_kept_sumpt_vs_linedensity_endcap",22,-0.05,2.05);
 
+
+  // chargedIso for rocs
+  TH1F *h_muon_relChIso03_dZ1_barrel = new TH1F("h_muon_relChIso03_dZ1_barrel","h_muon_relChIso03_dZ1_barrel",5000, 0, 5); 
+  TH1F *h_muon_relChIso03_dZ1_endcap = new TH1F("h_muon_relChIso03_dZ1_endcap","h_muon_relChIso03_dZ1_endcap",5000,0,5); 
+
+  TH1F *h_muon_relChIso03_dZ1_dT3s_barrel = new TH1F("h_muon_relChIso03_dZ1_dT3s_barrel","h_muon_relChIso03_dT3s_dZ1_barrel",5000, 0, 5); 
+  TH1F *h_muon_relChIso03_dZ1_dT3s_endcap = new TH1F("h_muon_relChIso03_dZ1_dT3s_endcap","h_muon_relChIso03_dT3s_dZ1_endcap",5000,0,5); 
+
+  TH1F *h_muon_rawChIso03_dZ1_barrel = new TH1F("h_muon_rawChIso03_dZ1_barrel","h_muon_rawChIso03_dZ1_barrel",5000, 0, 500); 
+  TH1F *h_muon_rawChIso03_dZ1_endcap = new TH1F("h_muon_rawChIso03_dZ1_endcap","h_muon_rawChIso03_dZ1_endcap",5000,0,500); 
+
+  TH1F *h_muon_rawChIso03_dZ1_dT3s_barrel = new TH1F("h_muon_rawChIso03_dZ1_dT3s_barrel","h_muon_rawChIso03_dT3s_dZ1_barrel",5000, 0, 500); 
+  TH1F *h_muon_rawChIso03_dZ1_dT3s_endcap = new TH1F("h_muon_rawChIso03_dZ1_dT3s_endcap","h_muon_rawChIso03_dT3s_dZ1_endcap",5000,0,500); 
+  
+
+  // efficiency vs pT for relChIsoCut at 0.1 
+  TProfile *p_muonEff_relChIso03_dZ1_vs_pt_barrel = new TProfile("p_muonEff_relChIso03_dZ1_vs_pt_barrel","p_muonEff_relChIso03_dZ1_vs_pt_barrel",100, 0, 100);
+  TProfile *p_muonEff_relChIso03_dZ1_dT3s_vs_pt_barrel = new TProfile("p_muonEff_relChIso03_dZ1_dT3s_vs_pt_barrel","p_muonEff_relChIso03_dZ1_dT3s_vs_pt_barrel",100, 0, 100);
+
+  TProfile *p_muonEff_relChIso03_dZ1_vs_pt_endcap = new TProfile("p_muonEff_relChIso03_dZ1_vs_pt_endcap","p_muonEff_relChIso03_dZ1_vs_pt_endcap",100, 0, 100);
+  TProfile *p_muonEff_relChIso03_dZ1_dT3s_vs_pt_endcap = new TProfile("p_muonEff_relChIso03_dZ1_dT3s_vs_pt_endcap","p_muonEff_relChIso03_dZ1_dT3s_vs_pt_endcap",100, 0, 100);
+  
 
 
   cout << "Analyzing " << chain->GetEntries() << "  events" <<endl;
-  
-  
+    
   int maxEntries = chain->GetEntries();
   //  maxEntries = 500000;
   for (int ientry = 0; ientry< maxEntries; ientry++) {
@@ -261,7 +286,8 @@ int main(int argc, char** argv){
     float linedensity = npu*TMath::Gaus(fabs(10.*vtxGen_z), 0, 42., 1);
 
     for (unsigned int imu = 0; imu < muon_pt->size(); imu++){
-      if (muon_pt->at(imu)< 20. ) continue;
+      if (muon_pt->at(imu) < minMuonPt ) continue;
+      if (muon_pt->at(imu) > maxMuonPt ) continue;
       if (!muon_isLoose->at(imu) ) continue;
       if (fabs(muon_dz4D->at(imu)) > 0.5 ) continue;
       if (fabs(muon_dxy4D->at(imu)) > 0.2 ) continue;
@@ -309,6 +335,9 @@ int main(int argc, char** argv){
 	
 	if ( dr > 0.3 ) continue;
 	
+	if ( fabs(track_eta->at(itk)) < 1.48 && track_pt->at(itk) < btlMinTrackPt ) continue;
+	if ( fabs(track_eta->at(itk)) > 1.48 && track_pt->at(itk) < etlMinTrackPt ) continue;
+
 	float dz = track_dz4D->at(itk);
 	float dxy = track_dxy4D->at(itk);
 	float dt = track_t->at(itk) - vtx4D_t;
@@ -403,6 +432,8 @@ int main(int argc, char** argv){
 	
       }// end loop over tracks
 
+      float relChIso = sumpt/muon_pt->at(imu);
+      float relChIso_dT = sumpt_kept/muon_pt->at(imu);
       
       if (isBarrel){
 	// -- all tracks in isolation cone
@@ -422,6 +453,21 @@ int main(int argc, char** argv){
 	h_tracks_kept_sumpt_barrel -> Fill( sumpt_kept );
 	p_tracks_kept_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_kept );
 	p_tracks_kept_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_kept );
+
+	// -- rel chIso
+	h_muon_relChIso03_dZ1_barrel ->Fill(sumpt/muon_pt->at(imu));
+	h_muon_relChIso03_dZ1_dT3s_barrel ->Fill(sumpt_kept/muon_pt->at(imu));
+
+	// -- raw chIso
+	h_muon_rawChIso03_dZ1_barrel ->Fill(sumpt);
+	h_muon_rawChIso03_dZ1_dT3s_barrel ->Fill(sumpt_kept);
+
+	// -- eff 
+	if (relChIso < 0.05) p_muonEff_relChIso03_dZ1_vs_pt_barrel->Fill(muon_pt->at(imu), 1.);
+	else p_muonEff_relChIso03_dZ1_vs_pt_barrel->Fill(muon_pt->at(imu), 0.);
+
+	if (relChIso_dT < 0.05) p_muonEff_relChIso03_dZ1_dT3s_vs_pt_barrel->Fill(muon_pt->at(imu), 1.);
+	else p_muonEff_relChIso03_dZ1_dT3s_vs_pt_barrel->Fill(muon_pt->at(imu), 0.);
       }
       else{
 	h_tracks_n_endcap -> Fill( ntracks );
@@ -438,14 +484,28 @@ int main(int argc, char** argv){
 	h_tracks_kept_sumpt_endcap -> Fill( sumpt_kept );
 	p_tracks_kept_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_kept );
 	p_tracks_kept_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_kept );
+
+	// -- rel chIso
+	h_muon_relChIso03_dZ1_endcap ->Fill(sumpt/muon_pt->at(imu));
+	h_muon_relChIso03_dZ1_dT3s_endcap ->Fill(sumpt_kept/muon_pt->at(imu));
+
+	// -- raw chIso
+	h_muon_rawChIso03_dZ1_endcap ->Fill(sumpt);
+	h_muon_rawChIso03_dZ1_dT3s_endcap ->Fill(sumpt_kept);
+
+	// -- eff 
+	if (relChIso < 0.1) p_muonEff_relChIso03_dZ1_vs_pt_endcap->Fill(muon_pt->at(imu), 1.);
+	else p_muonEff_relChIso03_dZ1_vs_pt_endcap->Fill(muon_pt->at(imu), 0.);
+
+	if (relChIso_dT < 0.1) p_muonEff_relChIso03_dZ1_dT3s_vs_pt_endcap->Fill(muon_pt->at(imu), 1.);
+	else p_muonEff_relChIso03_dZ1_dT3s_vs_pt_endcap->Fill(muon_pt->at(imu), 0.);
       }
 
     }// end loop over muons
 
   }//end loop over events
   
-  
-
+  // -- dt track in muon iso cone
   TF1 *fitfun_barrel = new TF1("fitfun_barrel","gaus(0)+gaus(3)", -10, 10);
   fitfun_barrel->SetParameter(1, 0.);
   fitfun_barrel->SetParameter(2, 0.030);
@@ -482,9 +542,15 @@ int main(int argc, char** argv){
   fitfun2_endcap->SetNpx(1000);
   h_tracks_dt_mu_endcap->Scale(1./h_muon_pt_endcap->GetSumOfWeights());
   h_tracks_dt_mu_endcap->Fit("fitfun2_endcap","QR");
+
+
   
-  
-  std::string foutName = "testTracks_" + process + "_" + pu + "_dT"+ std::to_string(nsigma)+"sigma.root";
+  // -- save histograms in output file
+  std::string foutName = "testTracks_" + process + "_" + pu + "_dT"+ std::to_string(nsigma)+"sigma"+
+                         "_minMuonPt"+std::to_string(int(minMuonPt))+
+                         "_maxMuonPt"+std::to_string(int(maxMuonPt))+
+                         "_minTrackPt.root";
+
   TFile *fout = new TFile(foutName.c_str(),"recreate");
 
   hsimvtx_z->Write();
@@ -568,6 +634,24 @@ int main(int argc, char** argv){
   p_tracks_removed_sumpt_vs_linedensity_endcap -> Write();
   p_tracks_kept_sumpt_vs_linedensity_endcap -> Write();
 
+  h_muon_relChIso03_dZ1_barrel -> Write();
+  h_muon_relChIso03_dZ1_dT3s_barrel -> Write();
+
+  h_muon_relChIso03_dZ1_endcap -> Write();
+  h_muon_relChIso03_dZ1_dT3s_endcap -> Write();
+
+
+  h_muon_rawChIso03_dZ1_barrel -> Write();
+  h_muon_rawChIso03_dZ1_dT3s_barrel -> Write();
+
+  h_muon_rawChIso03_dZ1_endcap -> Write();
+  h_muon_rawChIso03_dZ1_dT3s_endcap -> Write();
+
+  p_muonEff_relChIso03_dZ1_vs_pt_barrel->Write();
+  p_muonEff_relChIso03_dZ1_dT3s_vs_pt_barrel->Write();
+
+  p_muonEff_relChIso03_dZ1_vs_pt_endcap->Write();
+  p_muonEff_relChIso03_dZ1_dT3s_vs_pt_endcap->Write();
 
 
   fout->Close();

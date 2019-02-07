@@ -55,11 +55,13 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   muonsToken_(consumes<View<reco::Muon> >(iConfig.getUntrackedParameter<edm::InputTag>("muonsTag")))
 {
   timeResolutions_ = iConfig.getUntrackedParameter<vector<double> >("timeResolutions");
+  mtd5sample_      = iConfig.getUntrackedParameter<bool>("mtd5sample");
   isoConeDR_       = iConfig.getUntrackedParameter<double>("isoConeDR");
   saveTracks_      = iConfig.getUntrackedParameter<bool>("saveTracks");
   maxDz_           = iConfig.getUntrackedParameter<double>("maxDz");
   minDr_           = iConfig.getUntrackedParameter<double>("minDr");
-  minTrackPt_      = iConfig.getUntrackedParameter<double>("minTrackPt");
+  btlMinTrackPt_   = iConfig.getUntrackedParameter<double>("btlMinTrackPt");
+  etlMinTrackPt_   = iConfig.getUntrackedParameter<double>("etlMinTrackPt");
   useVertexClosestToGenZ_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZ");
   useVertexClosestToGenZT_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZT");
   btlEfficiency_ = iConfig.getUntrackedParameter<double>("btlEfficiency");
@@ -371,7 +373,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       if ( trackRef == muon.track() ) continue;
 
       //-- use tracks with pT above thtreshold
-      if ( pfcand.pt() < minTrackPt_) continue;
+      if ( std::abs(pfcand.eta()) < 1.48 && pfcand.pt() < btlMinTrackPt_) continue;
+      if ( std::abs(pfcand.eta()) > 1.48 && pfcand.pt() < etlMinTrackPt_) continue;
 
       // -- compute dz, dxy 
       float dz4D  = std::abs( trackRef->dz(vtx4D.position()) );
@@ -419,8 +422,12 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
 	  double targetTimeResol = timeResolutions_[iRes];
 	  double defaultTimeResol  = 0.;
-	  if ( pfcand.isTimeValid() ) defaultTimeResol  = double(pfcand.timeError()); 
-	  double extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol);                 
+	  if ( pfcand.isTimeValid() ) {
+	    defaultTimeResol  = double(pfcand.timeError()); 
+	    if (mtd5sample_) defaultTimeResol = 0.035;
+	  }	  
+	  double extra_resol = 0.;
+	  if ( targetTimeResol > defaultTimeResol) { extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol); }
 	  double dtsim = 0.;
 	  double dt = 0.;
 	  double dtmu = 0.;
