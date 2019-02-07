@@ -201,6 +201,7 @@ private:
   
   //--- options
   vector<double> timeResolutions_;
+  bool mtd5sample_;
   double isoConeDR_;
   bool saveTracks_;
   double maxDz_;

@@ -32,6 +32,7 @@ process.analysis = cms.EDAnalyzer(
     genXYZTag = cms.untracked.InputTag("genParticles", "xyz0", "HLT"),
     genT0Tag = cms.untracked.InputTag("genParticles", "t0", "HLT"),
     genJetsTag = cms.untracked.InputTag("ak4GenJets", "", "HLT"),
+    mtd5sample = cms.untracked.bool(False),
     #timeResolutions = cms.untracked.vdouble(0.030, 0.040, 0.050, 0.060, 0.070, 0.200),
     timeResolutions = cms.untracked.vdouble(0.030),
     isoConeDR = cms.untracked.double(0.3),
