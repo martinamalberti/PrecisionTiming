@@ -59,7 +59,8 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   saveTracks_      = iConfig.getUntrackedParameter<bool>("saveTracks");
   maxDz_           = iConfig.getUntrackedParameter<double>("maxDz");
   minDr_           = iConfig.getUntrackedParameter<double>("minDr");
-  minTrackPt_      = iConfig.getUntrackedParameter<double>("minTrackPt");
+  btlMinTrackPt_   = iConfig.getUntrackedParameter<double>("btlMinTrackPt");
+  etlMinTrackPt_   = iConfig.getUntrackedParameter<double>("etlMinTrackPt");
   useVertexClosestToGenZ_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZ");
   useVertexClosestToGenZT_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZT");
   btlEfficiency_ = iConfig.getUntrackedParameter<double>("btlEfficiency");
@@ -371,7 +372,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       if ( trackRef == muon.track() ) continue;
 
       //-- use tracks with pT above thtreshold
-      if ( pfcand.pt() < minTrackPt_) continue;
+      if ( std::abs(pfcand.eta()) < 1.48 && pfcand.pt() < btlMinTrackPt_) continue;
+      if ( std::abs(pfcand.eta()) > 1.48 && pfcand.pt() < etlMinTrackPt_) continue;
 
       // -- compute dz, dxy 
       float dz4D  = std::abs( trackRef->dz(vtx4D.position()) );
