@@ -948,7 +948,7 @@ MuonIsolationAnalyzer::initEventStructure()
   }
 }
 
-
+/*
 
 // --- matching to gen muon
 bool isPromptMuon(const reco::Muon& muon, const edm::View<reco::GenParticle>& genParticles)
@@ -1084,7 +1084,7 @@ bool isUnmatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<r
   return isUnmatched;
 
 }
-
+*/
 
 
 //define this as a plug-in
