@@ -1,3 +1,5 @@
+#ifndef _MUON_ISOLATION_H
+#define _MUON_ISOLATION_H
 // -*- C++ -*-
 //
 // Package:    PrecisionTiming/MuonIsolationAnalyzer
@@ -47,6 +49,8 @@
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 
 #include "DataFormats/Common/interface/View.h"
+
+#include "PrecisionTiming/PTAnalysis/interface/Utils.h"
 
 #include <vector>
 #include <map>
@@ -219,8 +223,11 @@ private:
 
 };
 
+/*
 bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenJet(const reco::Muon &muon, const edm::View<reco::GenJet>& genJet);
 bool isFromTau(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);
 bool isUnmatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);
+*/
+#endif
