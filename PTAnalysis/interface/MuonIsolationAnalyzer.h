@@ -126,6 +126,16 @@ struct eventInfo
   vector<float> muon_chIso_dZ2_dT3s_simVtx;
   vector<float> muon_chIso_dZ2_dT5s_simVtx;
 
+  vector<float> muon_chIso_dZ3_simVtx;
+  vector<float> muon_chIso_dZ3_dT2s_simVtx;
+  vector<float> muon_chIso_dZ3_dT3s_simVtx;
+  vector<float> muon_chIso_dZ3_dT5s_simVtx;
+
+  vector<float> muon_chIso_dZ10_simVtx;
+  vector<float> muon_chIso_dZ10_dT2s_simVtx;
+  vector<float> muon_chIso_dZ10_dT3s_simVtx;
+  vector<float> muon_chIso_dZ10_dT5s_simVtx;
+
   vector<float> muon_chIso_dZ05;
   vector<float> muon_chIso_dZ05_dT2s;
   vector<float> muon_chIso_dZ05_dT3s;
@@ -140,6 +150,16 @@ struct eventInfo
   vector<float> muon_chIso_dZ2_dT2s;
   vector<float> muon_chIso_dZ2_dT3s;
   vector<float> muon_chIso_dZ2_dT5s;
+
+  vector<float> muon_chIso_dZ3;
+  vector<float> muon_chIso_dZ3_dT2s;
+  vector<float> muon_chIso_dZ3_dT3s;
+  vector<float> muon_chIso_dZ3_dT5s;
+
+  vector<float> muon_chIso_dZ10;
+  vector<float> muon_chIso_dZ10_dT2s;
+  vector<float> muon_chIso_dZ10_dT3s;
+  vector<float> muon_chIso_dZ10_dT5s;
 
   vector<float> muon_chIso_reldZ;
   vector<float> muon_chIso_reldZ_dT;

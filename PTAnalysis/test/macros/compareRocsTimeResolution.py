@@ -40,7 +40,14 @@ ROOT.gStyle.SetOptFit(0)
 
 
 whichVtx = sys.argv[1]
-resolutions = ['30', '40', '50', '60', '70']
+inputDir = '93X/30ps_PU200_TTbar_minTkPtCut/'
+inputDirNoPU = '93X/30ps_noPU_TTbar_minTkPtCut/'
+#inputDir = '30ps_PU200_TTbar/'
+#inputDirNoPU = '30ps_noPU_TTbar/'
+
+#resolutions = ['30', '40', '50', '60', '70']
+resolutions = ['30']
+
 canvasWithRatios = False
 
 tl = ROOT.TLatex( 0.65, 0.86,'<PU> = 200')
@@ -61,7 +68,7 @@ roc_NoPU = {}
 
 c = {}
 
-regions = ['','barrel','endcap']
+regions = ['barrel','endcap']
 
 
 col = {'30':ROOT.kRed,
@@ -75,8 +82,8 @@ leg = {}
 
 tt = {}
 tt[''] = ROOT.TLatex( 0.15, 0.13, '|#eta|<2.8')
-tt['barrel'] = ROOT.TLatex( 0.15, 0.13, '|#eta|<1.48')
-tt['endcap'] = ROOT.TLatex( 0.15, 0.13, '1.48 < |#eta| < 2.8')
+tt['barrel'] = ROOT.TLatex( 0.15, 0.13, '|#eta|<1.5')
+tt['endcap'] = ROOT.TLatex( 0.15, 0.13, '1.5 < |#eta| < 2.8')
 for reg in regions:
     tt[reg].SetNDC()
     tt[reg].SetTextSize(0.035)
@@ -123,26 +130,28 @@ for ireg,reg in enumerate(regions):
     g_ratio_fake[reg] = {}
 
     for ires,res in enumerate(resolutions):
-        f[res] = ROOT.TFile.Open('%sps_PU200_TTbar/roc_%sps_PU200.root'%(res,res))
-        f_NoPU[res] = ROOT.TFile.Open('30ps_noPU_TTbar/roc_30ps_noPU.root')
+        f[res] = ROOT.TFile.Open( (inputDir+'/roc_%sps_PU200.root'%(res)).replace('30',res) )
+        print inputDirNoPU+'/roc_30ps_noPU.root'
+        f_NoPU[res] = ROOT.TFile.Open(inputDirNoPU+'/roc_30ps_noPU.root')
         
         if (whichVtx == 'simVtx'):
-            gname  = 'g_roc_relChIso03_dZ1_simVtx_%s'%reg
-            gname_dT = 'g_roc_relChIso03_dZ1_simVtx_dT3s_%s'%reg
+            if (reg == 'barrel'):
+                gname  = 'g_roc_relChIso03_dZ1_simVtx_%s'%reg
+                gname_dT = 'g_roc_relChIso03_dZ1_simVtx_dT3s_%s'%reg
+                gnameNoPU  = 'g_roc_relChIso03_dZ10_simVtx_%s'%reg
+            else:
+                gname  = 'g_roc_relChIso03_dZ2_simVtx_%s'%reg
+                gname_dT = 'g_roc_relChIso03_dZ2_simVtx_dT3s_%s'%reg
+                gnameNoPU  = 'g_roc_relChIso03_dZ10_simVtx_%s'%reg
         else:
             gname  = 'g_roc_relChIso03_dZ1_%s'%reg
             gname_dT = 'g_roc_relChIso03_dZ1_dT3s_%s'%reg
-            #gname  = 'g_roc_relChIso03_dZ2_%s'%reg
-            #gname_dT = 'g_roc_relChIso03_dZ2_dT_%s'%reg
 
             
-        if (reg == ''):
-            gname = gname[:-1]
-            gname_dT = gname_dT[:-1]
-
+            
         roc[reg][res] = f[res].Get(gname) 
         roc_dT[reg][res] = f[res].Get(gname_dT)
-        roc_NoPU[reg][res] = f_NoPU[res].Get(gname) 
+        roc_NoPU[reg][res] = f_NoPU[res].Get(gnameNoPU) 
 
         g_prompt_vs_fake[reg][res] = ROOT.TGraph()
         g_prompt_vs_fake_dT[reg][res] = ROOT.TGraph()
@@ -196,8 +205,8 @@ for ireg,reg in enumerate(regions):
             roc[reg][res].GetYaxis().SetRangeUser(0.01,0.08)
             roc[reg][res].Draw('A C E3')
             leg[reg].AddEntry(roc[reg][res],'no MTD','FL')
-            #roc_NoPU[reg][res].Draw('C E3 same')
-            #leg[reg].AddEntry(roc_NoPU[reg][res],'no MTD, noPU','PL')
+            roc_NoPU[reg][res].Draw('C E3 same')
+            leg[reg].AddEntry(roc_NoPU[reg][res],'no MTD, noPU, no dz/dt cuts','PL')
         if (canvasWithRatios):
             pad1.cd()  
         roc_dT[reg][res].Draw('C E3 same')

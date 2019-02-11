@@ -69,6 +69,8 @@ def makeEff(h, heff):
 #conesDR = ['02','03','04','05']
 conesDR = ['03']
 
+#release = '10_4_0_mtd5'
+release = '93X'
 
 resolution = int(sys.argv[1])
 pu = sys.argv[2]
@@ -76,17 +78,19 @@ bkgProc = sys.argv[3]
 suffix = sys.argv[4]
 
 if (pu == 'noPU'):
-    fSig = '../output_muIso_DYToLL_noPU_%dps_prompt.root '%resolution
-    fBkg = '../output_muIso_%s_noPU_%dps_fake.root' %(bkgProc,resolution)
-    #fSig = '../10_4_0_mtd3/output_muIso_DYToLL_noPU_%dps_prompt_1040mtd3.root '%resolution
-    #fBkg = '../10_4_0_mtd3/output_muIso_%s_noPU_%dps_fake_1040mtd3.root' %(bkgProc,resolution)
+    #fSig = '../'+release+'/output_muIso_DYToLL_noPU_%dps_prompt.root '%resolution
+    #fBkg = '../'+release+'/output_muIso_%s_noPU_%dps_fake.root' %(bkgProc,resolution)
+    fSig = '../'+release+'//output_muIso_DYToLL_noPU_%dps_prompt_minTkPtCut.root '%resolution
+    fBkg = '../'+release+'/output_muIso_%s_noPU_%dps_fake_minTkPtCut.root' %(bkgProc,resolution)
 else:
-    fSig = '../output_muIso_DYToLL_%dps_prompt.root '%resolution
-    fBkg = '../output_muIso_%s_%dps_fake.root'  %(bkgProc,resolution)
-    #fSig = '../output_muIso_DYToLL_%dps_prompt_eff90.root '%resolution
-    #fBkg = '../output_muIso_%s_%dps_fake_eff90.root'  %(bkgProc,resolution)
-    #fSig = '../output_muIso_DYToLL_%dps_prompt_ZTClosestVtx.root '%resolution
-    #fBkg = '../output_muIso_%s_%dps_fake_ZTClosestVtx.root'  %(bkgProc,resolution)
+    #fSig = '../'+release+'/output_muIso_DYToLL_%dps_prompt.root '%resolution
+    #fBkg = '../'+release+'/output_muIso_%s_%dps_fake.root'  %(bkgProc,resolution)
+    fSig = '../'+release+'/output_muIso_DYToLL_%dps_prompt_minTkPtCut.root '%resolution
+    fBkg = '../'+release+'/output_muIso_%s_%dps_fake_minTkPtCut.root'  %(bkgProc,resolution)
+    #fSig = '../'+release+'/output_muIso_DYToLL_%dps_prompt_eff90.root '%resolution
+    #fBkg = '../'+release+'/output_muIso_%s_%dps_fake_eff90.root'  %(bkgProc,resolution)
+    #fSig = '../'+release+'/output_muIso_DYToLL_%dps_prompt_ZTClosestVtx.root '%resolution
+    #fBkg = '../'+release+'/output_muIso_%s_%dps_fake_ZTClosestVtx.root'  %(bkgProc,resolution)
 
     
     
@@ -237,9 +241,13 @@ for ir,dr in enumerate(conesDR):
     chIsoNames[dr] = ['relChIso%s_dZ05_simVtx'%dr,
                       'relChIso%s_dZ1_simVtx'%dr,
                       'relChIso%s_dZ2_simVtx'%dr,
+                      'relChIso%s_dZ3_simVtx'%dr,
+                      'relChIso%s_dZ10_simVtx'%dr,
                       'relChIso%s_dZ05'%dr,
                       'relChIso%s_dZ1'%dr,
                       'relChIso%s_dZ2'%dr,
+                      'relChIso%s_dZ3'%dr,
+                      'relChIso%s_dZ10'%dr,
                       #'relChIso%s_reldZ'%dr,
                       'relChIso%s_dZmu05'%dr,
                       'relChIso%s_dZmu1'%dr,
@@ -654,7 +662,7 @@ for ir,dr in enumerate(conesDR):
         
     
 #save plots
-dirname = '%dps_%s_%s'%(resolution, pu, bkgProc)
+dirname = release+'/%dps_%s_%s'%(resolution, pu, bkgProc)
 if (suffix != ''):
     dirname = dirname+'_'+suffix
 dirname = dirname+'/'

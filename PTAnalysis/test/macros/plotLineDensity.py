@@ -38,15 +38,10 @@ ROOT.gStyle.SetOptFit(0)
 #ROOT.gStyle.SetLegendFont(42)
 
 
+resol = [30, 40, 50, 60, 70]
 
-
-fSig = '../output_muIso_DYToLL_30ps_prompt.root '
-fBkg = '../output_muIso_TTbar_30ps_fake.root'
-#fBkg = '../output_muIso_QCD_30ps_fake.root'
 
 f = {}
-f['sig'] = ROOT.TFile.Open(fSig)
-f['bkg'] = ROOT.TFile.Open(fBkg)
 
 h_linedensity_noRelChIsoZCut = {}
 h_linedensity_noRelChIsoZTCut = {}
@@ -59,61 +54,81 @@ h_eff_RelChIsoZTCut = {}
 
 nRe = 20
 
-for proc in 'sig', 'bkg':
-    h_linedensity_noRelChIsoZCut[proc]  =  f[proc].Get('h_linedensity_noRelChIsoZCut')
-    h_linedensity_noRelChIsoZTCut[proc]  =  f[proc].Get('h_linedensity_noRelChIsoZTCut')
-    h_linedensity_RelChIsoZCut[proc]  =  f[proc].Get('h_linedensity_RelChIsoZCut')
-    h_linedensity_RelChIsoZTCut[proc]  =  f[proc].Get('h_linedensity_RelChIsoZTCut')
-    #h_linedensity_RelChIsoZCut[proc]  =  f[proc].Get('h_linedensity_RelChIsoZCut_simVtx')
-    #h_linedensity_RelChIsoZTCut[proc]  =  f[proc].Get('h_linedensity_RelChIsoZTCut_simVtx')
+for i,res in enumerate(resol):
+    f[res] = {}
+    h_linedensity_noRelChIsoZCut[res] = {}
+    h_linedensity_noRelChIsoZTCut[res] = {}
+    h_linedensity_RelChIsoZCut[res] = {}
+    h_linedensity_RelChIsoZTCut[res] = {}
+    h_eff_RelChIsoZCut[res] = {}
+    h_eff_RelChIsoZTCut[res] = {}
+    for proc in 'sig', 'bkg':
+        fname = '../output_muIso_DYToLL_%dps_prompt.root'%res
+        if (proc == 'bkg'): fname = '../output_muIso_TTbar_%dps_fake.root'%res
+        f[res][proc] = ROOT.TFile.Open(fname)
 
-    h_linedensity_noRelChIsoZCut[proc].Rebin(nRe)
-    h_linedensity_noRelChIsoZTCut[proc].Rebin(nRe)
-    h_linedensity_RelChIsoZCut[proc].Rebin(nRe)
-    h_linedensity_RelChIsoZTCut[proc].Rebin(nRe)
+        #h_linedensity_noRelChIsoZCut[res][proc]  =  f[res][proc].Get('h_linedensity_noRelChIsoZCut')
+        #h_linedensity_noRelChIsoZTCut[res][proc]  =  f[res][proc].Get('h_linedensity_noRelChIsoZTCut')
+        #h_linedensity_RelChIsoZCut[res][proc]  =  f[res][proc].Get('h_linedensity_RelChIsoZCut_simVtx')
+        #h_linedensity_RelChIsoZTCut[res][proc]  =  f[res][proc].Get('h_linedensity_RelChIsoZTCut_simVtx')
 
-    h_linedensity_noRelChIsoZCut[proc].Sumw2()
-    h_linedensity_noRelChIsoZTCut[proc].Sumw2()
-    h_linedensity_RelChIsoZCut[proc].Sumw2()
-    h_linedensity_RelChIsoZTCut[proc].Sumw2()
-    
-    h_eff_RelChIsoZCut[proc] =  h_linedensity_RelChIsoZCut[proc].Clone('h_eff_RelChIsoZCut_%s'%proc)
-    h_eff_RelChIsoZTCut[proc] =  h_linedensity_RelChIsoZTCut[proc].Clone('h_eff_RelChIsoZTCut_%s'%proc)
+        h_linedensity_noRelChIsoZCut[res][proc]  =  f[res][proc].Get('h_linedensity_noRelChIsoZCut_endcap')
+        h_linedensity_noRelChIsoZTCut[res][proc]  =  f[res][proc].Get('h_linedensity_noRelChIsoZTCut_endcap')
+        h_linedensity_RelChIsoZCut[res][proc]  =  f[res][proc].Get('h_linedensity_RelChIsoZCut_simVtx_endcap')
+        h_linedensity_RelChIsoZTCut[res][proc]  =  f[res][proc].Get('h_linedensity_RelChIsoZTCut_simVtx_endcap')
 
-    h_eff_RelChIsoZCut[proc].Divide(h_eff_RelChIsoZCut[proc],h_linedensity_noRelChIsoZCut[proc])
-    h_eff_RelChIsoZTCut[proc].Divide(h_eff_RelChIsoZTCut[proc],h_linedensity_noRelChIsoZTCut[proc])
+        h_linedensity_noRelChIsoZCut[res][proc].Rebin(nRe)
+        h_linedensity_noRelChIsoZTCut[res][proc].Rebin(nRe)
+        h_linedensity_RelChIsoZCut[res][proc].Rebin(nRe)
+        h_linedensity_RelChIsoZTCut[res][proc].Rebin(nRe)
+        
+        h_linedensity_noRelChIsoZCut[res][proc].Sumw2()
+        h_linedensity_noRelChIsoZTCut[res][proc].Sumw2()
+        h_linedensity_RelChIsoZCut[res][proc].Sumw2()
+        h_linedensity_RelChIsoZTCut[res][proc].Sumw2()
+        
+        h_eff_RelChIsoZCut[res][proc] =  h_linedensity_RelChIsoZCut[res][proc].Clone('h_eff_RelChIsoZCut_%s_%dps'%(proc,res))
+        h_eff_RelChIsoZTCut[res][proc] =  h_linedensity_RelChIsoZTCut[res][proc].Clone('h_eff_RelChIsoZTCut_%s_%dps'%(proc,res))
 
-    h_eff_RelChIsoZCut[proc].SetLineColor(ROOT.kBlue)
-    h_eff_RelChIsoZTCut[proc].SetLineColor(ROOT.kRed)
+        h_eff_RelChIsoZCut[res][proc].Divide(h_eff_RelChIsoZCut[res][proc],h_linedensity_noRelChIsoZCut[res][proc])
+        h_eff_RelChIsoZTCut[res][proc].Divide(h_eff_RelChIsoZTCut[res][proc],h_linedensity_noRelChIsoZTCut[res][proc])
 
-    h_eff_RelChIsoZCut[proc].SetMarkerColor(ROOT.kBlue)
-    h_eff_RelChIsoZTCut[proc].SetMarkerColor(ROOT.kRed)
+        h_eff_RelChIsoZCut[res][proc].SetLineColor(ROOT.kBlue)
+        h_eff_RelChIsoZTCut[res][proc].SetLineColor(ROOT.kRed+i)
 
-    h_eff_RelChIsoZCut[proc].SetMarkerStyle(20)
-    h_eff_RelChIsoZTCut[proc].SetMarkerStyle(20)
+        h_eff_RelChIsoZCut[res][proc].SetMarkerColor(ROOT.kBlue)
+        h_eff_RelChIsoZTCut[res][proc].SetMarkerColor(ROOT.kRed+i)
 
-    h_eff_RelChIsoZCut[proc].SetLineWidth(2)
-    h_eff_RelChIsoZTCut[proc].SetLineWidth(2)
+        h_eff_RelChIsoZCut[res][proc].SetMarkerStyle(20)
+        h_eff_RelChIsoZTCut[res][proc].SetMarkerStyle(20)
+        
+        h_eff_RelChIsoZCut[res][proc].SetLineWidth(2)
+        h_eff_RelChIsoZTCut[res][proc].SetLineWidth(2)
 
+        
 canvas = ROOT.TCanvas('eff_vs_linedensity','eff_vs_linedensity')
 canvas.Divide(1,2)
 canvas.cd(1)
 canvas.cd(1).SetGridx()
 canvas.cd(1).SetGridy()
-h_eff_RelChIsoZCut['sig'].GetYaxis().SetRangeUser(0.8,1.0)
-h_eff_RelChIsoZCut['sig'].GetYaxis().SetTitle('prompt efficiency')
-h_eff_RelChIsoZCut['sig'].GetXaxis().SetTitle('line density (mm^{-1})')
-h_eff_RelChIsoZCut['sig'].Draw('e')
-h_eff_RelChIsoZTCut['sig'].Draw('esame')
+h_eff_RelChIsoZCut[30]['sig'].GetYaxis().SetRangeUser(0.8,1.0)
+h_eff_RelChIsoZCut[30]['sig'].GetYaxis().SetTitle('prompt efficiency')
+h_eff_RelChIsoZCut[30]['sig'].GetXaxis().SetTitle('line density (mm^{-1})')
+h_eff_RelChIsoZCut[30]['sig'].Draw('e')
+h_eff_RelChIsoZTCut[30]['sig'].Draw('esame')
+h_eff_RelChIsoZTCut[40]['sig'].Draw('esame')
+h_eff_RelChIsoZTCut[60]['sig'].Draw('esame')
 
 canvas.cd(2)
 canvas.cd(2).SetGridx()
 canvas.cd(2).SetGridy()
-h_eff_RelChIsoZCut['bkg'].GetYaxis().SetRangeUser(0.0,0.1)
-h_eff_RelChIsoZCut['bkg'].GetYaxis().SetTitle('non-prompt efficiency')
-h_eff_RelChIsoZCut['bkg'].GetXaxis().SetTitle('line density (mm^{-1})')
-h_eff_RelChIsoZCut['bkg'].Draw('e')
-h_eff_RelChIsoZTCut['bkg'].Draw('esame')
+h_eff_RelChIsoZCut[30]['bkg'].GetYaxis().SetRangeUser(0.0,0.1)
+h_eff_RelChIsoZCut[30]['bkg'].GetYaxis().SetTitle('non-prompt efficiency')
+h_eff_RelChIsoZCut[30]['bkg'].GetXaxis().SetTitle('line density (mm^{-1})')
+h_eff_RelChIsoZCut[30]['bkg'].Draw('e')
+h_eff_RelChIsoZTCut[30]['bkg'].Draw('esame')
+h_eff_RelChIsoZTCut[40]['bkg'].Draw('esame')
+h_eff_RelChIsoZTCut[60]['bkg'].Draw('esame')
 
 CMS_lumi.CMS_lumi(canvas.cd(1), iPeriod, iPos)
 

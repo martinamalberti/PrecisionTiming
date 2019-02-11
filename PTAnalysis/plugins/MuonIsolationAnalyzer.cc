@@ -286,9 +286,13 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float chIso_dZ05_simVtx = 0.;
     float chIso_dZ1_simVtx = 0.;
     float chIso_dZ2_simVtx = 0.;
+    float chIso_dZ3_simVtx = 0.;
+    float chIso_dZ10_simVtx = 0.;
     float chIso_dZ05 = 0.;
     float chIso_dZ1 = 0.;
     float chIso_dZ2 = 0.;
+    float chIso_dZ3 = 0.;
+    float chIso_dZ10 = 0.;
     float chIso_reldZ = 0.;
     float chIso_dZmu05 = 0.;
     float chIso_dZmu1 = 0.;
@@ -299,23 +303,35 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float chIso_dZ05_dT2s_simVtx[nResol];
     float chIso_dZ1_dT2s_simVtx[nResol];
     float chIso_dZ2_dT2s_simVtx[nResol];
+    float chIso_dZ3_dT2s_simVtx[nResol];
+    float chIso_dZ10_dT2s_simVtx[nResol];
     float chIso_dZ05_dT2s[nResol];
     float chIso_dZ1_dT2s[nResol];
     float chIso_dZ2_dT2s[nResol];
+    float chIso_dZ3_dT2s[nResol];
+    float chIso_dZ10_dT2s[nResol];
 
     float chIso_dZ05_dT3s_simVtx[nResol];
     float chIso_dZ1_dT3s_simVtx[nResol];
     float chIso_dZ2_dT3s_simVtx[nResol];
+    float chIso_dZ3_dT3s_simVtx[nResol];
+    float chIso_dZ10_dT3s_simVtx[nResol];
     float chIso_dZ05_dT3s[nResol];
     float chIso_dZ1_dT3s[nResol];
     float chIso_dZ2_dT3s[nResol];
+    float chIso_dZ3_dT3s[nResol];
+    float chIso_dZ10_dT3s[nResol];
 
     float chIso_dZ05_dT5s_simVtx[nResol];
     float chIso_dZ1_dT5s_simVtx[nResol];
     float chIso_dZ2_dT5s_simVtx[nResol];
+    float chIso_dZ3_dT5s_simVtx[nResol];
+    float chIso_dZ10_dT5s_simVtx[nResol];
     float chIso_dZ05_dT5s[nResol];
     float chIso_dZ1_dT5s[nResol];
     float chIso_dZ2_dT5s[nResol];
+    float chIso_dZ3_dT5s[nResol];
+    float chIso_dZ10_dT5s[nResol];
 
     float chIso_reldZ_dT[nResol];
     float chIso_dZmu05_dTmu[nResol];
@@ -330,23 +346,35 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       chIso_dZ05_dT2s_simVtx[iRes] = 0.;
       chIso_dZ1_dT2s_simVtx[iRes]  = 0.;
       chIso_dZ2_dT2s_simVtx[iRes]  = 0.;
+      chIso_dZ3_dT2s_simVtx[iRes]  = 0.;
+      chIso_dZ10_dT2s_simVtx[iRes]  = 0.;
       chIso_dZ05_dT2s[iRes] = 0.;
       chIso_dZ1_dT2s[iRes] = 0.;
       chIso_dZ2_dT2s[iRes] = 0.;
+      chIso_dZ3_dT2s[iRes] = 0.;
+      chIso_dZ10_dT2s[iRes] = 0.;
 
       chIso_dZ05_dT3s_simVtx[iRes] = 0.;
       chIso_dZ1_dT3s_simVtx[iRes]  = 0.;
       chIso_dZ2_dT3s_simVtx[iRes]  = 0.;
+      chIso_dZ3_dT3s_simVtx[iRes]  = 0.;
+      chIso_dZ10_dT3s_simVtx[iRes]  = 0.;
       chIso_dZ05_dT3s[iRes] = 0.;
       chIso_dZ1_dT3s[iRes] = 0.;
       chIso_dZ2_dT3s[iRes] = 0.;
+      chIso_dZ3_dT3s[iRes] = 0.;
+      chIso_dZ10_dT3s[iRes] = 0.;
 
       chIso_dZ05_dT5s_simVtx[iRes] = 0.;
       chIso_dZ1_dT5s_simVtx[iRes]  = 0.;
       chIso_dZ2_dT5s_simVtx[iRes]  = 0.;
+      chIso_dZ3_dT5s_simVtx[iRes]  = 0.;
+      chIso_dZ10_dT5s_simVtx[iRes]  = 0.;
       chIso_dZ05_dT5s[iRes] = 0.;
       chIso_dZ1_dT5s[iRes] = 0.;
       chIso_dZ2_dT5s[iRes] = 0.;
+      chIso_dZ3_dT5s[iRes] = 0.;
+      chIso_dZ10_dT5s[iRes] = 0.;
      
       chIso_reldZ_dT[iRes] = 0.;
       chIso_dZmu05_dTmu[iRes] = 0.;
@@ -399,11 +427,15 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	if (dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_simVtx+= pfcand.pt(); }
 	if (dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_simVtx+= pfcand.pt(); }
 	if (dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_simVtx+= pfcand.pt(); }
+	if (dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_simVtx+= pfcand.pt(); }
+	if (dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_simVtx+= pfcand.pt(); }
 	
 	// -- reco vtx closest to the sim one
 	if (dz3D < 0.05  &&  dxy3D < 0.02) { chIso_dZ05+= pfcand.pt(); }
 	if (dz3D < 0.1   &&  dxy3D < 0.02) { chIso_dZ1+= pfcand.pt(); }
 	if (dz3D < 0.2   &&  dxy3D < 0.02) { chIso_dZ2+= pfcand.pt(); }
+	if (dz3D < 0.3   &&  dxy3D < 0.02) { chIso_dZ3+= pfcand.pt(); }
+	if (dz3D < 1.0   &&  dxy3D < 0.02) { chIso_dZ10+= pfcand.pt(); }
 	
 	// -- using reco vtx closest to the sim one and cut on relative dz  
 	if (dz3Drel < 3.0  && dxy3D < 0.02) { chIso_reldZ+= pfcand.pt(); } 
@@ -469,27 +501,39 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  if (dtsim < 2.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT2s_simVtx[iRes]+= pfcand.pt();}
 	  if (dtsim < 2.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT2s_simVtx[iRes]+= pfcand.pt();}
 	  if (dtsim < 2.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT2s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 2.*targetTimeResol && dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_dT2s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 2.*targetTimeResol && dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_dT2s_simVtx[iRes]+= pfcand.pt();}
 
 	  if (dtsim < 3.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT3s_simVtx[iRes]+= pfcand.pt();}
 	  if (dtsim < 3.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT3s_simVtx[iRes]+= pfcand.pt();}
 	  if (dtsim < 3.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT3s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 3.*targetTimeResol && dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_dT3s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 3.*targetTimeResol && dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_dT3s_simVtx[iRes]+= pfcand.pt();}
 
 	  if (dtsim < 5.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT5s_simVtx[iRes]+= pfcand.pt();}
 	  if (dtsim < 5.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT5s_simVtx[iRes]+= pfcand.pt();}
 	  if (dtsim < 5.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT5s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 5.*targetTimeResol && dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_dT5s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 5.*targetTimeResol && dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_dT5s_simVtx[iRes]+= pfcand.pt();}
 	  
 	  // -- reco vtx closest to the sim one
 	  if (dt < 2.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT2s[iRes]+= pfcand.pt(); }
 	  if (dt < 2.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT2s[iRes]+= pfcand.pt(); }
 	  if (dt < 2.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT2s[iRes]+= pfcand.pt(); }
+	  if (dt < 2.*targetTimeResol && dz4D < 0.3  &&  dxy4D < 0.02) { chIso_dZ3_dT2s[iRes]+= pfcand.pt(); }
+	  if (dt < 2.*targetTimeResol && dz4D < 1.0  &&  dxy4D < 0.02) { chIso_dZ10_dT2s[iRes]+= pfcand.pt(); }
 
 	  if (dt < 3.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT3s[iRes]+= pfcand.pt(); }
 	  if (dt < 3.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT3s[iRes]+= pfcand.pt(); }
 	  if (dt < 3.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT3s[iRes]+= pfcand.pt(); }
+	  if (dt < 3.*targetTimeResol && dz4D < 0.3  &&  dxy4D < 0.02) { chIso_dZ3_dT3s[iRes]+= pfcand.pt(); }
+	  if (dt < 3.*targetTimeResol && dz4D < 1.0  &&  dxy4D < 0.02) { chIso_dZ10_dT3s[iRes]+= pfcand.pt(); }
 
 	  if (dt < 5.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT5s[iRes]+= pfcand.pt(); }
 	  if (dt < 5.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT5s[iRes]+= pfcand.pt(); }
 	  if (dt < 5.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT5s[iRes]+= pfcand.pt(); }
+	  if (dt < 5.*targetTimeResol && dz4D < 0.3  &&  dxy4D < 0.02) { chIso_dZ3_dT5s[iRes]+= pfcand.pt(); }
+	  if (dt < 5.*targetTimeResol && dz4D < 1.0  &&  dxy4D < 0.02) { chIso_dZ10_dT5s[iRes]+= pfcand.pt(); }
 	  
 	  // -- using reco vtx closest to the sim one   and cut on relative dz
 	  if (dt < 3.*targetTimeResol && dz4Drel < 3.0  && dxy4D < 0.02) { chIso_reldZ_dT[iRes]+= pfcand.pt(); }
@@ -562,6 +606,16 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       evInfo[iRes]->muon_chIso_dZ2_dT2s_simVtx.push_back(chIso_dZ2_dT2s_simVtx[iRes]);
       evInfo[iRes]->muon_chIso_dZ2_dT3s_simVtx.push_back(chIso_dZ2_dT3s_simVtx[iRes]);
       evInfo[iRes]->muon_chIso_dZ2_dT5s_simVtx.push_back(chIso_dZ2_dT5s_simVtx[iRes]);
+
+      evInfo[iRes]->muon_chIso_dZ3_simVtx.push_back(chIso_dZ3_simVtx);
+      evInfo[iRes]->muon_chIso_dZ3_dT2s_simVtx.push_back(chIso_dZ3_dT2s_simVtx[iRes]);
+      evInfo[iRes]->muon_chIso_dZ3_dT3s_simVtx.push_back(chIso_dZ3_dT3s_simVtx[iRes]);
+      evInfo[iRes]->muon_chIso_dZ3_dT5s_simVtx.push_back(chIso_dZ3_dT5s_simVtx[iRes]);
+
+      evInfo[iRes]->muon_chIso_dZ10_simVtx.push_back(chIso_dZ10_simVtx);
+      evInfo[iRes]->muon_chIso_dZ10_dT2s_simVtx.push_back(chIso_dZ10_dT2s_simVtx[iRes]);
+      evInfo[iRes]->muon_chIso_dZ10_dT3s_simVtx.push_back(chIso_dZ10_dT3s_simVtx[iRes]);
+      evInfo[iRes]->muon_chIso_dZ10_dT5s_simVtx.push_back(chIso_dZ10_dT5s_simVtx[iRes]);
       
       evInfo[iRes]->muon_chIso_dZ05.push_back(chIso_dZ05);  
       evInfo[iRes]->muon_chIso_dZ05_dT2s.push_back(chIso_dZ05_dT2s[iRes]);
@@ -577,6 +631,16 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       evInfo[iRes]->muon_chIso_dZ2_dT2s.push_back(chIso_dZ2_dT2s[iRes]);
       evInfo[iRes]->muon_chIso_dZ2_dT3s.push_back(chIso_dZ2_dT3s[iRes]);
       evInfo[iRes]->muon_chIso_dZ2_dT5s.push_back(chIso_dZ2_dT5s[iRes]);
+
+      evInfo[iRes]->muon_chIso_dZ3.push_back(chIso_dZ3);  
+      evInfo[iRes]->muon_chIso_dZ3_dT2s.push_back(chIso_dZ3_dT2s[iRes]);
+      evInfo[iRes]->muon_chIso_dZ3_dT3s.push_back(chIso_dZ3_dT3s[iRes]);
+      evInfo[iRes]->muon_chIso_dZ3_dT5s.push_back(chIso_dZ3_dT5s[iRes]);
+
+      evInfo[iRes]->muon_chIso_dZ10.push_back(chIso_dZ10);  
+      evInfo[iRes]->muon_chIso_dZ10_dT2s.push_back(chIso_dZ10_dT2s[iRes]);
+      evInfo[iRes]->muon_chIso_dZ10_dT3s.push_back(chIso_dZ10_dT3s[iRes]);
+      evInfo[iRes]->muon_chIso_dZ10_dT5s.push_back(chIso_dZ10_dT5s[iRes]);
       
       evInfo[iRes]->muon_chIso_reldZ.push_back(chIso_reldZ);  
       evInfo[iRes]->muon_chIso_reldZ_dT.push_back(chIso_reldZ_dT[iRes]);
@@ -676,6 +740,16 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT2s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT2s_simVtx);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT3s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT3s_simVtx);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT5s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT5s_simVtx);  
+
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_simVtx);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT2s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT2s_simVtx);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT3s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT3s_simVtx);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT5s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT5s_simVtx);  
+
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_simVtx);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT2s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT2s_simVtx);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT3s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT3s_simVtx);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT5s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT5s_simVtx);  
     
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ05);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05_dT2s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ05_dT2s);  
@@ -691,6 +765,16 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT2s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT2s);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT3s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT3s);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT5s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT5s);  
+
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT2s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT2s);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT3s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT3s);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT5s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT5s);  
+
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT2s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT2s);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT3s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT3s);  
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT5s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT5s);  
     
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_reldZ);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ_dT",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_reldZ_dT);  
@@ -797,6 +881,16 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes]->muon_chIso_dZ2_dT3s_simVtx.clear();
     evInfo[iRes]->muon_chIso_dZ2_dT5s_simVtx.clear();
 
+    evInfo[iRes]->muon_chIso_dZ3_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT2s_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT3s_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT5s_simVtx.clear();
+
+    evInfo[iRes]->muon_chIso_dZ10_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT2s_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT3s_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT5s_simVtx.clear();
+
     evInfo[iRes]->muon_chIso_dZ05.clear();
     evInfo[iRes]->muon_chIso_dZ05_dT2s.clear();
     evInfo[iRes]->muon_chIso_dZ05_dT3s.clear();
@@ -811,6 +905,16 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes]->muon_chIso_dZ2_dT2s.clear();
     evInfo[iRes]->muon_chIso_dZ2_dT3s.clear();
     evInfo[iRes]->muon_chIso_dZ2_dT5s.clear();
+
+    evInfo[iRes]->muon_chIso_dZ3.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT2s.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT3s.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT5s.clear();
+
+    evInfo[iRes]->muon_chIso_dZ10.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT2s.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT3s.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT5s.clear();
 
     evInfo[iRes]->muon_chIso_reldZ.clear();
     evInfo[iRes]->muon_chIso_reldZ_dT.clear();

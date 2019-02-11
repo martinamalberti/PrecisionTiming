@@ -34,8 +34,14 @@ ROOT.gStyle.SetPadTickY(1)
 
 pu = sys.argv[1]
 
-dzs = ['05','1','2']
-dzvals = {'1': 1.0, '05': 0.5, '2':2.0 }
+inputDir = '93X/30ps_PU200_TTbar_minTkPtCut/'
+if (pu == 'noPU'):
+    inputDir = '93X/30ps_noPU_TTbar_minTkPtCut/'
+
+print inputDir
+
+dzs = ['05','1','2','3', '10']
+dzvals = {'1': 1, '05': 0.5, '2':2, '3':3, '10':10 }
 
 f = {}
 roc = {}
@@ -48,7 +54,9 @@ regions = ['','barrel','endcap']
 col = { '05':ROOT.kOrange,
         '1' :ROOT.kRed,
         '2' :ROOT.kGreen,
-        '5' :ROOT.kCyan}
+        '3' :ROOT.kCyan,
+        '5' :ROOT.kMagenta,
+        '10' :ROOT.kBlue}
 
 leg = {}
 
@@ -65,9 +73,10 @@ for ireg,reg in enumerate(regions):
     c[reg].SetGridy()
 
     for idz,dz in enumerate(dzs):
-        f[dz] = ROOT.TFile.Open('30ps_PU200/roc_30ps_PU200.root')
+        if (pu == 'PU200'):
+            f[dz] = ROOT.TFile.Open(inputDir+'/roc_30ps_PU200.root')
         if (pu == 'noPU'):
-            f[dz] = ROOT.TFile.Open('30ps_noPU/roc_30ps_noPU.root')
+            f[dz] = ROOT.TFile.Open(inputDir+'/roc_30ps_noPU.root')
 
         #gname = 'g_roc_relChIso03_dZ%s_%s'%(dz,reg)
         #gname_dT = 'g_roc_relChIso03_dZ%s_dT3s_%s'%(dz,reg)

@@ -33,7 +33,10 @@ ROOT.gStyle.SetPadTickY(1)
 
 
 pu = sys.argv[1]
-
+inputDir = '93X/30ps_PU200_TTbar_minTkPtCut/'
+if (pu == 'noPU'):
+    inputDir = '93X/30ps_noPU_TTbar_minTkPtCut/'
+    
 dts = ['2s','3s','5s']
 dtvals = {'2s': 2, '3s': 3, '5s': 5 }  
 
@@ -42,7 +45,7 @@ roc = {}
 roc_dT =  {}
 c = {}
 
-regions = ['','barrel','endcap']
+regions = ['barrel','endcap']
 
 
 col = { '2s':ROOT.kRed,
@@ -64,24 +67,22 @@ for ireg,reg in enumerate(regions):
     c[reg].SetGridy()
 
     for idt,dt in enumerate(dts):
-        f[dt] = ROOT.TFile.Open('30ps_PU200/roc_30ps_PU200.root')
+        if (pu == 'PU200'):
+            f[dt] = ROOT.TFile.Open(inputDir+/'roc_30ps_PU200.root')
         if (pu == 'noPU'):
-            f[dt] = ROOT.TFile.Open('30ps_noPU/roc_30ps_noPU.root')
+            f[dt] = ROOT.TFile.Open(inputDir+'/roc_30ps_noPU.root')
 
-        #gname = 'g_roc_relChIso03_dZ1_%s'%(reg)
-        #gname_dT = 'g_roc_relChIso03_dZ1_dT%s_%s'%(dt,reg)
-
-        gname = 'g_roc_relChIso03_dZ1_simVtx_%s'%(reg)
-        gname_dT = 'g_roc_relChIso03_dZ1_simVtx_dT%s_%s'%(dt,reg)
-
-        if (reg == ''):
-            gname = gname[:-1]
-            gname_dT = gname_dT[:-1]
-
+            
+        if (reg == 'barrel'):
+            gname = 'g_roc_relChIso03_dZ1_simVtx_%s'%(reg)
+            gname_dT = 'g_roc_relChIso03_dZ1_simVtx_dT%s_%s'%(dt,reg)
+        else:
+            gname = 'g_roc_relChIso03_dZ2_simVtx_%s'%(reg)
+            gname_dT = 'g_roc_relChIso03_dZ2_simVtx_dT%s_%s'%(dt,reg)
+            
             
         roc[reg][dt] = f[dt].Get(gname) 
         roc_dT[reg][dt] = f[dt].Get(gname_dT)
-
                     
         roc[reg][dt].SetLineColor(col[dt])
         roc[reg][dt].SetLineWidth(2)

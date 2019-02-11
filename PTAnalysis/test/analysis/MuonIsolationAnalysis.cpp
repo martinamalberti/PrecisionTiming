@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
   // -- get TChain
   TChain* chain = new TChain(("analysis/tree_"+timeResolution+"ps").c_str(),"tree");
-  chain->Add((folderName+"/0000/muonIsolation_*.root").c_str());
+  chain->Add((folderName+"/0000/muonIsolation*.root").c_str());
 
   // -- tree vars
   int npu;
@@ -110,6 +110,14 @@ int main(int argc, char** argv)
   vector<float> *muon_chIso03_dZ2_dT2s_simVtx;
   vector<float> *muon_chIso03_dZ2_dT3s_simVtx;
   vector<float> *muon_chIso03_dZ2_dT5s_simVtx;
+  vector<float> *muon_chIso03_dZ3_simVtx;
+  vector<float> *muon_chIso03_dZ3_dT2s_simVtx;
+  vector<float> *muon_chIso03_dZ3_dT3s_simVtx;
+  vector<float> *muon_chIso03_dZ3_dT5s_simVtx;
+  vector<float> *muon_chIso03_dZ10_simVtx;
+  vector<float> *muon_chIso03_dZ10_dT2s_simVtx;
+  vector<float> *muon_chIso03_dZ10_dT3s_simVtx;
+  vector<float> *muon_chIso03_dZ10_dT5s_simVtx;
 
   vector<float> *muon_chIso03_dZ05;
   vector<float> *muon_chIso03_dZ05_dT2s;
@@ -123,6 +131,14 @@ int main(int argc, char** argv)
   vector<float> *muon_chIso03_dZ2_dT2s;
   vector<float> *muon_chIso03_dZ2_dT3s;
   vector<float> *muon_chIso03_dZ2_dT5s;
+  vector<float> *muon_chIso03_dZ3;
+  vector<float> *muon_chIso03_dZ3_dT2s;
+  vector<float> *muon_chIso03_dZ3_dT3s;
+  vector<float> *muon_chIso03_dZ3_dT5s;
+  vector<float> *muon_chIso03_dZ10;
+  vector<float> *muon_chIso03_dZ10_dT2s;
+  vector<float> *muon_chIso03_dZ10_dT3s;
+  vector<float> *muon_chIso03_dZ10_dT5s;
 
   vector<float> *muon_chIso03_reldZ;
   vector<float> *muon_chIso03_reldZ_dT;  
@@ -169,6 +185,14 @@ int main(int argc, char** argv)
   muon_chIso03_dZ2_dT2s_simVtx = 0;
   muon_chIso03_dZ2_dT3s_simVtx = 0;
   muon_chIso03_dZ2_dT5s_simVtx = 0;
+  muon_chIso03_dZ3_simVtx = 0;
+  muon_chIso03_dZ3_dT2s_simVtx = 0;
+  muon_chIso03_dZ3_dT3s_simVtx = 0;
+  muon_chIso03_dZ3_dT5s_simVtx = 0;
+  muon_chIso03_dZ10_simVtx = 0;
+  muon_chIso03_dZ10_dT2s_simVtx = 0;
+  muon_chIso03_dZ10_dT3s_simVtx = 0;
+  muon_chIso03_dZ10_dT5s_simVtx = 0;
 
   muon_chIso03_dZ05 = 0;
   muon_chIso03_dZ05_dT2s = 0;
@@ -182,6 +206,14 @@ int main(int argc, char** argv)
   muon_chIso03_dZ2_dT2s = 0;
   muon_chIso03_dZ2_dT3s = 0;
   muon_chIso03_dZ2_dT5s = 0;
+  muon_chIso03_dZ3 = 0;
+  muon_chIso03_dZ3_dT2s = 0;
+  muon_chIso03_dZ3_dT3s = 0;
+  muon_chIso03_dZ3_dT5s = 0;
+  muon_chIso03_dZ10 = 0;
+  muon_chIso03_dZ10_dT2s = 0;
+  muon_chIso03_dZ10_dT3s = 0;
+  muon_chIso03_dZ10_dT5s = 0;
 
   muon_chIso03_dZmu05 = 0;
   muon_chIso03_dZmu05_dTmu = 0;
@@ -245,6 +277,16 @@ int main(int argc, char** argv)
   chain->SetBranchStatus("muon_chIso03_dZ2_dT3s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ2_dT3s_simVtx",&muon_chIso03_dZ2_dT3s_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ2_dT5s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ2_dT5s_simVtx",&muon_chIso03_dZ2_dT5s_simVtx);
 
+  chain->SetBranchStatus("muon_chIso03_dZ3_simVtx",1);     chain->SetBranchAddress("muon_chIso03_dZ3_simVtx",    &muon_chIso03_dZ3_simVtx);
+  chain->SetBranchStatus("muon_chIso03_dZ3_dT2s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ3_dT2s_simVtx",&muon_chIso03_dZ3_dT2s_simVtx);
+  chain->SetBranchStatus("muon_chIso03_dZ3_dT3s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ3_dT3s_simVtx",&muon_chIso03_dZ3_dT3s_simVtx);
+  chain->SetBranchStatus("muon_chIso03_dZ3_dT5s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ3_dT5s_simVtx",&muon_chIso03_dZ3_dT5s_simVtx);
+
+  chain->SetBranchStatus("muon_chIso03_dZ10_simVtx",1);     chain->SetBranchAddress("muon_chIso03_dZ10_simVtx",    &muon_chIso03_dZ10_simVtx);
+  chain->SetBranchStatus("muon_chIso03_dZ10_dT2s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ10_dT2s_simVtx",&muon_chIso03_dZ10_dT2s_simVtx);
+  chain->SetBranchStatus("muon_chIso03_dZ10_dT3s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ10_dT3s_simVtx",&muon_chIso03_dZ10_dT3s_simVtx);
+  chain->SetBranchStatus("muon_chIso03_dZ10_dT5s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ10_dT5s_simVtx",&muon_chIso03_dZ10_dT5s_simVtx);
+
   chain->SetBranchStatus("muon_chIso03_dZ05",1);      chain->SetBranchAddress("muon_chIso03_dZ05",   &muon_chIso03_dZ05);
   chain->SetBranchStatus("muon_chIso03_dZ05_dT2s",1);   chain->SetBranchAddress("muon_chIso03_dZ05_dT2s",&muon_chIso03_dZ05_dT2s);
   chain->SetBranchStatus("muon_chIso03_dZ05_dT3s",1);   chain->SetBranchAddress("muon_chIso03_dZ05_dT3s",&muon_chIso03_dZ05_dT3s);
@@ -259,6 +301,17 @@ int main(int argc, char** argv)
   chain->SetBranchStatus("muon_chIso03_dZ2_dT2s",1);   chain->SetBranchAddress("muon_chIso03_dZ2_dT2s",&muon_chIso03_dZ2_dT2s);
   chain->SetBranchStatus("muon_chIso03_dZ2_dT3s",1);   chain->SetBranchAddress("muon_chIso03_dZ2_dT3s",&muon_chIso03_dZ2_dT3s);
   chain->SetBranchStatus("muon_chIso03_dZ2_dT5s",1);   chain->SetBranchAddress("muon_chIso03_dZ2_dT5s",&muon_chIso03_dZ2_dT5s);
+
+  chain->SetBranchStatus("muon_chIso03_dZ3",1);       chain->SetBranchAddress("muon_chIso03_dZ3",    &muon_chIso03_dZ3);
+  chain->SetBranchStatus("muon_chIso03_dZ3_dT2s",1);   chain->SetBranchAddress("muon_chIso03_dZ3_dT2s",&muon_chIso03_dZ3_dT2s);
+  chain->SetBranchStatus("muon_chIso03_dZ3_dT3s",1);   chain->SetBranchAddress("muon_chIso03_dZ3_dT3s",&muon_chIso03_dZ3_dT3s);
+  chain->SetBranchStatus("muon_chIso03_dZ3_dT5s",1);   chain->SetBranchAddress("muon_chIso03_dZ3_dT5s",&muon_chIso03_dZ3_dT5s);
+
+  chain->SetBranchStatus("muon_chIso03_dZ10",1);       chain->SetBranchAddress("muon_chIso03_dZ10",    &muon_chIso03_dZ10);
+  chain->SetBranchStatus("muon_chIso03_dZ10_dT2s",1);   chain->SetBranchAddress("muon_chIso03_dZ10_dT2s",&muon_chIso03_dZ10_dT2s);
+  chain->SetBranchStatus("muon_chIso03_dZ10_dT3s",1);   chain->SetBranchAddress("muon_chIso03_dZ10_dT3s",&muon_chIso03_dZ10_dT3s);
+  chain->SetBranchStatus("muon_chIso03_dZ10_dT5s",1);   chain->SetBranchAddress("muon_chIso03_dZ10_dT5s",&muon_chIso03_dZ10_dT5s);
+
 
   chain->SetBranchStatus("muon_chIso03_reldZ",1);       chain->SetBranchAddress("muon_chIso03_reldZ",   &muon_chIso03_reldZ);
   chain->SetBranchStatus("muon_chIso03_reldZ_dT",1);    chain->SetBranchAddress("muon_chIso03_reldZ_dT",&muon_chIso03_reldZ_dT);
@@ -275,8 +328,8 @@ int main(int argc, char** argv)
   chain->SetBranchStatus("muon_chIso03_dZmu5",1);       chain->SetBranchAddress("muon_chIso03_dZmu5",&muon_chIso03_dZmu5);
   chain->SetBranchStatus("muon_chIso03_dZmu5_dTmu",1);  chain->SetBranchAddress("muon_chIso03_dZmu5_dTmu",&muon_chIso03_dZmu5_dTmu);
 
-  //chain->SetBranchStatus("muon_chIso03_dZmu10",1);       chain->SetBranchAddress("muon_chIso03_dZmu10",&muon_chIso03_dZmu10);
-  //chain->SetBranchStatus("muon_chIso03_dZmu10_dTmu",1);  chain->SetBranchAddress("muon_chIso03_dZmu10_dTmu",&muon_chIso03_dZmu10_dTmu);
+  chain->SetBranchStatus("muon_chIso03_dZmu10",1);       chain->SetBranchAddress("muon_chIso03_dZmu10",&muon_chIso03_dZmu10);
+  chain->SetBranchStatus("muon_chIso03_dZmu10_dTmu",1);  chain->SetBranchAddress("muon_chIso03_dZmu10_dTmu",&muon_chIso03_dZmu10_dTmu);
 
 
   // -- book histograms
@@ -435,6 +488,86 @@ int main(int argc, char** argv)
 
   TH1F *h_muon_relChIso03_dZ2_dT5s_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ2_dT5s_simVtx_endcap","h_muon_relChIso03_dZ2_dT5s_simVtx_endcap",5000,0,5);
   h_muon_relChIso03_dZ2_dT5s_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  // -- dz = 3. mm
+  TH1F *h_muon_relChIso03_dZ3_simVtx = new TH1F("h_muon_relChIso03_dZ3_simVtx","h_muon_relChIso03_dZ3_simVtx",5000,0,5);
+  h_muon_relChIso03_dZ3_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT2s_simVtx = new TH1F("h_muon_relChIso03_dZ3_dT2s_simVtx","h_muon_relChIso03_dZ3_dT2s_simVtx",5000,0,5);
+  h_muon_relChIso03_dZ3_dT2s_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT3s_simVtx = new TH1F("h_muon_relChIso03_dZ3_dT3s_simVtx","h_muon_relChIso03_dZ3_dT3s_simVtx",5000,0,5);
+  h_muon_relChIso03_dZ3_dT3s_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT5s_simVtx = new TH1F("h_muon_relChIso03_dZ3_dT5s_simVtx","h_muon_relChIso03_dZ3_dT5s_simVtx",5000,0,5);
+  h_muon_relChIso03_dZ3_dT5s_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  TH1F *h_muon_relChIso03_dZ3_simVtx_barrel = new TH1F("h_muon_relChIso03_dZ3_simVtx_barrel","h_muon_relChIso03_dZ3_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_dZ3_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT2s_simVtx_barrel = new TH1F("h_muon_relChIso03_dZ3_dT2s_simVtx_barrel","h_muon_relChIso03_dZ3_dT2s_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_dZ3_dT2s_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT3s_simVtx_barrel = new TH1F("h_muon_relChIso03_dZ3_dT3s_simVtx_barrel","h_muon_relChIso03_dZ3_dT3s_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_dZ3_dT3s_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT5s_simVtx_barrel = new TH1F("h_muon_relChIso03_dZ3_dT5s_simVtx_barrel","h_muon_relChIso03_dZ3_dT5s_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_dZ3_dT5s_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  TH1F *h_muon_relChIso03_dZ3_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ3_simVtx_endcap","h_muon_relChIso03_dZ3_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_dZ3_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT2s_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ3_dT2s_simVtx_endcap","h_muon_relChIso03_dZ3_dT2s_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_dZ3_dT2s_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT3s_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ3_dT3s_simVtx_endcap","h_muon_relChIso03_dZ3_dT3s_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_dZ3_dT3s_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT5s_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ3_dT5s_simVtx_endcap","h_muon_relChIso03_dZ3_dT5s_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_dZ3_dT5s_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  // -- dz = 10. mm
+  TH1F *h_muon_relChIso03_dZ10_simVtx = new TH1F("h_muon_relChIso03_dZ10_simVtx","h_muon_relChIso03_dZ10_simVtx",5000,0,5);
+  h_muon_relChIso03_dZ10_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT2s_simVtx = new TH1F("h_muon_relChIso03_dZ10_dT2s_simVtx","h_muon_relChIso03_dZ10_dT2s_simVtx",5000,0,5);
+  h_muon_relChIso03_dZ10_dT2s_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT3s_simVtx = new TH1F("h_muon_relChIso03_dZ10_dT3s_simVtx","h_muon_relChIso03_dZ10_dT3s_simVtx",5000,0,5);
+  h_muon_relChIso03_dZ10_dT3s_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT5s_simVtx = new TH1F("h_muon_relChIso03_dZ10_dT5s_simVtx","h_muon_relChIso03_dZ10_dT5s_simVtx",5000,0,5);
+  h_muon_relChIso03_dZ10_dT5s_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  TH1F *h_muon_relChIso03_dZ10_simVtx_barrel = new TH1F("h_muon_relChIso03_dZ10_simVtx_barrel","h_muon_relChIso03_dZ10_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_dZ10_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT2s_simVtx_barrel = new TH1F("h_muon_relChIso03_dZ10_dT2s_simVtx_barrel","h_muon_relChIso03_dZ10_dT2s_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_dZ10_dT2s_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT3s_simVtx_barrel = new TH1F("h_muon_relChIso03_dZ10_dT3s_simVtx_barrel","h_muon_relChIso03_dZ10_dT3s_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_dZ10_dT3s_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT5s_simVtx_barrel = new TH1F("h_muon_relChIso03_dZ10_dT5s_simVtx_barrel","h_muon_relChIso03_dZ10_dT5s_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_dZ10_dT5s_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  TH1F *h_muon_relChIso03_dZ10_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ10_simVtx_endcap","h_muon_relChIso03_dZ10_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_dZ10_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT2s_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ10_dT2s_simVtx_endcap","h_muon_relChIso03_dZ10_dT2s_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_dZ10_dT2s_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT3s_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ10_dT3s_simVtx_endcap","h_muon_relChIso03_dZ10_dT3s_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_dZ10_dT3s_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT5s_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ10_dT5s_simVtx_endcap","h_muon_relChIso03_dZ10_dT5s_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_dZ10_dT5s_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
   
 
   // --- reco vtx closest to sim vertex
@@ -556,6 +689,87 @@ int main(int argc, char** argv)
 
   TH1F *h_muon_relChIso03_dZ2_dT5s_endcap = new TH1F("h_muon_relChIso03_dZ2_dT5s_endcap","h_muon_relChIso03_dZ2_dT5s_endcap",5000,0,5);
   h_muon_relChIso03_dZ2_dT5s_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+
+
+  // -- dz = 3. mm
+  TH1F *h_muon_relChIso03_dZ3 = new TH1F("h_muon_relChIso03_dZ3","h_muon_relChIso03_dZ3",5000,0,5);
+  h_muon_relChIso03_dZ3->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT2s = new TH1F("h_muon_relChIso03_dZ3_dT2s","h_muon_relChIso03_dZ3_dT2s",5000,0,5);
+  h_muon_relChIso03_dZ3_dT2s->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT3s = new TH1F("h_muon_relChIso03_dZ3_dT3s","h_muon_relChIso03_dZ3_dT3s",5000,0,5);
+  h_muon_relChIso03_dZ3_dT3s->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT5s = new TH1F("h_muon_relChIso03_dZ3_dT5s","h_muon_relChIso03_dZ3_dT5s",5000,0,5);
+  h_muon_relChIso03_dZ3_dT5s->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  TH1F *h_muon_relChIso03_dZ3_barrel = new TH1F("h_muon_relChIso03_dZ3_barrel","h_muon_relChIso03_dZ3_barrel",5000,0,5);
+  h_muon_relChIso03_dZ3_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT2s_barrel = new TH1F("h_muon_relChIso03_dZ3_dT2s_barrel","h_muon_relChIso03_dZ3_dT2s_barrel",5000,0,5);
+  h_muon_relChIso03_dZ3_dT2s_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT3s_barrel = new TH1F("h_muon_relChIso03_dZ3_dT3s_barrel","h_muon_relChIso03_dZ3_dT3s_barrel",5000,0,5);
+  h_muon_relChIso03_dZ3_dT3s_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT5s_barrel = new TH1F("h_muon_relChIso03_dZ3_dT5s_barrel","h_muon_relChIso03_dZ3_dT5s_barrel",5000,0,5);
+  h_muon_relChIso03_dZ3_dT5s_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  TH1F *h_muon_relChIso03_dZ3_endcap = new TH1F("h_muon_relChIso03_dZ3_endcap","h_muon_relChIso03_dZ3_endcap",5000,0,5);
+  h_muon_relChIso03_dZ3_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT2s_endcap = new TH1F("h_muon_relChIso03_dZ3_dT2s_endcap","h_muon_relChIso03_dZ3_dT2s_endcap",5000,0,5);
+  h_muon_relChIso03_dZ3_dT2s_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT3s_endcap = new TH1F("h_muon_relChIso03_dZ3_dT3s_endcap","h_muon_relChIso03_dZ3_dT3s_endcap",5000,0,5);
+  h_muon_relChIso03_dZ3_dT3s_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ3_dT5s_endcap = new TH1F("h_muon_relChIso03_dZ3_dT5s_endcap","h_muon_relChIso03_dZ3_dT5s_endcap",5000,0,5);
+  h_muon_relChIso03_dZ3_dT5s_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  // -- dz = 10. mm
+  TH1F *h_muon_relChIso03_dZ10 = new TH1F("h_muon_relChIso03_dZ10","h_muon_relChIso03_dZ10",5000,0,5);
+  h_muon_relChIso03_dZ10->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT2s = new TH1F("h_muon_relChIso03_dZ10_dT2s","h_muon_relChIso03_dZ10_dT2s",5000,0,5);
+  h_muon_relChIso03_dZ10_dT2s->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT3s = new TH1F("h_muon_relChIso03_dZ10_dT3s","h_muon_relChIso03_dZ10_dT3s",5000,0,5);
+  h_muon_relChIso03_dZ10_dT3s->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT5s = new TH1F("h_muon_relChIso03_dZ10_dT5s","h_muon_relChIso03_dZ10_dT5s",5000,0,5);
+  h_muon_relChIso03_dZ10_dT5s->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  TH1F *h_muon_relChIso03_dZ10_barrel = new TH1F("h_muon_relChIso03_dZ10_barrel","h_muon_relChIso03_dZ10_barrel",5000,0,5);
+  h_muon_relChIso03_dZ10_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT2s_barrel = new TH1F("h_muon_relChIso03_dZ10_dT2s_barrel","h_muon_relChIso03_dZ10_dT2s_barrel",5000,0,5);
+  h_muon_relChIso03_dZ10_dT2s_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT3s_barrel = new TH1F("h_muon_relChIso03_dZ10_dT3s_barrel","h_muon_relChIso03_dZ10_dT3s_barrel",5000,0,5);
+  h_muon_relChIso03_dZ10_dT3s_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT5s_barrel = new TH1F("h_muon_relChIso03_dZ10_dT5s_barrel","h_muon_relChIso03_dZ10_dT5s_barrel",5000,0,5);
+  h_muon_relChIso03_dZ10_dT5s_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+
+  TH1F *h_muon_relChIso03_dZ10_endcap = new TH1F("h_muon_relChIso03_dZ10_endcap","h_muon_relChIso03_dZ10_endcap",5000,0,5);
+  h_muon_relChIso03_dZ10_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT2s_endcap = new TH1F("h_muon_relChIso03_dZ10_dT2s_endcap","h_muon_relChIso03_dZ10_dT2s_endcap",5000,0,5);
+  h_muon_relChIso03_dZ10_dT2s_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT3s_endcap = new TH1F("h_muon_relChIso03_dZ10_dT3s_endcap","h_muon_relChIso03_dZ10_dT3s_endcap",5000,0,5);
+  h_muon_relChIso03_dZ10_dT3s_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ10_dT5s_endcap = new TH1F("h_muon_relChIso03_dZ10_dT5s_endcap","h_muon_relChIso03_dZ10_dT5s_endcap",5000,0,5);
+  h_muon_relChIso03_dZ10_dT5s_endcap->GetXaxis()->SetTitle("relative charged isolation");
 
 
   // --- rel dZ ( 3*sigma_Z)
@@ -816,9 +1030,13 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZ05_simVtx -> Fill(muon_chIso03_dZ05_simVtx->at(imu)/pt, w);
 	h_muon_relChIso03_dZ1_simVtx -> Fill(muon_chIso03_dZ1_simVtx->at(imu)/pt, w);
 	h_muon_relChIso03_dZ2_simVtx -> Fill(muon_chIso03_dZ2_simVtx->at(imu)/pt, w);
+	h_muon_relChIso03_dZ3_simVtx -> Fill(muon_chIso03_dZ3_simVtx->at(imu)/pt, w);
+	h_muon_relChIso03_dZ10_simVtx -> Fill(muon_chIso03_dZ10_simVtx->at(imu)/pt, w);
 	h_muon_relChIso03_dZ05 -> Fill(muon_chIso03_dZ05->at(imu)/pt, w);
 	h_muon_relChIso03_dZ1  -> Fill(muon_chIso03_dZ1->at(imu)/pt, w);
 	h_muon_relChIso03_dZ2  -> Fill(muon_chIso03_dZ2->at(imu)/pt, w);
+	h_muon_relChIso03_dZ3  -> Fill(muon_chIso03_dZ3->at(imu)/pt, w);
+	h_muon_relChIso03_dZ10 -> Fill(muon_chIso03_dZ10->at(imu)/pt, w);
 	h_muon_relChIso03_reldZ -> Fill(muon_chIso03_reldZ->at(imu)/pt, w);
       }
       if ( pass4D ){
@@ -834,6 +1052,14 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZ2_dT3s_simVtx -> Fill(muon_chIso03_dZ2_dT3s_simVtx->at(imu)/pt, w);
 	h_muon_relChIso03_dZ2_dT5s_simVtx -> Fill(muon_chIso03_dZ2_dT5s_simVtx->at(imu)/pt, w);
 
+	h_muon_relChIso03_dZ3_dT2s_simVtx -> Fill(muon_chIso03_dZ3_dT2s_simVtx->at(imu)/pt, w);
+	h_muon_relChIso03_dZ3_dT3s_simVtx -> Fill(muon_chIso03_dZ3_dT3s_simVtx->at(imu)/pt, w);
+	h_muon_relChIso03_dZ3_dT5s_simVtx -> Fill(muon_chIso03_dZ3_dT5s_simVtx->at(imu)/pt, w);
+
+	h_muon_relChIso03_dZ10_dT2s_simVtx -> Fill(muon_chIso03_dZ10_dT2s_simVtx->at(imu)/pt, w);
+	h_muon_relChIso03_dZ10_dT3s_simVtx -> Fill(muon_chIso03_dZ10_dT3s_simVtx->at(imu)/pt, w);
+	h_muon_relChIso03_dZ10_dT5s_simVtx -> Fill(muon_chIso03_dZ10_dT5s_simVtx->at(imu)/pt, w);
+
 	h_muon_relChIso03_dZ05_dT2s -> Fill(muon_chIso03_dZ05_dT2s->at(imu)/pt, w);
 	h_muon_relChIso03_dZ05_dT3s -> Fill(muon_chIso03_dZ05_dT3s->at(imu)/pt, w);
 	h_muon_relChIso03_dZ05_dT5s -> Fill(muon_chIso03_dZ05_dT5s->at(imu)/pt, w);
@@ -846,6 +1072,14 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZ2_dT3s -> Fill(muon_chIso03_dZ2_dT3s->at(imu)/pt, w);
 	h_muon_relChIso03_dZ2_dT5s -> Fill(muon_chIso03_dZ2_dT5s->at(imu)/pt, w);
 
+	h_muon_relChIso03_dZ3_dT2s -> Fill(muon_chIso03_dZ3_dT2s->at(imu)/pt, w);
+	h_muon_relChIso03_dZ3_dT3s -> Fill(muon_chIso03_dZ3_dT3s->at(imu)/pt, w);
+	h_muon_relChIso03_dZ3_dT5s -> Fill(muon_chIso03_dZ3_dT5s->at(imu)/pt, w);
+
+	h_muon_relChIso03_dZ10_dT2s -> Fill(muon_chIso03_dZ10_dT2s->at(imu)/pt, w);
+	h_muon_relChIso03_dZ10_dT3s -> Fill(muon_chIso03_dZ10_dT3s->at(imu)/pt, w);
+	h_muon_relChIso03_dZ10_dT5s -> Fill(muon_chIso03_dZ10_dT5s->at(imu)/pt, w);
+
 	h_muon_relChIso03_reldZ_dT -> Fill(muon_chIso03_reldZ_dT->at(imu)/pt, w);
       }
 
@@ -855,9 +1089,13 @@ int main(int argc, char** argv)
 	  h_muon_relChIso03_dZ05_simVtx_barrel -> Fill(muon_chIso03_dZ05_simVtx->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ1_simVtx_barrel -> Fill(muon_chIso03_dZ1_simVtx->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ2_simVtx_barrel -> Fill(muon_chIso03_dZ2_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ3_simVtx_barrel -> Fill(muon_chIso03_dZ3_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ10_simVtx_barrel -> Fill(muon_chIso03_dZ10_simVtx->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ05_barrel -> Fill(muon_chIso03_dZ05->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ1_barrel  -> Fill(muon_chIso03_dZ1->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ2_barrel  -> Fill(muon_chIso03_dZ2->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ3_barrel  -> Fill(muon_chIso03_dZ3->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ10_barrel -> Fill(muon_chIso03_dZ10->at(imu)/pt, w);
 	  h_muon_relChIso03_reldZ_barrel -> Fill(muon_chIso03_reldZ->at(imu)/pt, w);
 	}
 	if ( pass4D ){
@@ -873,6 +1111,14 @@ int main(int argc, char** argv)
 	  h_muon_relChIso03_dZ2_dT3s_simVtx_barrel -> Fill(muon_chIso03_dZ2_dT3s_simVtx->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ2_dT5s_simVtx_barrel -> Fill(muon_chIso03_dZ2_dT5s_simVtx->at(imu)/pt, w);
 
+	  h_muon_relChIso03_dZ3_dT2s_simVtx_barrel -> Fill(muon_chIso03_dZ3_dT2s_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ3_dT3s_simVtx_barrel -> Fill(muon_chIso03_dZ3_dT3s_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ3_dT5s_simVtx_barrel -> Fill(muon_chIso03_dZ3_dT5s_simVtx->at(imu)/pt, w);
+
+	  h_muon_relChIso03_dZ10_dT2s_simVtx_barrel -> Fill(muon_chIso03_dZ10_dT2s_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ10_dT3s_simVtx_barrel -> Fill(muon_chIso03_dZ10_dT3s_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ10_dT5s_simVtx_barrel -> Fill(muon_chIso03_dZ10_dT5s_simVtx->at(imu)/pt, w);
+
 	  h_muon_relChIso03_dZ05_dT2s_barrel -> Fill(muon_chIso03_dZ05_dT2s->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ05_dT3s_barrel -> Fill(muon_chIso03_dZ05_dT3s->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ05_dT5s_barrel -> Fill(muon_chIso03_dZ05_dT5s->at(imu)/pt, w);
@@ -885,6 +1131,14 @@ int main(int argc, char** argv)
 	  h_muon_relChIso03_dZ2_dT3s_barrel -> Fill(muon_chIso03_dZ2_dT3s->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ2_dT5s_barrel -> Fill(muon_chIso03_dZ2_dT5s->at(imu)/pt, w);
 
+	  h_muon_relChIso03_dZ3_dT2s_barrel -> Fill(muon_chIso03_dZ3_dT2s->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ3_dT3s_barrel -> Fill(muon_chIso03_dZ3_dT3s->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ3_dT5s_barrel -> Fill(muon_chIso03_dZ3_dT5s->at(imu)/pt, w);
+
+	  h_muon_relChIso03_dZ10_dT2s_barrel -> Fill(muon_chIso03_dZ10_dT2s->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ10_dT3s_barrel -> Fill(muon_chIso03_dZ10_dT3s->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ10_dT5s_barrel -> Fill(muon_chIso03_dZ10_dT5s->at(imu)/pt, w);
+
 	  h_muon_relChIso03_reldZ_dT_barrel -> Fill(muon_chIso03_reldZ_dT->at(imu)/pt, w);
 	}
       }
@@ -894,9 +1148,13 @@ int main(int argc, char** argv)
 	  h_muon_relChIso03_dZ05_simVtx_endcap -> Fill(muon_chIso03_dZ05_simVtx->at(imu)/pt, w);
           h_muon_relChIso03_dZ1_simVtx_endcap -> Fill(muon_chIso03_dZ1_simVtx->at(imu)/pt, w);
           h_muon_relChIso03_dZ2_simVtx_endcap -> Fill(muon_chIso03_dZ2_simVtx->at(imu)/pt, w);
+          h_muon_relChIso03_dZ3_simVtx_endcap -> Fill(muon_chIso03_dZ3_simVtx->at(imu)/pt, w);
+          h_muon_relChIso03_dZ10_simVtx_endcap -> Fill(muon_chIso03_dZ10_simVtx->at(imu)/pt, w);
           h_muon_relChIso03_dZ05_endcap -> Fill(muon_chIso03_dZ05->at(imu)/pt, w);
           h_muon_relChIso03_dZ1_endcap  -> Fill(muon_chIso03_dZ1->at(imu)/pt, w);
           h_muon_relChIso03_dZ2_endcap  -> Fill(muon_chIso03_dZ2->at(imu)/pt, w);
+          h_muon_relChIso03_dZ3_endcap  -> Fill(muon_chIso03_dZ3->at(imu)/pt, w);
+          h_muon_relChIso03_dZ10_endcap  -> Fill(muon_chIso03_dZ10->at(imu)/pt, w);
           h_muon_relChIso03_reldZ_endcap -> Fill(muon_chIso03_reldZ->at(imu)/pt, w);
 	}
 	if ( pass4D ) {
@@ -912,6 +1170,14 @@ int main(int argc, char** argv)
 	  h_muon_relChIso03_dZ2_dT3s_simVtx_endcap -> Fill(muon_chIso03_dZ2_dT3s_simVtx->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ2_dT5s_simVtx_endcap -> Fill(muon_chIso03_dZ2_dT5s_simVtx->at(imu)/pt, w);
 
+	  h_muon_relChIso03_dZ3_dT2s_simVtx_endcap -> Fill(muon_chIso03_dZ3_dT2s_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ3_dT3s_simVtx_endcap -> Fill(muon_chIso03_dZ3_dT3s_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ3_dT5s_simVtx_endcap -> Fill(muon_chIso03_dZ3_dT5s_simVtx->at(imu)/pt, w);
+
+	  h_muon_relChIso03_dZ10_dT2s_simVtx_endcap -> Fill(muon_chIso03_dZ10_dT2s_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ10_dT3s_simVtx_endcap -> Fill(muon_chIso03_dZ10_dT3s_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ10_dT5s_simVtx_endcap -> Fill(muon_chIso03_dZ10_dT5s_simVtx->at(imu)/pt, w);
+
 	  h_muon_relChIso03_dZ05_dT2s_endcap -> Fill(muon_chIso03_dZ05_dT2s->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ05_dT3s_endcap -> Fill(muon_chIso03_dZ05_dT3s->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ05_dT5s_endcap -> Fill(muon_chIso03_dZ05_dT5s->at(imu)/pt, w);
@@ -923,6 +1189,14 @@ int main(int argc, char** argv)
 	  h_muon_relChIso03_dZ2_dT2s_endcap -> Fill(muon_chIso03_dZ2_dT2s->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ2_dT3s_endcap -> Fill(muon_chIso03_dZ2_dT3s->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ2_dT5s_endcap -> Fill(muon_chIso03_dZ2_dT5s->at(imu)/pt, w);
+
+	  h_muon_relChIso03_dZ3_dT2s_endcap -> Fill(muon_chIso03_dZ3_dT2s->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ3_dT3s_endcap -> Fill(muon_chIso03_dZ3_dT3s->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ3_dT5s_endcap -> Fill(muon_chIso03_dZ3_dT5s->at(imu)/pt, w);
+
+	  h_muon_relChIso03_dZ10_dT2s_endcap -> Fill(muon_chIso03_dZ10_dT2s->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ10_dT3s_endcap -> Fill(muon_chIso03_dZ10_dT3s->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ10_dT5s_endcap -> Fill(muon_chIso03_dZ10_dT5s->at(imu)/pt, w);
 
 	  h_muon_relChIso03_reldZ_dT_endcap -> Fill(muon_chIso03_reldZ_dT->at(imu)/pt, w);
 	}
@@ -939,8 +1213,8 @@ int main(int argc, char** argv)
       h_muon_relChIso03_dZmu2_dTmu -> Fill(muon_chIso03_dZmu2_dTmu->at(imu)/pt, w);
       h_muon_relChIso03_dZmu5 -> Fill(muon_chIso03_dZmu5->at(imu)/pt, w);
       h_muon_relChIso03_dZmu5_dTmu -> Fill(muon_chIso03_dZmu5_dTmu->at(imu)/pt, w);
-      //h_muon_relChIso03_dZmu10 -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
-      //h_muon_relChIso03_dZmu10_dTmu -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
+      h_muon_relChIso03_dZmu10 -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
+      h_muon_relChIso03_dZmu10_dTmu -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
       if (fabs(muon_eta->at(imu))<1.5){ 
 	h_muon_relChIso03_dZmu05_barrel -> Fill(muon_chIso03_dZmu05->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu05_dTmu_barrel -> Fill(muon_chIso03_dZmu05_dTmu->at(imu)/pt, w);
@@ -950,8 +1224,8 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZmu2_dTmu_barrel -> Fill(muon_chIso03_dZmu2_dTmu->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_barrel -> Fill(muon_chIso03_dZmu5->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_dTmu_barrel -> Fill(muon_chIso03_dZmu5_dTmu->at(imu)/pt, w);
-	//h_muon_relChIso03_dZmu10_barrel -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
-	//h_muon_relChIso03_dZmu10_dTmu_barrel -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
+	h_muon_relChIso03_dZmu10_barrel -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
+	h_muon_relChIso03_dZmu10_dTmu_barrel -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
       }
       else{
 	h_muon_relChIso03_dZmu05_endcap -> Fill(muon_chIso03_dZmu05->at(imu)/pt, w);
@@ -962,8 +1236,8 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZmu2_dTmu_endcap -> Fill(muon_chIso03_dZmu2_dTmu->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_endcap -> Fill(muon_chIso03_dZmu5->at(imu)/pt, w);
 	h_muon_relChIso03_dZmu5_dTmu_endcap -> Fill(muon_chIso03_dZmu5_dTmu->at(imu)/pt, w);
-	//h_muon_relChIso03_dZmu10_endcap -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
-	//h_muon_relChIso03_dZmu10_dTmu_endcap -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
+	h_muon_relChIso03_dZmu10_endcap -> Fill(muon_chIso03_dZmu10->at(imu)/pt, w);
+	h_muon_relChIso03_dZmu10_dTmu_endcap -> Fill(muon_chIso03_dZmu10_dTmu->at(imu)/pt, w);
       }
               
 
@@ -1099,6 +1373,38 @@ int main(int argc, char** argv)
   h_muon_relChIso03_dZ2_dT5s_simVtx_barrel->Write();
   h_muon_relChIso03_dZ2_dT5s_simVtx_endcap->Write();
 
+  h_muon_relChIso03_dZ3_simVtx->Write();
+  h_muon_relChIso03_dZ3_simVtx_barrel->Write();
+  h_muon_relChIso03_dZ3_simVtx_endcap->Write();
+
+  h_muon_relChIso03_dZ3_dT2s_simVtx->Write();
+  h_muon_relChIso03_dZ3_dT2s_simVtx_barrel->Write();
+  h_muon_relChIso03_dZ3_dT2s_simVtx_endcap->Write();
+
+  h_muon_relChIso03_dZ3_dT3s_simVtx->Write();
+  h_muon_relChIso03_dZ3_dT3s_simVtx_barrel->Write();
+  h_muon_relChIso03_dZ3_dT3s_simVtx_endcap->Write();
+
+  h_muon_relChIso03_dZ3_dT5s_simVtx->Write();
+  h_muon_relChIso03_dZ3_dT5s_simVtx_barrel->Write();
+  h_muon_relChIso03_dZ3_dT5s_simVtx_endcap->Write();
+
+  h_muon_relChIso03_dZ10_simVtx->Write();
+  h_muon_relChIso03_dZ10_simVtx_barrel->Write();
+  h_muon_relChIso03_dZ10_simVtx_endcap->Write();
+
+  h_muon_relChIso03_dZ10_dT2s_simVtx->Write();
+  h_muon_relChIso03_dZ10_dT2s_simVtx_barrel->Write();
+  h_muon_relChIso03_dZ10_dT2s_simVtx_endcap->Write();
+
+  h_muon_relChIso03_dZ10_dT3s_simVtx->Write();
+  h_muon_relChIso03_dZ10_dT3s_simVtx_barrel->Write();
+  h_muon_relChIso03_dZ10_dT3s_simVtx_endcap->Write();
+
+  h_muon_relChIso03_dZ10_dT5s_simVtx->Write();
+  h_muon_relChIso03_dZ10_dT5s_simVtx_barrel->Write();
+  h_muon_relChIso03_dZ10_dT5s_simVtx_endcap->Write();
+
 
 
   h_muon_relChIso03_dZ05->Write();
@@ -1148,6 +1454,38 @@ int main(int argc, char** argv)
   h_muon_relChIso03_dZ2_dT5s->Write();
   h_muon_relChIso03_dZ2_dT5s_barrel->Write();
   h_muon_relChIso03_dZ2_dT5s_endcap->Write();
+
+  h_muon_relChIso03_dZ3->Write();
+  h_muon_relChIso03_dZ3_barrel->Write();
+  h_muon_relChIso03_dZ3_endcap->Write();
+
+  h_muon_relChIso03_dZ3_dT2s->Write();
+  h_muon_relChIso03_dZ3_dT2s_barrel->Write();
+  h_muon_relChIso03_dZ3_dT2s_endcap->Write();
+
+  h_muon_relChIso03_dZ3_dT3s->Write();
+  h_muon_relChIso03_dZ3_dT3s_barrel->Write();
+  h_muon_relChIso03_dZ3_dT3s_endcap->Write();
+
+  h_muon_relChIso03_dZ3_dT5s->Write();
+  h_muon_relChIso03_dZ3_dT5s_barrel->Write();
+  h_muon_relChIso03_dZ3_dT5s_endcap->Write();
+
+  h_muon_relChIso03_dZ10->Write();
+  h_muon_relChIso03_dZ10_barrel->Write();
+  h_muon_relChIso03_dZ10_endcap->Write();
+
+  h_muon_relChIso03_dZ10_dT2s->Write();
+  h_muon_relChIso03_dZ10_dT2s_barrel->Write();
+  h_muon_relChIso03_dZ10_dT2s_endcap->Write();
+
+  h_muon_relChIso03_dZ10_dT3s->Write();
+  h_muon_relChIso03_dZ10_dT3s_barrel->Write();
+  h_muon_relChIso03_dZ10_dT3s_endcap->Write();
+
+  h_muon_relChIso03_dZ10_dT5s->Write();
+  h_muon_relChIso03_dZ10_dT5s_barrel->Write();
+  h_muon_relChIso03_dZ10_dT5s_endcap->Write();
 
 
 
