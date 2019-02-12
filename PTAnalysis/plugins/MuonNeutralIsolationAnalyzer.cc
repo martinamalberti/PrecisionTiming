@@ -316,10 +316,19 @@ MuonNeutralIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
     }
 
     float muonTime =  -999.;
-        
+      
     // -- loop over neutral pf candidates
     for(unsigned icand = 0; icand < pfcands.size(); ++icand) {
       const reco::PFCandidate& pfcand = pfcands[icand];
+
+      //if (pfcand.charge() != 0 ){
+      //	auto pfcandRef = pfcands.refAt(icand);
+      //	reco::TrackRef trackRef = pfcandRef->trackRef();
+      //	if (trackRef.isNull()) continue;
+      //	cout << icand << " pfcand.time = " << pfcand.time() << " trackRef.t0 = " << trackRef -> t0() <<endl; 
+      //	cout << icand << " pfcand.timeError = " << pfcand.timeError() << " trackRef.t0Error = " << trackRef -> t0Error() <<endl; 
+      //}
+
       if (pfcand.charge() != 0 ) continue;
       
       float dr  = deltaR(muon.eta(), muon.phi(), pfcand.eta(), pfcand.phi());
@@ -333,27 +342,26 @@ MuonNeutralIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
       if (dr > minDr_ && dr < isoConeDR_){ 	  
 
 	for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
-	  double targetTimeResol = timeResolutions_[iRes];
-	  double defaultTimeResol = 0.;
-	  if ( pfcand.isTimeValid() ) {
-	    defaultTimeResol  = double(pfcand.timeError()); 
-	    if (mtd5sample_) defaultTimeResol = 0.035;
-	  }	  
-	  double extra_resol = 0.;
+	  float targetTimeResol = timeResolutions_[iRes];
+	  float defaultTimeResol = 0.030;
+	  if (mtd5sample_) defaultTimeResol = 0.035;
+	  float extra_resol = 0.;
 	  if ( targetTimeResol > defaultTimeResol) { extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol); }
 
 	  // check is it's matched to MTD cluster
 	  bool matchedToMTD = false;
-	  double clusterTime, clusterSeedTime;
+	  float clusterTime = -999.;
+	  float clusterSeedTime = -999.;
+	  float dRcluster = -999.;
 	  time[iRes] = -999.;
-	  double dt = 0;
-	  if (std::abs(pfcand.eta() < 1.5)) matchedToMTD = isMatchedToMTDCluster(pfcand, clustersBTL, mtdGeometry_, clusterTime, clusterSeedTime);
-	  if (std::abs(pfcand.eta() > 1.5)) matchedToMTD = isMatchedToMTDCluster(pfcand, clustersETL, mtdGeometry_, clusterTime, clusterSeedTime);
+	  float dt = 0;
+	  if (std::abs(pfcand.eta() < 1.5)) matchedToMTD = isMatchedToMTDCluster(pfcand, clustersBTL, mtdGeometry_, clusterTime, clusterSeedTime, dRcluster);
+	  if (std::abs(pfcand.eta() > 1.5)) matchedToMTD = isMatchedToMTDCluster(pfcand, clustersETL, mtdGeometry_, clusterTime, clusterSeedTime, dRcluster);
 	  if (matchedToMTD){
 	    // -- extra smearing to emulate different time resolution
-	    double rnd   = gRandom->Gaus(0., extra_resol);
+	    float rnd   = gRandom->Gaus(0., extra_resol);
 	    time[iRes] = clusterSeedTime + rnd;
-	    dt  = std::abs(time[iRes] - vtx4D.t());
+	    dt = std::abs(time[iRes] - vtx4D.t());
 	  }
 	  else {
 	    dt = 0. ;
@@ -370,8 +378,10 @@ MuonNeutralIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
 	    bool genMatching  = isMatchedToGenParticle(pfcand, genParticles);
 	    bool genUnmatching  = isUnmatchedToGenParticle(pfcand, genParticles);
 
+	    evInfo[iRes]->neutrPfCand_particleId.push_back(pfcand.translateTypeToPdgId(pfcand.particleId())); 
 	    evInfo[iRes]->neutrPfCand_tCluster.push_back(clusterTime); 
 	    evInfo[iRes]->neutrPfCand_tClusterSeed.push_back(clusterSeedTime); 
+	    evInfo[iRes]->neutrPfCand_dRcluster.push_back(dRcluster); 
 	    evInfo[iRes]->neutrPfCand_pt.push_back(pfcand.pt());
 	    evInfo[iRes]->neutrPfCand_eta.push_back(pfcand.eta());
 	    evInfo[iRes]->neutrPfCand_phi.push_back(pfcand.phi());
@@ -483,8 +493,10 @@ MuonNeutralIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( Form("muon_neutrIso%.2d_dT5s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_neutrIso_dT5s);  
     
     if (savePfCands_){
+      eventTree[iRes]->Branch( "neutrPfCand_particleId",  &evInfo[iRes]->neutrPfCand_particleId);
       eventTree[iRes]->Branch( "neutrPfCand_tCluster",  &evInfo[iRes]->neutrPfCand_tCluster);
       eventTree[iRes]->Branch( "neutrPfCand_tClusterSeed",&evInfo[iRes]->neutrPfCand_tClusterSeed);
+      eventTree[iRes]->Branch( "neutrPfCand_dRcluster",&evInfo[iRes]->neutrPfCand_dRcluster);
       eventTree[iRes]->Branch( "neutrPfCand_pt",     &evInfo[iRes]->neutrPfCand_pt);
       eventTree[iRes]->Branch( "neutrPfCand_eta",    &evInfo[iRes]->neutrPfCand_eta);
       eventTree[iRes]->Branch( "neutrPfCand_phi",    &evInfo[iRes]->neutrPfCand_phi);
@@ -556,8 +568,10 @@ MuonNeutralIsolationAnalyzer::initEventStructure()
     evInfo[iRes]->muon_neutrIso_dT5s.clear();
 
     if (savePfCands_){
+      evInfo[iRes]->neutrPfCand_particleId.clear();
       evInfo[iRes]->neutrPfCand_tCluster.clear();
       evInfo[iRes]->neutrPfCand_tClusterSeed.clear();
+      evInfo[iRes]->neutrPfCand_dRcluster.clear();
       evInfo[iRes]->neutrPfCand_pt.clear();
       evInfo[iRes]->neutrPfCand_eta.clear();
       evInfo[iRes]->neutrPfCand_phi.clear();

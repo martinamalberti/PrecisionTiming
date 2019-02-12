@@ -127,12 +127,14 @@ using namespace reco;
 struct eventInfo
 {
   int npu;
+  vector<int> neutrPfCand_particleId;
   vector<float> neutrPfCand_pt;
   vector<float> neutrPfCand_eta;
   vector<float> neutrPfCand_phi;
   vector<float> neutrPfCand_tCluster;
   vector<float> neutrPfCand_tClusterSeed;
   vector<float> neutrPfCand_dRmu;
+  vector<float> neutrPfCand_dRcluster;
   vector<int> neutrPfCand_muIndex;
   vector<int> neutrPfCand_isMatchedToGenParticle;
   vector<int> neutrPfCand_isUnmatchedToGenParticle;
