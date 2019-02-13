@@ -47,7 +47,9 @@ bool isMatchedToGenJet(const reco::Muon &muon, const edm::View<reco::GenJet>& ge
 bool isFromTau(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);
 bool isUnmatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);
-bool isMatchedToMTDCluster(const reco::PFCandidate &pfcand, FTLClusterCollection &clustersBTL, const MTDGeometry* mtdGeometry_, float &clusterTime, float &clusterSeedTime, float &dRcluster) ;    
+bool isMatchedToMTDCluster(const reco::PFCandidate &pfcand, FTLClusterCollection &clustersBTL, const MTDGeometry* mtdGeometry_, 
+			   float &clusterTime, float &clusterSeedTime, float &dRcluster,
+			   float &clusterX, float &clusterY, float &clusterZ, float &clusterR) ;    
 
 
 #endif

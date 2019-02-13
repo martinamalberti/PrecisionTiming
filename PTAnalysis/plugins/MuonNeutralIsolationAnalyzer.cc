@@ -305,6 +305,9 @@ MuonNeutralIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
     float neutrIso_dT2s[nResol];
     float neutrIso_dT3s[nResol];
     float neutrIso_dT5s[nResol];
+    float neutrIso_dT2s_simVtx[nResol];
+    float neutrIso_dT3s_simVtx[nResol];
+    float neutrIso_dT5s_simVtx[nResol];
     float time[nResol]; 
     
     // -- initialize 
@@ -312,6 +315,9 @@ MuonNeutralIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
       neutrIso_dT2s[iRes] = 0 ;
       neutrIso_dT3s[iRes] = 0 ;
       neutrIso_dT5s[iRes] = 0 ;
+      neutrIso_dT2s_simVtx[iRes] = 0 ;
+      neutrIso_dT3s_simVtx[iRes] = 0 ;
+      neutrIso_dT5s_simVtx[iRes] = 0 ;
       time[iRes] = 0.;
     }
 
@@ -352,25 +358,39 @@ MuonNeutralIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
 	  bool matchedToMTD = false;
 	  float clusterTime = -999.;
 	  float clusterSeedTime = -999.;
+	  float clusterX = -999.;
+	  float clusterY = -999.;
+	  float clusterZ = -999.;
+	  float clusterR = -999.;
 	  float dRcluster = -999.;
 	  time[iRes] = -999.;
 	  float dt = 0;
-	  if (std::abs(pfcand.eta() < 1.5)) matchedToMTD = isMatchedToMTDCluster(pfcand, clustersBTL, mtdGeometry_, clusterTime, clusterSeedTime, dRcluster);
-	  if (std::abs(pfcand.eta() > 1.5)) matchedToMTD = isMatchedToMTDCluster(pfcand, clustersETL, mtdGeometry_, clusterTime, clusterSeedTime, dRcluster);
+	  float dtsim = 0;
+	  if (std::abs(pfcand.eta() < 1.5)) matchedToMTD = isMatchedToMTDCluster(pfcand, clustersBTL, mtdGeometry_, clusterTime, clusterSeedTime, dRcluster, clusterX, clusterY, clusterZ, clusterR);
+	  if (std::abs(pfcand.eta() > 1.5)) matchedToMTD = isMatchedToMTDCluster(pfcand, clustersETL, mtdGeometry_, clusterTime, clusterSeedTime, dRcluster, clusterX, clusterY, clusterZ, clusterR);
 	  if (matchedToMTD){
 	    // -- extra smearing to emulate different time resolution
 	    float rnd   = gRandom->Gaus(0., extra_resol);
-	    time[iRes] = clusterSeedTime + rnd;
-	    dt = std::abs(time[iRes] - vtx4D.t());
+	    time[iRes] = clusterTime + rnd;
+	    float tof    = sqrt( pow(clusterZ - vtx4D.z(), 2)  + clusterR*clusterR ) / (TMath::C()*1.E-07) ; // m/s --> cm/ns
+	    float tofsim = sqrt( pow(clusterZ - genPV.position().z(), 2) + clusterR*clusterR ) / (TMath::C()*1.E-07) ; // m/s --> cm/ns
+	    dt = std::abs(time[iRes] - tof - vtx4D.t());
+	    dtsim = std::abs(time[iRes] - tofsim - genPV.position().t()*1.E09);
 	  }
 	  else {
 	    dt = 0. ;
+	    dtsim = 0. ;
 	  }
 	  	   
-	  // -- sim vertex
+	  // -- reco vertex
 	  if (dt < 2.*targetTimeResol) { neutrIso_dT2s[iRes]+= pfcand.pt();}
 	  if (dt < 3.*targetTimeResol) { neutrIso_dT3s[iRes]+= pfcand.pt();}
 	  if (dt < 5.*targetTimeResol) { neutrIso_dT5s[iRes]+= pfcand.pt();}
+
+	  // -- sim vertex
+	  if (dtsim < 2.*targetTimeResol) { neutrIso_dT2s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 3.*targetTimeResol) { neutrIso_dT3s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 5.*targetTimeResol) { neutrIso_dT5s_simVtx[iRes]+= pfcand.pt();}
 	  	  
 	  // -- save info for neutral pf cands in the isolation cone 
 	  if ( savePfCands_ )  {
@@ -379,8 +399,12 @@ MuonNeutralIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
 	    bool genUnmatching  = isUnmatchedToGenParticle(pfcand, genParticles);
 
 	    evInfo[iRes]->neutrPfCand_particleId.push_back(pfcand.translateTypeToPdgId(pfcand.particleId())); 
-	    evInfo[iRes]->neutrPfCand_tCluster.push_back(clusterTime); 
-	    evInfo[iRes]->neutrPfCand_tClusterSeed.push_back(clusterSeedTime); 
+	    evInfo[iRes]->neutrPfCand_cluster_t.push_back(clusterTime); 
+	    evInfo[iRes]->neutrPfCand_clusterSeed_t.push_back(clusterSeedTime); 
+	    evInfo[iRes]->neutrPfCand_cluster_x.push_back(clusterX); 
+	    evInfo[iRes]->neutrPfCand_cluster_y.push_back(clusterY); 
+	    evInfo[iRes]->neutrPfCand_cluster_z.push_back(clusterZ); 
+	    evInfo[iRes]->neutrPfCand_cluster_R.push_back(clusterR); 
 	    evInfo[iRes]->neutrPfCand_dRcluster.push_back(dRcluster); 
 	    evInfo[iRes]->neutrPfCand_pt.push_back(pfcand.pt());
 	    evInfo[iRes]->neutrPfCand_eta.push_back(pfcand.eta());
@@ -421,6 +445,9 @@ MuonNeutralIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
       evInfo[iRes]->muon_neutrIso_dT2s.push_back(neutrIso_dT2s[iRes]);
       evInfo[iRes]->muon_neutrIso_dT3s.push_back(neutrIso_dT3s[iRes]);
       evInfo[iRes]->muon_neutrIso_dT5s.push_back(neutrIso_dT5s[iRes]);
+      evInfo[iRes]->muon_neutrIso_dT2s_simVtx.push_back(neutrIso_dT2s_simVtx[iRes]);
+      evInfo[iRes]->muon_neutrIso_dT3s_simVtx.push_back(neutrIso_dT3s_simVtx[iRes]);
+      evInfo[iRes]->muon_neutrIso_dT5s_simVtx.push_back(neutrIso_dT5s_simVtx[iRes]);
     } // end loop over time resolutions
 
   }// end loop over muons
@@ -436,7 +463,7 @@ MuonNeutralIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::Event
     evInfo[iRes]->vtx3D_z = vtx3D.z();
     evInfo[iRes]->vtx3D_zErr = vtx3D.zError();
     evInfo[iRes]->vtxGen_z = genPV.position().z();
-    evInfo[iRes]->vtxGen_t = genPV.position().t();
+    evInfo[iRes]->vtxGen_t = genPV.position().t()*1.E09; // ns
     evInfo[iRes]->vtx3D_isFake = vtx3D.isFake();
     evInfo[iRes]->vtx4D_isFake = vtx4D.isFake();
   }
@@ -491,12 +518,19 @@ MuonNeutralIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( Form("muon_neutrIso%.2d_dT2s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_neutrIso_dT2s);  
     eventTree[iRes]->Branch( Form("muon_neutrIso%.2d_dT3s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_neutrIso_dT3s);  
     eventTree[iRes]->Branch( Form("muon_neutrIso%.2d_dT5s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_neutrIso_dT5s);  
+    eventTree[iRes]->Branch( Form("muon_neutrIso%.2d_dT2s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_neutrIso_dT2s_simVtx);  
+    eventTree[iRes]->Branch( Form("muon_neutrIso%.2d_dT3s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_neutrIso_dT3s_simVtx);  
+    eventTree[iRes]->Branch( Form("muon_neutrIso%.2d_dT5s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_neutrIso_dT5s_simVtx);  
     
     if (savePfCands_){
-      eventTree[iRes]->Branch( "neutrPfCand_particleId",  &evInfo[iRes]->neutrPfCand_particleId);
-      eventTree[iRes]->Branch( "neutrPfCand_tCluster",  &evInfo[iRes]->neutrPfCand_tCluster);
-      eventTree[iRes]->Branch( "neutrPfCand_tClusterSeed",&evInfo[iRes]->neutrPfCand_tClusterSeed);
-      eventTree[iRes]->Branch( "neutrPfCand_dRcluster",&evInfo[iRes]->neutrPfCand_dRcluster);
+      eventTree[iRes]->Branch( "neutrPfCand_particleId",    &evInfo[iRes]->neutrPfCand_particleId);
+      eventTree[iRes]->Branch( "neutrPfCand_cluster_t",     &evInfo[iRes]->neutrPfCand_cluster_t);
+      eventTree[iRes]->Branch( "neutrPfCand_clusterSeed_t", &evInfo[iRes]->neutrPfCand_clusterSeed_t);
+      eventTree[iRes]->Branch( "neutrPfCand_cluster_x",     &evInfo[iRes]->neutrPfCand_cluster_x);
+      eventTree[iRes]->Branch( "neutrPfCand_cluster_y",     &evInfo[iRes]->neutrPfCand_cluster_y);
+      eventTree[iRes]->Branch( "neutrPfCand_cluster_z",     &evInfo[iRes]->neutrPfCand_cluster_z);
+      eventTree[iRes]->Branch( "neutrPfCand_cluster_R",     &evInfo[iRes]->neutrPfCand_cluster_R);
+      eventTree[iRes]->Branch( "neutrPfCand_dRcluster",     &evInfo[iRes]->neutrPfCand_dRcluster);
       eventTree[iRes]->Branch( "neutrPfCand_pt",     &evInfo[iRes]->neutrPfCand_pt);
       eventTree[iRes]->Branch( "neutrPfCand_eta",    &evInfo[iRes]->neutrPfCand_eta);
       eventTree[iRes]->Branch( "neutrPfCand_phi",    &evInfo[iRes]->neutrPfCand_phi);
@@ -566,11 +600,19 @@ MuonNeutralIsolationAnalyzer::initEventStructure()
     evInfo[iRes]->muon_neutrIso_dT2s.clear();
     evInfo[iRes]->muon_neutrIso_dT3s.clear();
     evInfo[iRes]->muon_neutrIso_dT5s.clear();
+    evInfo[iRes]->muon_neutrIso_dT2s_simVtx.clear();
+    evInfo[iRes]->muon_neutrIso_dT3s_simVtx.clear();
+    evInfo[iRes]->muon_neutrIso_dT5s_simVtx.clear();
+
 
     if (savePfCands_){
       evInfo[iRes]->neutrPfCand_particleId.clear();
-      evInfo[iRes]->neutrPfCand_tCluster.clear();
-      evInfo[iRes]->neutrPfCand_tClusterSeed.clear();
+      evInfo[iRes]->neutrPfCand_cluster_t.clear();
+      evInfo[iRes]->neutrPfCand_clusterSeed_t.clear();
+      evInfo[iRes]->neutrPfCand_cluster_x.clear();
+      evInfo[iRes]->neutrPfCand_cluster_y.clear();
+      evInfo[iRes]->neutrPfCand_cluster_z.clear();
+      evInfo[iRes]->neutrPfCand_cluster_R.clear();
       evInfo[iRes]->neutrPfCand_dRcluster.clear();
       evInfo[iRes]->neutrPfCand_pt.clear();
       evInfo[iRes]->neutrPfCand_eta.clear();

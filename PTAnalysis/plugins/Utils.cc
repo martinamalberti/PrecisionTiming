@@ -146,7 +146,10 @@ bool isUnmatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<r
 
 
 // --- matching pfcand to MTD cluster -------------------------------------------------------
-bool isMatchedToMTDCluster(const reco::PFCandidate &pfcand, FTLClusterCollection &clustersBTL, const MTDGeometry* mtdGeometry_, float &clusterTime,  float &clusterSeedTime, float &dRcluster){
+bool isMatchedToMTDCluster(const reco::PFCandidate &pfcand, FTLClusterCollection &clustersBTL, const MTDGeometry* mtdGeometry_, 
+			   float &clusterTime,  float &clusterSeedTime, float &dRcluster,
+			   float &clusterX, float &clusterY, float &clusterZ, float &clusterR
+			   ){
   bool ismatched = false;
 
   float  drmin = 9999999.;
@@ -173,6 +176,10 @@ bool isMatchedToMTDCluster(const reco::PFCandidate &pfcand, FTLClusterCollection
 	    drmin = dr;
             clusterTime = cluster.time();
             clusterSeedTime = cluster.seed().time();
+	    clusterX = gp.x();
+	    clusterY = gp.y();
+	    clusterZ = gp.z();
+	    clusterR = sqrt(gp.perp2());
 	    dRcluster = dr; 
             ismatched = true;
             //break;

@@ -131,8 +131,12 @@ struct eventInfo
   vector<float> neutrPfCand_pt;
   vector<float> neutrPfCand_eta;
   vector<float> neutrPfCand_phi;
-  vector<float> neutrPfCand_tCluster;
-  vector<float> neutrPfCand_tClusterSeed;
+  vector<float> neutrPfCand_cluster_t;
+  vector<float> neutrPfCand_clusterSeed_t;
+  vector<float> neutrPfCand_cluster_x;
+  vector<float> neutrPfCand_cluster_y;
+  vector<float> neutrPfCand_cluster_z;
+  vector<float> neutrPfCand_cluster_R;
   vector<float> neutrPfCand_dRmu;
   vector<float> neutrPfCand_dRcluster;
   vector<int> neutrPfCand_muIndex;
@@ -169,6 +173,9 @@ struct eventInfo
   vector<float> muon_neutrIso_dT2s;
   vector<float> muon_neutrIso_dT3s;
   vector<float> muon_neutrIso_dT5s;
+  vector<float> muon_neutrIso_dT2s_simVtx;
+  vector<float> muon_neutrIso_dT3s_simVtx;
+  vector<float> muon_neutrIso_dT5s_simVtx;
 
 };
 
