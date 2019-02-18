@@ -49,6 +49,7 @@
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 
 #include "DataFormats/Common/interface/View.h"
+#include "DataFormats/Common/interface/ValueMap.h"
 
 #include "PrecisionTiming/PTAnalysis/interface/Utils.h"
 
@@ -197,6 +198,8 @@ private:
   EDGetTokenT<float>  genT0Token_;
   EDGetTokenT<View<reco::GenJet> > genJetsToken_;
   EDGetTokenT<View<reco::Muon> > muonsToken_; 
+  EDGetTokenT<ValueMap<float> > trackTimeToken_;
+  EDGetTokenT<ValueMap<float> > trackTimeErrToken_;
   
   //--- outputs
   edm::Service<TFileService> fs_;
