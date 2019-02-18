@@ -35,7 +35,7 @@ using namespace std;
 
 int main(int argc, char** argv){
 
-  float timeResolution = 0.030;
+  float timeResolution = 0.035;
   int nsigma = 3;
 
   float minMuonPt = 20.;
@@ -52,15 +52,17 @@ int main(int argc, char** argv){
   string pu = argv[2];
   
   // -- get TChain
-  TChain* chain = new TChain("analysis/tree_30ps","tree");
+  //  TChain* chain = new TChain("analysis/tree_35ps","tree");
+  TChain* chain = new TChain("MuonIsolationAnalyzer/tree_35ps","tree");
   if (process.find("DYToLL") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190206_095318/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190207_152534/0000/muonIsolation*.root");
     if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_noPU_muIso/190111_164205/0000/muonIsolation_*.root");
     prompt = true;
   }
   
   if (process.find("TTbar") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190206_095332/0000/muonIsolation_*.root");
+    //    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190207_152546/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190215_063202/0000/muonIsolation_*.root");
     if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_noPU_muIso/190111_164224/0000/muonIsolation_*.root");
     prompt = false;
   }
@@ -105,6 +107,7 @@ int main(int argc, char** argv){
   vector<float> *track_dxy4D;
   vector<float> *track_t;
   vector<int> *track_muIndex;
+  vector<int> *track_isMatchedToGenParticle;
   
   muon_pt = 0;
   muon_eta = 0;
@@ -128,6 +131,7 @@ int main(int argc, char** argv){
   track_dxy4D = 0;
   track_t = 0;
   track_muIndex = 0;
+  track_isMatchedToGenParticle = 0;
 
   chain->SetBranchStatus("*",0);
   chain->SetBranchStatus("npu",1);                    chain->SetBranchAddress("npu",            &npu);
@@ -161,6 +165,7 @@ int main(int argc, char** argv){
   chain->SetBranchStatus("track_dxy4D",1);            chain->SetBranchAddress("track_dxy4D",    &track_dxy4D);
   chain->SetBranchStatus("track_t",1);                chain->SetBranchAddress("track_t",        &track_t);
   chain->SetBranchStatus("track_muIndex",1);          chain->SetBranchAddress("track_muIndex",  &track_muIndex);
+  chain->SetBranchStatus("track_isMatchedToGenParticle",1);          chain->SetBranchAddress("track_isMatchedToGenParticle",  &track_isMatchedToGenParticle);
 
   TH1F *hsimvtx_z = new TH1F("hsimvtx_z","hsimvtx_z", 500,-25,25);
   TH1F *hsimvtx_t = new TH1F("hsimvtx_t","hsimvtx_t", 1000,-1,1);
@@ -193,6 +198,9 @@ int main(int argc, char** argv){
 
   TH2F *h2_tracks_dzmu_dtmu_barrel = new TH2F("h2_tracks_dzmu_dtmu_barrel","h2_tracks_dzmu_dtmu_barrel",1000,-1,1, 1000, -1, 1);
   TH2F *h2_tracks_dzmu_dtmu_endcap = new TH2F("h2_tracks_dzmu_dtmu_endcap","h2_tracks_dzmu_dtmu_endcap",1000,-1,1, 1000, -1, 1);
+
+  TH1F *h_matched_tracks_dt_vtx_barrel = new TH1F("h_matched_tracks_dt_vtx_barrel","h_matched_tracks_dt_vtx_barrel",500, -1.0, 1.0);
+  TH1F *h_matched_tracks_dt_vtx_endcap = new TH1F("h_matched_tracks_dt_vtx_endcap","h_matched_tracks_dt_vtx_endcap",500, -1.0, 1.0);
 
 
   // -- to debug tracks in cone 
@@ -355,6 +363,7 @@ int main(int argc, char** argv){
 	    h_tracks_dz_vtx_barrel -> Fill(dz);
 	    if (track_t->at(itk) != -999){
 	      h_tracks_dt_vtx_barrel->Fill(dt);
+	      if (track_isMatchedToGenParticle->at(itk)) h_matched_tracks_dt_vtx_barrel->Fill(dt);
 	      h2_tracks_dzvtx_dtvtx_barrel->Fill(dz, dt);
 	    }
 	    
@@ -382,6 +391,7 @@ int main(int argc, char** argv){
 	    h_tracks_dz_vtx_endcap -> Fill(dz);
             if (track_t->at(itk) != -999){
               h_tracks_dt_vtx_endcap->Fill(dt);
+	      if (track_isMatchedToGenParticle->at(itk)) h_matched_tracks_dt_vtx_endcap->Fill(dt);
               h2_tracks_dzvtx_dtvtx_endcap->Fill(dz, dt);
             }
             // -- all tracks
@@ -583,6 +593,8 @@ int main(int argc, char** argv){
   h2_tracks_dzmu_dtmu_barrel->Write();  
   h2_tracks_dzmu_dtmu_endcap->Write();
 
+  h_matched_tracks_dt_vtx_barrel->Write();
+  h_matched_tracks_dt_vtx_endcap->Write();
 
 
   h_tracks_pt_barrel ->Write();

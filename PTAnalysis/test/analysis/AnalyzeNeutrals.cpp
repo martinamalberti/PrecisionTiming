@@ -55,14 +55,14 @@ int main(int argc, char** argv){
   }
   
   if (process.find("TTbar") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190206_095332/0000/muonNeutrIsolation_*.root");
-    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_noPU_muIso/190111_164224/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/NeutralIso/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_neutralMuIso/190212_145344/0000/muonNeutrIsolation_*.root"); 
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_noPU_muIso/190111_164224/0000/muonNeutrIsolation_*.root");
     prompt = false;
   }
   
   if (process.find("QCD") != std::string::npos) {
     if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Pt-15To7000_TuneCP5_Flat_14TeV-pythia8/test_QCD_muIso/190206_095346/0000/muonNeutrIsolation_*.root");
-    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_noPU_muIso/190111_164240/0000/muonIsolation_*.root");
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_noPU_muIso/190111_164240/0000/muonNeutrIsolation_*.root");
     prompt = false; 
   }
   
@@ -140,16 +140,16 @@ int main(int argc, char** argv){
   chain->SetBranchStatus("muon_isLoose",1);           chain->SetBranchAddress("muon_isLoose",   &muon_isLoose);
   chain->SetBranchStatus("muon_isPrompt",1);          chain->SetBranchAddress("muon_isPrompt",  &muon_isPrompt);
   chain->SetBranchStatus("muon_isMatchedToGenJet",1); chain->SetBranchAddress("muon_isMatchedToGenJet", &muon_isMatchedToGenJet);
-  chain->SetBranchStatus("muon_isFromTauDecay",1); chain->SetBranchAddress("muon_isFromTauDecay", &muon_isFromTauDecay);
+  chain->SetBranchStatus("muon_isFromTauDecay",1);    chain->SetBranchAddress("muon_isFromTauDecay", &muon_isFromTauDecay);
   
-  chain->SetBranchStatus("neutrPfCand_pt",1);               chain->SetBranchAddress("neutrPfCand_pt",       &neutrPfCand_pt);
-  chain->SetBranchStatus("neutrPfCand_eta",1);              chain->SetBranchAddress("neutrPfCand_eta",      &neutrPfCand_eta);
-  chain->SetBranchStatus("neutrPfCand_phi",1);              chain->SetBranchAddress("neutrPfCand_phi",      &neutrPfCand_phi);
+  chain->SetBranchStatus("neutrPfCand_pt",1);               chain->SetBranchAddress("neutrPfCand_pt",        &neutrPfCand_pt);
+  chain->SetBranchStatus("neutrPfCand_eta",1);              chain->SetBranchAddress("neutrPfCand_eta",       &neutrPfCand_eta);
+  chain->SetBranchStatus("neutrPfCand_phi",1);              chain->SetBranchAddress("neutrPfCand_phi",       &neutrPfCand_phi);
   chain->SetBranchStatus("neutrPfCand_particleId",1);       chain->SetBranchAddress("neutrPfCand_particleId",&neutrPfCand_particleId);
-  chain->SetBranchStatus("neutrPfCand_tCluster",1);         chain->SetBranchAddress("neutrPfCand_tCluster", &neutrPfCand_tCluster);
-  chain->SetBranchStatus("neutrPfCand_dRcluster",1);         chain->SetBranchAddress("neutrPfCand_dRcluster", &neutrPfCand_dRcluster);
-  chain->SetBranchStatus("neutrPfCand_dRmu",1);         chain->SetBranchAddress("neutrPfCand_dRmu", &neutrPfCand_dRmu);
-  chain->SetBranchStatus("neutrPfCand_muIndex",1);          chain->SetBranchAddress("neutrPfCand_muIndex",  &neutrPfCand_muIndex);
+  chain->SetBranchStatus("neutrPfCand_tCluster",1);         chain->SetBranchAddress("neutrPfCand_tCluster",  &neutrPfCand_tCluster);
+  chain->SetBranchStatus("neutrPfCand_dRcluster",1);        chain->SetBranchAddress("neutrPfCand_dRcluster", &neutrPfCand_dRcluster);
+  chain->SetBranchStatus("neutrPfCand_dRmu",1);             chain->SetBranchAddress("neutrPfCand_dRmu",      &neutrPfCand_dRmu);
+  chain->SetBranchStatus("neutrPfCand_muIndex",1);          chain->SetBranchAddress("neutrPfCand_muIndex",   &neutrPfCand_muIndex);
 
   TH1F *hsimvtx_z = new TH1F("hsimvtx_z","hsimvtx_z", 500,-25,25);
   TH1F *hsimvtx_t = new TH1F("hsimvtx_t","hsimvtx_t", 1000,-1,1);
@@ -192,7 +192,6 @@ int main(int argc, char** argv){
   TProfile *p_neutrals_removed_sumpt_vs_linedensity_barrel = new TProfile("p_neutrals_removed_sumpt_vs_linedensity_barrel","p_neutrals_removed_sumpt_vs_linedensity_barrel",22,-0.05,2.05);
   TProfile *p_neutrals_kept_sumpt_vs_linedensity_barrel = new TProfile("p_neutrals_kept_sumpt_vs_linedensity_barrel","p_neutrals_kept_sumpt_vs_linedensity_barrel",22,-0.05,2.05);
 
-
   TH1F *h_neutrals_pt_endcap = new TH1F("h_neutrals_pt_endcap","h_neutrals_pt_endcap",400,0.,20.);
   TH1F *h_neutrals_removed_pt_endcap = new TH1F("h_neutrals_removed_pt_endcap","h_neutrals_removed_pt_endcap",400,0.,20.);
   TH1F *h_neutrals_kept_pt_endcap = new TH1F("h_neutrals_kept_pt_endcap","h_neutrals_kept_pt_endcap",400,0.,20.);
@@ -216,6 +215,10 @@ int main(int argc, char** argv){
   TProfile *p_neutrals_sumpt_vs_linedensity_endcap = new TProfile("p_neutrals_sumpt_vs_linedensity_endcap","p_neutrals_sumpt_vs_linedensity_endcap",22,-0.05,2.05);
   TProfile *p_neutrals_removed_sumpt_vs_linedensity_endcap = new TProfile("p_neutrals_removed_sumpt_vs_linedensity_endcap","p_neutrals_removed_sumpt_vs_linedensity_endcap",22,-0.05,2.05);
   TProfile *p_neutrals_kept_sumpt_vs_linedensity_endcap = new TProfile("p_neutrals_kept_sumpt_vs_linedensity_endcap","p_neutrals_kept_sumpt_vs_linedensity_endcap",22,-0.05,2.05);
+
+
+  TProfile *p_neutrals_n_vs_npu_barrel = new TProfile("p_neutrals_n_vs_npu_barrel","p_neutrals_n_vs_npu_barrel",100, 150, 250);
+  TProfile *p_neutrals_n_vs_npu_endcap = new TProfile("p_neutrals_n_vs_npu_endcap","p_neutrals_n_vs_npu_endcap",100, 150, 250);
 
 
   cout << "Analyzing " << chain->GetEntries() << "  events" <<endl;
@@ -342,7 +345,7 @@ int main(int argc, char** argv){
 	h_neutrals_sumpt_barrel -> Fill( sumpt );
 	p_neutrals_n_vs_linedensity_barrel -> Fill( linedensity, npfcands );
 	p_neutrals_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt );
-
+	p_neutrals_n_vs_npu_barrel  -> Fill( npu, npfcands );
 	// -- pfcands removed from isolation cone
 	h_neutrals_removed_n_barrel -> Fill( npfcands_removed );
 	h_neutrals_removed_sumpt_barrel -> Fill( sumpt_removed );
@@ -360,6 +363,7 @@ int main(int argc, char** argv){
 	h_neutrals_sumpt_endcap -> Fill( sumpt );
 	p_neutrals_n_vs_linedensity_endcap -> Fill( linedensity, npfcands );
 	p_neutrals_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt );
+	p_neutrals_n_vs_npu_endcap  -> Fill( npu, npfcands );
 
 	h_neutrals_removed_n_endcap -> Fill( npfcands_removed );
 	h_neutrals_removed_sumpt_endcap -> Fill( sumpt_removed );
@@ -467,6 +471,8 @@ int main(int argc, char** argv){
   p_neutrals_removed_sumpt_vs_linedensity_endcap -> Write();
   p_neutrals_kept_sumpt_vs_linedensity_endcap -> Write();
 
+  p_neutrals_n_vs_npu_barrel-> Write();
+  p_neutrals_n_vs_npu_endcap -> Write();
 
   fout->Close();
   
