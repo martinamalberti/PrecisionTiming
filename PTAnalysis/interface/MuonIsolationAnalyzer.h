@@ -89,6 +89,8 @@ struct eventInfo
   vector<int> track_muIndex;
   vector<int> track_isMatchedToGenParticle;
   vector<int> track_isUnmatchedToGenParticle;
+  vector<float> track_puid3dmva;
+  vector<float> track_puid4dmva;
 
   float vtxGen_z;
   float vtxGen_t;
@@ -131,6 +133,16 @@ struct eventInfo
   vector<float> muon_chIso_dZ2_dT3s_simVtx;
   vector<float> muon_chIso_dZ2_dT5s_simVtx;
 
+  vector<float> muon_chIso_dZ3_simVtx;
+  vector<float> muon_chIso_dZ3_dT2s_simVtx;
+  vector<float> muon_chIso_dZ3_dT3s_simVtx;
+  vector<float> muon_chIso_dZ3_dT5s_simVtx;
+
+  vector<float> muon_chIso_dZ10_simVtx;
+  vector<float> muon_chIso_dZ10_dT2s_simVtx;
+  vector<float> muon_chIso_dZ10_dT3s_simVtx;
+  vector<float> muon_chIso_dZ10_dT5s_simVtx;
+
   vector<float> muon_chIso_dZ05;
   vector<float> muon_chIso_dZ05_dT2s;
   vector<float> muon_chIso_dZ05_dT3s;
@@ -145,6 +157,16 @@ struct eventInfo
   vector<float> muon_chIso_dZ2_dT2s;
   vector<float> muon_chIso_dZ2_dT3s;
   vector<float> muon_chIso_dZ2_dT5s;
+
+  vector<float> muon_chIso_dZ3;
+  vector<float> muon_chIso_dZ3_dT2s;
+  vector<float> muon_chIso_dZ3_dT3s;
+  vector<float> muon_chIso_dZ3_dT5s;
+
+  vector<float> muon_chIso_dZ10;
+  vector<float> muon_chIso_dZ10_dT2s;
+  vector<float> muon_chIso_dZ10_dT3s;
+  vector<float> muon_chIso_dZ10_dT5s;
 
   vector<float> muon_chIso_reldZ;
   vector<float> muon_chIso_reldZ_dT;
@@ -200,6 +222,8 @@ private:
   EDGetTokenT<View<reco::Muon> > muonsToken_; 
   EDGetTokenT<ValueMap<float> > trackTimeToken_;
   EDGetTokenT<ValueMap<float> > trackTimeErrToken_;
+  EDGetTokenT<ValueMap<float> > trackPUID3DMVAToken_;
+  EDGetTokenT<ValueMap<float> > trackPUID4DMVAToken_;
   
   //--- outputs
   edm::Service<TFileService> fs_;
@@ -226,11 +250,4 @@ private:
 
 };
 
-/*
-bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
-bool isMatchedToGenJet(const reco::Muon &muon, const edm::View<reco::GenJet>& genJet);
-bool isFromTau(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
-bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);
-bool isUnmatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);
-*/
 #endif

@@ -54,7 +54,9 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   genJetsToken_(consumes<View<reco::GenJet> >(iConfig.getUntrackedParameter<InputTag>("genJetsTag"))),
   muonsToken_(consumes<View<reco::Muon> >(iConfig.getUntrackedParameter<edm::InputTag>("muonsTag"))),
   trackTimeToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeValueMapTag" ) ) ),
-  trackTimeErrToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeErrValueMapTag" ) ) )
+  trackTimeErrToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeErrValueMapTag" ) ) ),
+  trackPUID3DMVAToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackPUID3DMVAValueMapTag" ) ) ),
+  trackPUID4DMVAToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackPUID4DMVAValueMapTag" ) ) )
 {
   timeResolutions_ = iConfig.getUntrackedParameter<vector<double> >("timeResolutions");
   mtd5sample_      = iConfig.getUntrackedParameter<bool>("mtd5sample");
@@ -168,6 +170,15 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   // -- get the trackTimeErrValueMap
   Handle<ValueMap<float> > trackTimeErrValueMap;
   iEvent.getByToken( trackTimeErrToken_, trackTimeErrValueMap );
+
+  // -- get the trackPUID3DMVAValueMap
+  Handle<ValueMap<float> > trackPUID3DMVAValueMap;
+  iEvent.getByToken( trackPUID3DMVAToken_, trackPUID3DMVAValueMap );
+
+  // -- get the trackPUID4DMVAValueMap
+  Handle<ValueMap<float> > trackPUID4DMVAValueMap;
+  iEvent.getByToken( trackPUID4DMVAToken_, trackPUID4DMVAValueMap );
+
 
   // -- initialize output tree
   initEventStructure();
@@ -296,9 +307,13 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float chIso_dZ05_simVtx = 0.;
     float chIso_dZ1_simVtx = 0.;
     float chIso_dZ2_simVtx = 0.;
+    float chIso_dZ3_simVtx = 0.;
+    float chIso_dZ10_simVtx = 0.;
     float chIso_dZ05 = 0.;
     float chIso_dZ1 = 0.;
     float chIso_dZ2 = 0.;
+    float chIso_dZ3 = 0.;
+    float chIso_dZ10 = 0.;
     float chIso_reldZ = 0.;
     float chIso_dZmu05 = 0.;
     float chIso_dZmu1 = 0.;
@@ -309,23 +324,35 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float chIso_dZ05_dT2s_simVtx[nResol];
     float chIso_dZ1_dT2s_simVtx[nResol];
     float chIso_dZ2_dT2s_simVtx[nResol];
+    float chIso_dZ3_dT2s_simVtx[nResol];
+    float chIso_dZ10_dT2s_simVtx[nResol];
     float chIso_dZ05_dT2s[nResol];
     float chIso_dZ1_dT2s[nResol];
     float chIso_dZ2_dT2s[nResol];
+    float chIso_dZ3_dT2s[nResol];
+    float chIso_dZ10_dT2s[nResol];
 
     float chIso_dZ05_dT3s_simVtx[nResol];
     float chIso_dZ1_dT3s_simVtx[nResol];
     float chIso_dZ2_dT3s_simVtx[nResol];
+    float chIso_dZ3_dT3s_simVtx[nResol];
+    float chIso_dZ10_dT3s_simVtx[nResol];
     float chIso_dZ05_dT3s[nResol];
     float chIso_dZ1_dT3s[nResol];
     float chIso_dZ2_dT3s[nResol];
+    float chIso_dZ3_dT3s[nResol];
+    float chIso_dZ10_dT3s[nResol];
 
     float chIso_dZ05_dT5s_simVtx[nResol];
     float chIso_dZ1_dT5s_simVtx[nResol];
     float chIso_dZ2_dT5s_simVtx[nResol];
+    float chIso_dZ3_dT5s_simVtx[nResol];
+    float chIso_dZ10_dT5s_simVtx[nResol];
     float chIso_dZ05_dT5s[nResol];
     float chIso_dZ1_dT5s[nResol];
     float chIso_dZ2_dT5s[nResol];
+    float chIso_dZ3_dT5s[nResol];
+    float chIso_dZ10_dT5s[nResol];
 
     float chIso_reldZ_dT[nResol];
     float chIso_dZmu05_dTmu[nResol];
@@ -340,23 +367,35 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       chIso_dZ05_dT2s_simVtx[iRes] = 0.;
       chIso_dZ1_dT2s_simVtx[iRes]  = 0.;
       chIso_dZ2_dT2s_simVtx[iRes]  = 0.;
+      chIso_dZ3_dT2s_simVtx[iRes]  = 0.;
+      chIso_dZ10_dT2s_simVtx[iRes]  = 0.;
       chIso_dZ05_dT2s[iRes] = 0.;
       chIso_dZ1_dT2s[iRes] = 0.;
       chIso_dZ2_dT2s[iRes] = 0.;
+      chIso_dZ3_dT2s[iRes] = 0.;
+      chIso_dZ10_dT2s[iRes] = 0.;
 
       chIso_dZ05_dT3s_simVtx[iRes] = 0.;
       chIso_dZ1_dT3s_simVtx[iRes]  = 0.;
       chIso_dZ2_dT3s_simVtx[iRes]  = 0.;
+      chIso_dZ3_dT3s_simVtx[iRes]  = 0.;
+      chIso_dZ10_dT3s_simVtx[iRes]  = 0.;
       chIso_dZ05_dT3s[iRes] = 0.;
       chIso_dZ1_dT3s[iRes] = 0.;
       chIso_dZ2_dT3s[iRes] = 0.;
+      chIso_dZ3_dT3s[iRes] = 0.;
+      chIso_dZ10_dT3s[iRes] = 0.;
 
       chIso_dZ05_dT5s_simVtx[iRes] = 0.;
       chIso_dZ1_dT5s_simVtx[iRes]  = 0.;
       chIso_dZ2_dT5s_simVtx[iRes]  = 0.;
+      chIso_dZ3_dT5s_simVtx[iRes]  = 0.;
+      chIso_dZ10_dT5s_simVtx[iRes]  = 0.;
       chIso_dZ05_dT5s[iRes] = 0.;
       chIso_dZ1_dT5s[iRes] = 0.;
       chIso_dZ2_dT5s[iRes] = 0.;
+      chIso_dZ3_dT5s[iRes] = 0.;
+      chIso_dZ10_dT5s[iRes] = 0.;
      
       chIso_reldZ_dT[iRes] = 0.;
       chIso_dZmu05_dTmu[iRes] = 0.;
@@ -422,12 +461,16 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	if (dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_simVtx+= pfcand.pt(); }
 	if (dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_simVtx+= pfcand.pt(); }
 	if (dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_simVtx+= pfcand.pt(); }
+        if (dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_simVtx+= pfcand.pt(); }
+        if (dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_simVtx+= pfcand.pt(); }
 	
 	// -- reco vtx closest to the sim one
 	if (dz3D < 0.05  &&  dxy3D < 0.02) { chIso_dZ05+= pfcand.pt(); }
 	if (dz3D < 0.1   &&  dxy3D < 0.02) { chIso_dZ1+= pfcand.pt(); }
 	if (dz3D < 0.2   &&  dxy3D < 0.02) { chIso_dZ2+= pfcand.pt(); }
-	
+        if (dz3D < 0.3   &&  dxy3D < 0.02) { chIso_dZ3+= pfcand.pt(); }
+	if (dz3D < 1.0   &&  dxy3D < 0.02) { chIso_dZ10+= pfcand.pt(); }
+
 	// -- using reco vtx closest to the sim one and cut on relative dz  
 	if (dz3Drel < 3.0  && dxy3D < 0.02) { chIso_reldZ+= pfcand.pt(); } 
 	
@@ -446,7 +489,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  double targetTimeResol = timeResolutions_[iRes];
 	  double defaultTimeResol  = 0.;
 	  //if ( pfcand.isTimeValid() ) {
-	  if ( pfcandtime !=0 ) {
+	  if ( pfcandtimeErr !=-1 ) {
 	    defaultTimeResol  = double(pfcand.timeError()); 
 	    if (mtd5sample_) defaultTimeResol = 0.035;
 	  }	  
@@ -492,29 +535,42 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	   
 	  // -- sim vertex
 	  if (dtsim < 2.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT2s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 2.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT2s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 2.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT2s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 2.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT2s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 2.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT2s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 2.*targetTimeResol && dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_dT2s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 2.*targetTimeResol && dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_dT2s_simVtx[iRes]+= pfcand.pt();}
 
-	  if (dtsim < 3.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT3s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 3.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT3s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 3.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT3s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 3.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT3s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 3.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT3s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 3.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT3s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 3.*targetTimeResol && dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_dT3s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 3.*targetTimeResol && dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_dT3s_simVtx[iRes]+= pfcand.pt();}
 
-	  if (dtsim < 5.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT5s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 5.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT5s_simVtx[iRes]+= pfcand.pt();}
-	  if (dtsim < 5.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT5s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 5.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT5s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 5.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT5s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 5.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT5s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 5.*targetTimeResol && dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_dT5s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 5.*targetTimeResol && dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_dT5s_simVtx[iRes]+= pfcand.pt();}
 	  
 	  // -- reco vtx closest to the sim one
-	  if (dt < 2.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT2s[iRes]+= pfcand.pt(); }
-	  if (dt < 2.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT2s[iRes]+= pfcand.pt(); }
-	  if (dt < 2.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT2s[iRes]+= pfcand.pt(); }
+          if (dt < 2.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT2s[iRes]+= pfcand.pt(); }
+          if (dt < 2.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT2s[iRes]+= pfcand.pt(); }
+          if (dt < 2.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT2s[iRes]+= pfcand.pt(); }
+          if (dt < 2.*targetTimeResol && dz4D < 0.3  &&  dxy4D < 0.02) { chIso_dZ3_dT2s[iRes]+= pfcand.pt(); }
+          if (dt < 2.*targetTimeResol && dz4D < 1.0  &&  dxy4D < 0.02) { chIso_dZ10_dT2s[iRes]+= pfcand.pt(); }
 
-	  if (dt < 3.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT3s[iRes]+= pfcand.pt(); }
-	  if (dt < 3.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT3s[iRes]+= pfcand.pt(); }
-	  if (dt < 3.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT3s[iRes]+= pfcand.pt(); }
+          if (dt < 3.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT3s[iRes]+= pfcand.pt(); }
+          if (dt < 3.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT3s[iRes]+= pfcand.pt(); }
+          if (dt < 3.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT3s[iRes]+= pfcand.pt(); }
+          if (dt < 3.*targetTimeResol && dz4D < 0.3  &&  dxy4D < 0.02) { chIso_dZ3_dT3s[iRes]+= pfcand.pt(); }
+          if (dt < 3.*targetTimeResol && dz4D < 1.0  &&  dxy4D < 0.02) { chIso_dZ10_dT3s[iRes]+= pfcand.pt(); }
 
-	  if (dt < 5.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT5s[iRes]+= pfcand.pt(); }
-	  if (dt < 5.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT5s[iRes]+= pfcand.pt(); }
-	  if (dt < 5.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT5s[iRes]+= pfcand.pt(); }
+          if (dt < 5.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT5s[iRes]+= pfcand.pt(); }
+          if (dt < 5.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT5s[iRes]+= pfcand.pt(); }
+          if (dt < 5.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT5s[iRes]+= pfcand.pt(); }
+          if (dt < 5.*targetTimeResol && dz4D < 0.3  &&  dxy4D < 0.02) { chIso_dZ3_dT5s[iRes]+= pfcand.pt(); }
+          if (dt < 5.*targetTimeResol && dz4D < 1.0  &&  dxy4D < 0.02) { chIso_dZ10_dT5s[iRes]+= pfcand.pt(); }
+
 	  
 	  // -- using reco vtx closest to the sim one   and cut on relative dz
 	  if (dt < 3.*targetTimeResol && dz4Drel < 3.0  && dxy4D < 0.02) { chIso_reldZ_dT[iRes]+= pfcand.pt(); }
@@ -545,6 +601,10 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	    evInfo[iRes]->track_muIndex.push_back(muonIndex);
 	    evInfo[iRes]->track_isMatchedToGenParticle.push_back(genMatching);
 	    evInfo[iRes]->track_isUnmatchedToGenParticle.push_back(genUnmatching);
+
+	    cout << icand <<">>>> trackRef :" << trackRef->pt() << endl;
+	    evInfo[iRes]->track_puid3dmva.push_back((*trackPUID3DMVAValueMap)[trackRef]);
+	    evInfo[iRes]->track_puid4dmva.push_back((*trackPUID4DMVAValueMap)[trackRef]);
 	  }
 	  
 	}// end loop over time resolutions                                                                                                                                    
@@ -587,6 +647,16 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       evInfo[iRes]->muon_chIso_dZ2_dT2s_simVtx.push_back(chIso_dZ2_dT2s_simVtx[iRes]);
       evInfo[iRes]->muon_chIso_dZ2_dT3s_simVtx.push_back(chIso_dZ2_dT3s_simVtx[iRes]);
       evInfo[iRes]->muon_chIso_dZ2_dT5s_simVtx.push_back(chIso_dZ2_dT5s_simVtx[iRes]);
+
+      evInfo[iRes]->muon_chIso_dZ3_simVtx.push_back(chIso_dZ3_simVtx);
+      evInfo[iRes]->muon_chIso_dZ3_dT2s_simVtx.push_back(chIso_dZ3_dT2s_simVtx[iRes]);
+      evInfo[iRes]->muon_chIso_dZ3_dT3s_simVtx.push_back(chIso_dZ3_dT3s_simVtx[iRes]);
+      evInfo[iRes]->muon_chIso_dZ3_dT5s_simVtx.push_back(chIso_dZ3_dT5s_simVtx[iRes]);
+
+      evInfo[iRes]->muon_chIso_dZ10_simVtx.push_back(chIso_dZ10_simVtx);
+      evInfo[iRes]->muon_chIso_dZ10_dT2s_simVtx.push_back(chIso_dZ10_dT2s_simVtx[iRes]);
+      evInfo[iRes]->muon_chIso_dZ10_dT3s_simVtx.push_back(chIso_dZ10_dT3s_simVtx[iRes]);
+      evInfo[iRes]->muon_chIso_dZ10_dT5s_simVtx.push_back(chIso_dZ10_dT5s_simVtx[iRes]);
       
       evInfo[iRes]->muon_chIso_dZ05.push_back(chIso_dZ05);  
       evInfo[iRes]->muon_chIso_dZ05_dT2s.push_back(chIso_dZ05_dT2s[iRes]);
@@ -602,6 +672,16 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       evInfo[iRes]->muon_chIso_dZ2_dT2s.push_back(chIso_dZ2_dT2s[iRes]);
       evInfo[iRes]->muon_chIso_dZ2_dT3s.push_back(chIso_dZ2_dT3s[iRes]);
       evInfo[iRes]->muon_chIso_dZ2_dT5s.push_back(chIso_dZ2_dT5s[iRes]);
+
+      evInfo[iRes]->muon_chIso_dZ3.push_back(chIso_dZ3);
+      evInfo[iRes]->muon_chIso_dZ3_dT2s.push_back(chIso_dZ3_dT2s[iRes]);
+      evInfo[iRes]->muon_chIso_dZ3_dT3s.push_back(chIso_dZ3_dT3s[iRes]);
+      evInfo[iRes]->muon_chIso_dZ3_dT5s.push_back(chIso_dZ3_dT5s[iRes]);
+
+      evInfo[iRes]->muon_chIso_dZ10.push_back(chIso_dZ10);
+      evInfo[iRes]->muon_chIso_dZ10_dT2s.push_back(chIso_dZ10_dT2s[iRes]);
+      evInfo[iRes]->muon_chIso_dZ10_dT3s.push_back(chIso_dZ10_dT3s[iRes]);
+      evInfo[iRes]->muon_chIso_dZ10_dT5s.push_back(chIso_dZ10_dT5s[iRes]);
       
       evInfo[iRes]->muon_chIso_reldZ.push_back(chIso_reldZ);  
       evInfo[iRes]->muon_chIso_reldZ_dT.push_back(chIso_reldZ_dT[iRes]);
@@ -702,6 +782,16 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT3s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT3s_simVtx);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT5s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT5s_simVtx);  
     
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_simVtx);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT2s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT2s_simVtx);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT3s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT3s_simVtx);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT5s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT5s_simVtx);
+
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_simVtx);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT2s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT2s_simVtx);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT3s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT3s_simVtx);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT5s_simVtx",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT5s_simVtx);
+
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ05);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05_dT2s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ05_dT2s);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ05_dT3s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ05_dT3s);  
@@ -716,6 +806,16 @@ MuonIsolationAnalyzer::beginJob()
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT2s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT2s);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT3s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT3s);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ2_dT5s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ2_dT5s);  
+
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT2s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT2s);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT3s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT3s);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ3_dT5s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ3_dT5s);
+
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT2s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT2s);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT3s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT3s);
+    eventTree[iRes]->Branch( Form("muon_chIso%.2d_dZ10_dT5s",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_dZ10_dT5s);
     
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_reldZ);  
     eventTree[iRes]->Branch( Form("muon_chIso%.2d_reldZ_dT",int(isoConeDR_*10) ), &evInfo[iRes]->muon_chIso_reldZ_dT);  
@@ -749,6 +849,8 @@ MuonIsolationAnalyzer::beginJob()
       eventTree[iRes]->Branch( "track_muIndex",&evInfo[iRes]->track_muIndex);
       eventTree[iRes]->Branch( "track_isMatchedToGenParticle",&evInfo[iRes]->track_isMatchedToGenParticle);
       eventTree[iRes]->Branch( "track_isUnmatchedToGenParticle",&evInfo[iRes]->track_isUnmatchedToGenParticle);
+      eventTree[iRes]->Branch( "track_puid3dmva",      &evInfo[iRes]->track_puid3dmva);
+      eventTree[iRes]->Branch( "track_puid4dmva",      &evInfo[iRes]->track_puid4dmva);
     }
   
   }
@@ -822,6 +924,16 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes]->muon_chIso_dZ2_dT3s_simVtx.clear();
     evInfo[iRes]->muon_chIso_dZ2_dT5s_simVtx.clear();
 
+    evInfo[iRes]->muon_chIso_dZ3_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT2s_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT3s_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT5s_simVtx.clear();
+
+    evInfo[iRes]->muon_chIso_dZ10_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT2s_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT3s_simVtx.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT5s_simVtx.clear();
+
     evInfo[iRes]->muon_chIso_dZ05.clear();
     evInfo[iRes]->muon_chIso_dZ05_dT2s.clear();
     evInfo[iRes]->muon_chIso_dZ05_dT3s.clear();
@@ -836,6 +948,16 @@ MuonIsolationAnalyzer::initEventStructure()
     evInfo[iRes]->muon_chIso_dZ2_dT2s.clear();
     evInfo[iRes]->muon_chIso_dZ2_dT3s.clear();
     evInfo[iRes]->muon_chIso_dZ2_dT5s.clear();
+
+    evInfo[iRes]->muon_chIso_dZ3.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT2s.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT3s.clear();
+    evInfo[iRes]->muon_chIso_dZ3_dT5s.clear();
+
+    evInfo[iRes]->muon_chIso_dZ10.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT2s.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT3s.clear();
+    evInfo[iRes]->muon_chIso_dZ10_dT5s.clear();
 
     evInfo[iRes]->muon_chIso_reldZ.clear();
     evInfo[iRes]->muon_chIso_reldZ_dT.clear();
@@ -865,148 +987,12 @@ MuonIsolationAnalyzer::initEventStructure()
       evInfo[iRes]->track_muIndex.clear();
       evInfo[iRes]->track_isMatchedToGenParticle.clear();
       evInfo[iRes]->track_isUnmatchedToGenParticle.clear();
+      evInfo[iRes]->track_puid3dmva.clear();
+      evInfo[iRes]->track_puid4dmva.clear();
     }
   }
 }
 
-
-/*
-// --- matching to gen muon
-bool isPromptMuon(const reco::Muon& muon, const edm::View<reco::GenParticle>& genParticles)
-{
-  bool isPrompt = false;
-
-  for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
-    const reco::GenParticle& genp = genParticles[ip];
-    if ( std::abs(genp.pdgId()) != 13) continue;
-    if (genp.status() != 1 || !genp.isLastCopy() ) continue; // -- from Simone
-    if ( !genp.isPromptFinalState() ) continue;
-    double dr = deltaR(muon,genp);
-    if (dr > 0.2){ 
-      continue;
-    }
-    else{ 
-      isPrompt=true;
-      break;
-    }
-  }
-  
-  return isPrompt;
-}
-
-
-// --- matching to gen jet
-bool isMatchedToGenJet(const reco::Muon& muon, const edm::View<reco::GenJet>& genJets)
-{
-  bool isMatched = false;
-
-  for(unsigned int ip=0; ip < genJets.size(); ip++ ){
-    const reco::GenJet& genj = genJets[ip];
-    if ( genj.pt() < 15.0  || genj.hadEnergy()/genj.energy() < 0.3) continue;
-    double dr = deltaR(muon,genj);
-    if (dr > 0.3){ 
-      continue;
-    }
-    else{ 
-      isMatched=true;
-      break;
-    }
-  }
-  
-  return isMatched;
-}
-
-
-
-// --- matching to muons from tau decays
-bool isFromTau(const reco::Muon& muon, const edm::View<reco::GenParticle>& genParticles)
-{
-  
-  bool fromTau = false;
-
-  for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
-    const reco::GenParticle& genp = genParticles[ip];
-    if ( std::abs(genp.pdgId()) != 13) continue;
-    if ( !genp.isDirectPromptTauDecayProductFinalState() ) continue;
-    double dr = deltaR(muon,genp);
-    if (dr > 0.2){
-      continue;
-    }
-    else{
-      fromTau=true;
-      break;
-    }
-  }
-
-  return fromTau;
-}
-
-
-
-// matching pfcands to gen level particles (from PV)
-bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles){
-  
-  bool isMatched = false;
-
-  for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
-    const reco::GenParticle& genp = genParticles[ip];
-    // -- stable particle
-    if (genp.status() !=1 ) continue;
-    // -- charged particle 
-    if (genp.charge()==0) continue;
-    // -- pt matching
-    float dpt = std::abs((pfcand.pt()-genp.pt())/genp.pt());
-    if ( dpt > 0.1) continue;
-    // -- deltaR matching
-    double dr = deltaR(pfcand,genp);
-    if (dr > 0.05){
-      continue;
-    }
-    else{
-      isMatched=true;
-      break;
-    }
-  }
-
-
-  return isMatched;
-
-}
-
-
-// -- not matching to gen particles (looser deltaR)
-bool isUnmatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles){
-  
-  bool isUnmatched = true;
-
-  for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
-    const reco::GenParticle& genp = genParticles[ip];
-    // -- stable particle
-    if (genp.status() !=1 ) continue;
-    // -- charged particle 
-    if (genp.charge()==0) continue;
-    // -- not a muon 
-    if (genp.pdgId() == 13 ) continue;
-    // -- pt matching
-    //float dpt = std::abs((pfcand.pt()-genp.pt())/genp.pt());
-    //if ( dpt > 0.2) continue;
-    // -- deltaR matching
-    double dr = deltaR(pfcand,genp);
-    if (dr > 0.15){
-      continue;
-    }
-    else{
-      isUnmatched=false;
-      break;
-    }
-  }
-
-
-  return isUnmatched;
-
-}
-
-*/
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(MuonIsolationAnalyzer);
