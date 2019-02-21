@@ -55,14 +55,14 @@ int main(int argc, char** argv){
   //  TChain* chain = new TChain("analysis/tree_35ps","tree");
   TChain* chain = new TChain("MuonIsolationAnalyzer/tree_35ps","tree");
   if (process.find("DYToLL") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190207_152534/0000/muonIsolation*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190218_211710/0000/muonIsolation*.root");
     if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_noPU_muIso/190111_164205/0000/muonIsolation_*.root");
     prompt = true;
   }
   
   if (process.find("TTbar") != std::string::npos) {
     //    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190207_152546/0000/muonIsolation_*.root");
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190215_063202/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190218_212018/0000/muonIsolation*.root");
     if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_noPU_muIso/190111_164224/0000/muonIsolation_*.root");
     prompt = false;
   }

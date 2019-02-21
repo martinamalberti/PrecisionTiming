@@ -68,7 +68,8 @@ int main(int argc, char** argv)
   cout << "Start analyzing " << folderName <<endl;
 
   // -- get TChain
-  TChain* chain = new TChain(("analysis/tree_"+timeResolution+"ps").c_str(),"tree");
+  //TChain* chain = new TChain(("analysis/tree_"+timeResolution+"ps").c_str(),"tree");
+  TChain* chain = new TChain(("MuonIsolationAnalyzer/tree_"+timeResolution+"ps").c_str(),"tree");
   chain->Add((folderName+"/0000/muonIsolation_*.root").c_str());
 
   // -- tree vars

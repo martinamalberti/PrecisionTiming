@@ -49,8 +49,8 @@ int main(int argc, char** argv){
   // -- get TChain
   TChain* chain = new TChain("analysis/tree_35ps","tree");
   if (process.find("DYToLL") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/NeutralIso/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_neutralMuIso/190212_133305/0000/muonNeutrIsolation*.root");
-    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/NeutralIso/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_noPU_neutralMuIso/190212_133029/0000/muonNeutrIsolation*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/NeutralIso/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_neutralMuIso/190213_112840/0000/muonNeutrIsolation*.root");
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/NeutralIso/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_noPU_neutralMuIso/190213_112909/0000/muonNeutrIsolation*.root");
     prompt = true;
   }
   
@@ -90,11 +90,15 @@ int main(int argc, char** argv){
   vector<float> *muon_dz4D;
   vector<float> *muon_dxy3D;
   vector<float> *muon_dxy4D;
-  vector<float> *neutrPfCand_particleId;
+  vector<int> *neutrPfCand_particleId;
   vector<float> *neutrPfCand_pt;
   vector<float> *neutrPfCand_eta;
   vector<float> *neutrPfCand_phi;
-  vector<float> *neutrPfCand_tCluster;
+  vector<float> *neutrPfCand_cluster_t;
+  vector<float> *neutrPfCand_cluster_x;
+  vector<float> *neutrPfCand_cluster_y;
+  vector<float> *neutrPfCand_cluster_z;
+  vector<float> *neutrPfCand_cluster_R;
   vector<float> *neutrPfCand_dRcluster;
   vector<float> *neutrPfCand_dRmu;
   vector<int> *neutrPfCand_muIndex;
@@ -116,7 +120,11 @@ int main(int argc, char** argv){
   neutrPfCand_phi = 0;
   neutrPfCand_particleId= 0;
   neutrPfCand_dRcluster = 0;
-  neutrPfCand_tCluster = 0;
+  neutrPfCand_cluster_t = 0;
+  neutrPfCand_cluster_x = 0;
+  neutrPfCand_cluster_y = 0;
+  neutrPfCand_cluster_z = 0;
+  neutrPfCand_cluster_R = 0;
   neutrPfCand_dRmu = 0;
   neutrPfCand_muIndex = 0;
 
@@ -146,7 +154,11 @@ int main(int argc, char** argv){
   chain->SetBranchStatus("neutrPfCand_eta",1);              chain->SetBranchAddress("neutrPfCand_eta",       &neutrPfCand_eta);
   chain->SetBranchStatus("neutrPfCand_phi",1);              chain->SetBranchAddress("neutrPfCand_phi",       &neutrPfCand_phi);
   chain->SetBranchStatus("neutrPfCand_particleId",1);       chain->SetBranchAddress("neutrPfCand_particleId",&neutrPfCand_particleId);
-  chain->SetBranchStatus("neutrPfCand_tCluster",1);         chain->SetBranchAddress("neutrPfCand_tCluster",  &neutrPfCand_tCluster);
+  chain->SetBranchStatus("neutrPfCand_cluster_t",1);         chain->SetBranchAddress("neutrPfCand_cluster_t",  &neutrPfCand_cluster_t);
+  chain->SetBranchStatus("neutrPfCand_cluster_x",1);         chain->SetBranchAddress("neutrPfCand_cluster_x",  &neutrPfCand_cluster_x);
+  chain->SetBranchStatus("neutrPfCand_cluster_y",1);         chain->SetBranchAddress("neutrPfCand_cluster_y",  &neutrPfCand_cluster_y);
+  chain->SetBranchStatus("neutrPfCand_cluster_z",1);         chain->SetBranchAddress("neutrPfCand_cluster_z",  &neutrPfCand_cluster_z);
+  chain->SetBranchStatus("neutrPfCand_cluster_R",1);         chain->SetBranchAddress("neutrPfCand_cluster_R",  &neutrPfCand_cluster_R);
   chain->SetBranchStatus("neutrPfCand_dRcluster",1);        chain->SetBranchAddress("neutrPfCand_dRcluster", &neutrPfCand_dRcluster);
   chain->SetBranchStatus("neutrPfCand_dRmu",1);             chain->SetBranchAddress("neutrPfCand_dRmu",      &neutrPfCand_dRmu);
   chain->SetBranchStatus("neutrPfCand_muIndex",1);          chain->SetBranchAddress("neutrPfCand_muIndex",   &neutrPfCand_muIndex);
@@ -232,7 +244,7 @@ int main(int argc, char** argv){
     if (ientry%1000==0) cout << "Analyzing event " << ientry << "\r" << flush;
 
     hsimvtx_z  -> Fill(vtxGen_z);    
-    hsimvtx_t  -> Fill(vtxGen_t*1000000000.);    
+    hsimvtx_t  -> Fill(vtxGen_t);    
     
     float linedensity = npu*TMath::Gaus(fabs(10.*vtxGen_z), 0, 42., 1);
 
@@ -267,15 +279,19 @@ int main(int argc, char** argv){
 	
 	// -- exclude pfcands corresponding to the isolation cone of the other muon(s)
 	if (neutrPfCand_muIndex ->at(icand) != int(imu)) continue;
+
+	// -- keep only photons
+	if (neutrPfCand_particleId->at(icand) != 22) continue;
 	
 	float drclus = neutrPfCand_dRcluster->at(icand);
-	float dt = neutrPfCand_tCluster->at(icand) - vtxGen_t*1000000000.;
+	float tof = sqrt( pow(neutrPfCand_cluster_z->at(icand) - vtxGen_z, 2)  + pow(neutrPfCand_cluster_R->at(icand),2) ) / (TMath::C()*1.E-07) ; // m/s --> cm/ns 
+	float dt = neutrPfCand_cluster_t->at(icand) - tof - vtxGen_t;
 	float pt = neutrPfCand_pt->at(icand);
 
 	// -- barrel
 	if (isBarrel){
 	  h_neutrals_dRcluster_barrel->Fill( drclus );
-	  if (neutrPfCand_tCluster->at(icand) != -999){
+	  if (neutrPfCand_cluster_t->at(icand) != -999){
 	    h_neutrals_matchingToMtd_barrel->Fill(1.);
 	    h_neutrals_dt_vtx_barrel->Fill(dt);
 	  }
@@ -288,7 +304,7 @@ int main(int argc, char** argv){
 	  npfcands++;
 	  sumpt+=pt;
 	  // -- removed pfcands
-	  if ( neutrPfCand_tCluster->at(icand) != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
+	  if ( neutrPfCand_cluster_t->at(icand) != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
 	    h_neutrals_removed_pt_barrel -> Fill( pt );
 	    p_neutrals_removed_pt_vs_linedensity_barrel -> Fill( linedensity, pt );
 	    npfcands_removed++;
@@ -305,7 +321,7 @@ int main(int argc, char** argv){
 	// endcap
 	else{
 	  h_neutrals_dRcluster_endcap->Fill( drclus );
-	  if (neutrPfCand_tCluster->at(icand) != -999){
+	  if (neutrPfCand_cluster_t->at(icand) != -999){
 	    h_neutrals_matchingToMtd_endcap->Fill(1.);
 	    h_neutrals_dt_vtx_endcap->Fill(dt);
 	  }
@@ -318,7 +334,7 @@ int main(int argc, char** argv){
 	  npfcands++;
 	  sumpt+=pt;
 	  // -- removed pfcands
-	  if ( neutrPfCand_tCluster->at(icand) != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
+	  if ( neutrPfCand_cluster_t->at(icand) != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
 	    h_neutrals_removed_pt_endcap -> Fill( pt );
 	    p_neutrals_removed_pt_vs_linedensity_endcap -> Fill( linedensity, pt );
 	    npfcands_removed++;
