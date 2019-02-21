@@ -253,7 +253,7 @@ if options.runTofPID:
     print ">>> Run TofPID"
     if (not options.run4DVertex):
         process.tofPID.vtxsSrc = cms.InputTag('offlinePrimaryVertices4DnoPID')
-    process.tofPID.fixedT0Error = cms.double(0.035) #put a constant 0.035 [ns] error for each track
+    #process.tofPID.fixedT0Error = cms.double(0.035) #put a constant 0.035 [ns] error for each track
     process.reconstruction_step += process.tofPID
     process.packedPFCandidates.TimeMap = cms.InputTag("tofPID:t0")
     process.packedPFCandidates.TimeErrorMap = cms.InputTag("tofPID:sigmat0")

@@ -91,7 +91,7 @@ bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<rec
     if (genp.charge()!=pfcand.charge()) continue;
     // -- pt matching 
     float dpt = std::abs((pfcand.pt()-genp.pt())/genp.pt());
-    if ( dpt > 0.1) continue;
+    if ( dpt > 0.05) continue;
     // -- deltaR matching
     double dr = deltaR(pfcand,genp);
     if (dr > 0.05){

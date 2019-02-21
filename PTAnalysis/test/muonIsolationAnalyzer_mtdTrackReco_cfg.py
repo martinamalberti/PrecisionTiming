@@ -129,7 +129,8 @@ process.source = cms.Source(
     #fileNames = cms.untracked.vstring(files),
     #secondaryFileNames = cms.untracked.vstring(secondary_files)
     fileNames = cms.untracked.vstring(
-        '/store/mc/PhaseIIMTDTDRAutumn18DR/DYToLL_M-50_14TeV_TuneCP5_pythia8/FEVT/PU200_103X_upgrade2023_realistic_v2-v2/90003/5ADE290E-1F66-134D-806E-CB620FA0EF3E.root'
+        #'/store/mc/PhaseIIMTDTDRAutumn18DR/DYToLL_M-50_14TeV_TuneCP5_pythia8/FEVT/PU200_103X_upgrade2023_realistic_v2-v2/90003/5ADE290E-1F66-134D-806E-CB620FA0EF3E.root'
+        '/store/mc/PhaseIIMTDTDRAutumn18DR/TTbar_14TeV_TuneCP5_Pythia8/FEVT/PU200_103X_upgrade2023_realistic_v2-v1/80002/D8DBF74C-A132-0643-9FA4-6153697CF9B8.root'
         ) 
     )
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
@@ -253,7 +254,7 @@ if options.runTofPID:
     print ">>> Run TofPID"
     if (not options.run4DVertex):
         process.tofPID.vtxsSrc = cms.InputTag('offlinePrimaryVertices4DnoPID')
-    process.tofPID.fixedT0Error = cms.double(0.035) #put a constant 0.035 [ns] error for each track
+    #process.tofPID.fixedT0Error = cms.double(0.035) #put a constant 0.035 [ns] error for each track
     process.reconstruction_step += process.tofPID
     process.packedPFCandidates.TimeMap = cms.InputTag("tofPID:t0")
     process.packedPFCandidates.TimeErrorMap = cms.InputTag("tofPID:sigmat0")

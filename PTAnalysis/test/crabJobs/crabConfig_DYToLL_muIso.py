@@ -9,7 +9,7 @@ config.General.transferLogs = False
 config.JobType.pluginName = 'Analysis'
 # Name of the CMSSW configuration file
 config.JobType.psetName = 'muonIsolationAnalyzer_mtdTrackReco_cfg.py'
-config.JobType.pyCfgParams = ['runMTDReco=1', 'runMTDTrackReco=1', 'runTofPID=1']
+config.JobType.pyCfgParams = ['runMTDReco=1', 'runMTDTrackReco=1', 'runTofPID=1', 'runPUIDMVA=1']
 
 config.Data.inputDataset = '/DYToLL_M-50_14TeV_TuneCP5_pythia8/PhaseIIMTDTDRAutumn18DR-PU200_103X_upgrade2023_realistic_v2-v2/FEVT'
 config.Data.inputDBS = 'global'
