@@ -441,15 +441,28 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       float dxysim  = sqrt ( pow(trackRef->vx() - genPV.position().x(),2) + pow(trackRef->vy() - genPV.position().y(),2) ); 
 
       float dzmu  = std::abs( trackRef->dz(vtx4D.position()) - muon.track()->dz(vtx4D.position()) );
-      float dxymu = std::abs( trackRef->dxy(vtx4D.position()) - muon.track()->dxy(vtx4D.position()) );
+      //float dxymu = std::abs( trackRef->dxy(vtx4D.position()) - muon.track()->dxy(vtx4D.position()) );
 
       float dr  = deltaR(muon.eta(), muon.phi(), pfcand.eta(), pfcand.phi());
 
       float pfcandtime = pfcand.time();
       float pfcandtimeErr = pfcand.timeError();
+      //float puid3dmva = 0;
+      //float puid4dmva = 0;
       if (mtd5sample_ ){
 	pfcandtime    = (*trackTimeValueMap)[trackRef] ;
 	pfcandtimeErr = (*trackTimeErrValueMap)[trackRef] ;
+	/*if(trackPUID4DMVAValueMap->contains(trackRef.id())) {
+	  puid4dmva = (*trackPUID4DMVAValueMap)[trackRef] ;
+	  puid4dmva = puid4dmva + 0; 
+	  cout << icand << "  " << puid4dmva <<endl;
+	  }
+	else{
+	  cout << "trackRef not found!!!" << endl;
+	  cout << trackRef->pt() << "  " << trackRef->eta() << "  " << pfcandtime << endl;
+	  }*/
+	//puid4dmva = (*trackPUID4DMVAValueMap)[trackRef] ;
+	//cout << icand << "  " << pfcandtime << "  " << pfcandtimeErr << " " << puid3dmva << "  " << puid4dmva <<endl; 
 	//cout << "pfcandtime    = " << pfcand.time() << "  " <<  pfcandtime <<endl;
 	//cout << "pfcandtimeErr = " << pfcand.timeError() << "  " << pfcandtimeErr <<endl;
       }
@@ -584,6 +597,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  
 	  
 	  // -- save info for tracks in the isolation cone (only for DR = 0.3)
+	  //if (saveTracks_ && (dzsim < 1.0 || dz4D < 1.0 || dz3D < 1. || dzmu < 1. ) ) { // save a subset of tracks with loose dz selection
 	  if (saveTracks_ && (dz4D < 1.0 || dz3D < 1. || dzmu < 1. ) ) { // save a subset of tracks with loose dz selection
 
 	    bool genMatching  = isMatchedToGenParticle(pfcand, genParticles);
@@ -601,8 +615,6 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	    evInfo[iRes]->track_muIndex.push_back(muonIndex);
 	    evInfo[iRes]->track_isMatchedToGenParticle.push_back(genMatching);
 	    evInfo[iRes]->track_isUnmatchedToGenParticle.push_back(genUnmatching);
-
-	    cout << icand <<">>>> trackRef :" << trackRef->pt() << endl;
 	    evInfo[iRes]->track_puid3dmva.push_back((*trackPUID3DMVAValueMap)[trackRef]);
 	    evInfo[iRes]->track_puid4dmva.push_back((*trackPUID4DMVAValueMap)[trackRef]);
 	  }

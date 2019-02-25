@@ -57,7 +57,12 @@ options.register('runPUIDMVA',
                  False,
                  VarParsing.multiplicity.singleton,
                  VarParsing.varType.bool,
-                 "Run MTD Reco"),
+                 "Run MTD Reco")
+options.register('runPAT',
+                 False,
+                 VarParsing.multiplicity.singleton,
+                 VarParsing.varType.bool,
+                 "RunPAT")
 options.register('useSimVertex',
                  False,
                  VarParsing.multiplicity.singleton,
@@ -72,9 +77,9 @@ process = cms.Process('PAT',eras.Phase2C4_timing_layer_bar)
 
 process.options = cms.untracked.PSet(
     allowUnscheduled = cms.untracked.bool(True),
-    numberOfThreads=cms.untracked.uint32(2),
-    numberOfStreams=cms.untracked.uint32(0),
-    wantSummary = cms.untracked.bool(False)
+#    numberOfThreads=cms.untracked.uint32(1),
+#    numberOfStreams=cms.untracked.uint32(0),
+    wantSummary = cms.untracked.bool(True)
     )
 
 # import of standard configurations
@@ -223,7 +228,7 @@ if options.runMTDReco:
     print ">>> Run MTD LocalReco"
     process.reconstruction_step += process.mtdClusters
     process.reconstruction_step += process.mtdTrackingRecHits
-
+    process.MINIAODSIMoutput.outputCommands.extend(['keep *_mtdClusters_*_PAT','keep *_mtdTrackingRecHits_*_PAT'])
 if options.runMTDTrackReco: 
     print ">>> Run MTD Track Extender with vtx constraint"
     process.trackExtenderWithMTD.UseVertex = cms.bool(True) #run trackExtender using vertex constrain
@@ -232,6 +237,7 @@ if options.runMTDTrackReco:
         process.trackExtenderWithMTD.UseSimVertex = cms.bool(True) #useSimVertex as the vector constrain
     process.trackExtenderWithMTD.DZCut = 0.3
     process.reconstruction_step += process.trackExtenderWithMTD
+    process.MINIAODSIMoutput.outputCommands.extend(['keep *_trackExtenderWithMTD_*_PAT'])
 
 if options.run4DVertex:
     print ">>> Run 4D Vertex"
@@ -254,19 +260,29 @@ if options.runTofPID:
     print ">>> Run TofPID"
     if (not options.run4DVertex):
         process.tofPID.vtxsSrc = cms.InputTag('offlinePrimaryVertices4DnoPID')
-    #process.tofPID.fixedT0Error = cms.double(0.035) #put a constant 0.035 [ns] error for each track
+    process.tofPID.fixedT0Error = cms.double(0.035) #put a constant 0.035 [ns] error for each track (cannot be used with the current training)
     process.reconstruction_step += process.tofPID
-    process.packedPFCandidates.TimeMap = cms.InputTag("tofPID:t0")
-    process.packedPFCandidates.TimeErrorMap = cms.InputTag("tofPID:sigmat0")
-    process.MINIAODSIMoutput.outputCommands.extend(['keep *_tofPID_*_*'])
+    if options.runPAT:
+        process.packedPFCandidates.TimeMap = cms.InputTag("tofPID:t0")
+        process.packedPFCandidates.TimeErrorMap = cms.InputTag("tofPID:sigmat0")
+    process.MINIAODSIMoutput.outputCommands.extend(['keep *_tofPID_*_PAT'])
 
 if options.runPUIDMVA:
     print ">>> Run PUIDMVA"
     from CommonTools.RecoAlgos.trackPUIDMVAProducer_cfi import trackPUIDMVAProducer
     process.trackPUIDMVA = trackPUIDMVAProducer.clone()
-    process.reconstruction_step += process.trackPUIDMVA
-    process.MINIAODSIMoutput.outputCommands.extend(['keep *_trackPUIDMVA_*_*'])
+    process.trackPUIDMVA.tracksMTDSrc = cms.InputTag('trackExtenderWithMTD','','PAT')
+    process.trackPUIDMVA.btlMatchChi2Src = cms.InputTag('trackExtenderWithMTD', 'btlMatchChi2','PAT')
+    process.trackPUIDMVA.btlMatchTimeChi2Src = cms.InputTag('trackExtenderWithMTD', 'btlMatchTimeChi2','PAT')
+    process.trackPUIDMVA.etlMatchChi2Src = cms.InputTag('trackExtenderWithMTD', 'etlMatchChi2','PAT')
+    process.trackPUIDMVA.etlMatchTimeChi2Src = cms.InputTag('trackExtenderWithMTD', 'etlMatchTimeChi2','PAT')
+    process.trackPUIDMVA.mtdTimeSrc = cms.InputTag('trackExtenderWithMTD', 'tmtd','PAT')
+    process.trackPUIDMVA.pathLengthSrc = cms.InputTag('trackExtenderWithMTD', 'pathLength','PAT')
+    process.trackPUIDMVA.t0TOFPIDSrc = cms.InputTag('tofPID', 't0','PAT')
+    process.trackPUIDMVA.sigmat0TOFPIDSrc = cms.InputTag('tofPID', 'sigmat0','PAT')
 
+    process.reconstruction_step += process.trackPUIDMVA
+    process.MINIAODSIMoutput.outputCommands.extend(['keep *_trackPUIDMVA_*_PAT'])
 # Additional output definition
 
 # Other statements
@@ -277,6 +293,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '103X_upgrade2023_realistic_v2'
 process.Flag_trackingFailureFilter = cms.Path(process.goodVertices+process.trackingFailureFilter)
 process.Flag_goodVertices = cms.Path(process.primaryVertexFilter)
 process.Flag_CSCTightHaloFilter = cms.Path(process.CSCTightHaloFilter)
+
 process.Flag_trkPOGFilters = cms.Path(~process.logErrorTooManyClusters)
 process.Flag_HcalStripHaloFilter = cms.Path(process.HcalStripHaloFilter)
 process.Flag_trkPOG_logErrorTooManyClusters = cms.Path(~process.logErrorTooManyClusters)
@@ -305,11 +322,10 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 process.MINIAODSIMoutput_step = cms.EndPath(process.MINIAODSIMoutput)
 
 
-
 # Load analyzer
 process.load('PrecisionTiming.PTAnalysis.muonIsolationAnalyzer_cfi')
 muIsoAnalyzer = process.MuonIsolationAnalyzer
-process.myanalysis = cms.Path(muIsoAnalyzer)
+process.myanalysis = cms.EndPath(muIsoAnalyzer)
 
 # Output TFile
 process.TFileService = cms.Service(
@@ -320,35 +336,18 @@ process.TFileService = cms.Service(
 
 # Schedule definition
 process.schedule = cms.Schedule(process.reconstruction_step,process.Flag_HBHENoiseFilter,process.Flag_HBHENoiseIsoFilter,process.Flag_CSCTightHaloFilter,process.Flag_CSCTightHaloTrkMuUnvetoFilter,process.Flag_CSCTightHalo2015Filter,process.Flag_globalTightHalo2016Filter,process.Flag_globalSuperTightHalo2016Filter,process.Flag_HcalStripHaloFilter,process.Flag_hcalLaserEventFilter,process.Flag_EcalDeadCellTriggerPrimitiveFilter,process.Flag_EcalDeadCellBoundaryEnergyFilter,process.Flag_ecalBadCalibFilter,process.Flag_goodVertices,process.Flag_eeBadScFilter,process.Flag_ecalLaserCorrFilter,process.Flag_trkPOGFilters,process.Flag_chargedHadronTrackResolutionFilter,process.Flag_muonBadTrackFilter,process.Flag_BadChargedCandidateFilter,process.Flag_BadPFMuonFilter,process.Flag_BadChargedCandidateSummer16Filter,process.Flag_BadPFMuonSummer16Filter,process.Flag_trkPOG_manystripclus53X,process.Flag_trkPOG_toomanystripclus53X,process.Flag_trkPOG_logErrorTooManyClusters,process.Flag_METFilters,process.endjob_step,#process.MINIAODSIMoutput_step,
-process.myanalysis
-)
+process.myanalysis)
 
-process.schedule.associate(process.patTask)
-from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
-associatePatAlgosToolsTask(process)
-
-#Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(2)
-process.options.numberOfStreams=cms.untracked.uint32(0)
+if options.runPAT:
+    process.schedule.associate(process.patTask)
+    from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
+    associatePatAlgosToolsTask(process)
 
 # customisation of the process.
-
-# Automatic addition of the customisation function from Configuration.DataProcessing.Utils
-from Configuration.DataProcessing.Utils import addMonitoring 
-
-#call to customisation function addMonitoring imported from Configuration.DataProcessing.Utils
-process = addMonitoring(process)
-
-# End of customisation functions
-#do not add changes to your config after this point (unless you know what you are doing)
-from FWCore.ParameterSet.Utilities import convertToUnscheduled
-process=convertToUnscheduled(process)
-
-# customisation of the process.
-
+    
 # Automatic addition of the customisation function from PhysicsTools.PatAlgos.slimming.miniAOD_tools
 from PhysicsTools.PatAlgos.slimming.miniAOD_tools import miniAOD_customizeAllMC 
-
+    
 #call to customisation function miniAOD_customizeAllMC imported from PhysicsTools.PatAlgos.slimming.miniAOD_tools
 process = miniAOD_customizeAllMC(process)
 
@@ -361,4 +360,18 @@ from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEar
 process = customiseEarlyDelete(process)
 # End adding early deletion
 
+# customisation of the process.
 
+# Automatic addition of the customisation function from Configuration.DataProcessing.Utils
+from Configuration.DataProcessing.Utils import addMonitoring 
+#call to customisation function addMonitoring imported from Configuration.DataProcessing.Utils
+process = addMonitoring(process)
+
+# End of customisation functions
+#do not add changes to your config after this point (unless you know what you are doing)
+from FWCore.ParameterSet.Utilities import convertToUnscheduled
+process=convertToUnscheduled(process)
+
+#Setup FWK for multithreaded
+#process.options.numberOfThreads=cms.untracked.uint32(2)
+#process.options.numberOfStreams=cms.untracked.uint32(0)
