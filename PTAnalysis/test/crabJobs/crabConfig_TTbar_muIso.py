@@ -18,7 +18,7 @@ config.Data.unitsPerJob = 60
 #config.Data.unitsPerJob = 30
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True
-config.Data.outputDatasetTag = 'test_TTbar_muIso'
-#config.Data.outputDatasetTag = 'test_TTbar_muIso_vtxClosestZT'
+#config.Data.outputDatasetTag = 'test_TTbar_muIso'
+config.Data.outputDatasetTag = 'test_TTbar_muIso_minPt'
 
 config.Site.storageSite = 'T2_CH_CERN'

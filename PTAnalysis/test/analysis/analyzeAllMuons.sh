@@ -1,21 +1,27 @@
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/ 30 1 0 output_muIso_DYToLL_30ps_prompt_minTkPtCut_muonPt10-20.root
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/ 30 0 0 output_muIso_TTbar_30ps_fake_minTkPtCut_muonPt10-20.root
+
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_noPU_muIso_minPt/190208_131709/ 30 1 0 output_muIso_DYToLL_noPU_30ps_prompt_minTkPtCut_muonPt10-20.root                                                                                                           
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_noPU_muIso_minPt/190208_131723/ 30 0 0 output_muIso_TTbar_noPU_30ps_fake_minTkPtCut_muonPt10-20.root   
+
 # min tack pT 0.7, 0.4
 ./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/ 30 1 0 output_muIso_DYToLL_30ps_prompt_minTkPtCut.root
 ./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/ 30 0 0 output_muIso_TTbar_30ps_fake_minTkPtCut.root
 
-#./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/ 40 1 0 output_muIso_DYToLL_40ps_prompt_minTkPtCut.root
-#./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/ 40 0 0 output_muIso_TTbar_40ps_fake_minTkPtCut.root
+./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/ 40 1 0 output_muIso_DYToLL_40ps_prompt_minTkPtCut.root
+./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/ 40 0 0 output_muIso_TTbar_40ps_fake_minTkPtCut.root
 
-#./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/ 50 1 0 output_muIso_DYToLL_50ps_prompt_minTkPtCut.root
-#./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/ 50 0 0 output_muIso_TTbar_50ps_fake_minTkPtCut.root
+./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/ 50 1 0 output_muIso_DYToLL_50ps_prompt_minTkPtCut.root
+./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/ 50 0 0 output_muIso_TTbar_50ps_fake_minTkPtCut.root
 
-#./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/ 60 1 0 output_muIso_DYToLL_60ps_prompt_minTkPtCut.root
-#./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/ 60 0 0 output_muIso_TTbar_60ps_fake_minTkPtCut.root
+./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/ 60 1 0 output_muIso_DYToLL_60ps_prompt_minTkPtCut.root
+./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/ 60 0 0 output_muIso_TTbar_60ps_fake_minTkPtCut.root
 
-#./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/ 70 1 0 output_muIso_DYToLL_70ps_prompt_minTkPtCut.root
-#./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/ 70 0 0 output_muIso_TTbar_70ps_fake_minTkPtCut.root       
+./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/ 70 1 0 output_muIso_DYToLL_70ps_prompt_minTkPtCut.root
+./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/ 70 0 0 output_muIso_TTbar_70ps_fake_minTkPtCut.root       
 
-./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_noPU_muIso_minPt/190208_131709/ 30 1 0 output_muIso_DYToLL_noPU_30ps_prompt_minTkPtCut.root
-./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_noPU_muIso_minPt/190208_131723/ 30 0 0 output_muIso_TTbar_noPU_30ps_fake_minTkPtCut.root
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_noPU_muIso_minPt/190208_131709/ 30 1 0 output_muIso_DYToLL_noPU_30ps_prompt_minTkPtCut.root
+#./MuonIsolationAnalysis /eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_noPU_muIso_minPt/190208_131723/ 30 0 0 output_muIso_TTbar_noPU_30ps_fake_minTkPtCut.root
 
 
 
