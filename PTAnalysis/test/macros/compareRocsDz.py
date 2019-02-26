@@ -10,38 +10,37 @@ import time
 
 import ROOT
 
+import CMS_lumi, tdrstyle
+
+CMS_lumi.writeExtraText = True
+iPeriod = 0
+iPos = 0
+
+#set the tdr style
+tdrstyle.setTDRStyle()
+ROOT.gStyle.SetOptStat(0)
+ROOT.gStyle.SetOptFit(0)
 ROOT.gStyle.SetOptTitle(0)
 
-ROOT.gStyle.SetOptStat(0)
-#ROOT.gStyle.SetStatX(0.6);
-#ROOT.gStyle.SetStatY(0.6);
-#ROOT.gStyle.SetStatW(0.3);
-#ROOT.gStyle.SetStatH(0.3);
-
-ROOT.gStyle.SetOptFit(0)
-ROOT.gStyle.SetFitFormat("4.4g")
-
-ROOT.gStyle.SetLabelSize(0.04,'X')
-ROOT.gStyle.SetLabelSize(0.04,'Y')
-ROOT.gStyle.SetTitleSize(0.04,'X')
-ROOT.gStyle.SetTitleSize(0.04,'Y')
-ROOT.gStyle.SetTitleOffset(1.0,'X')
-ROOT.gStyle.SetTitleOffset(1.0,'Y')
-#ROOT.gStyle.SetTextFont(42)
-ROOT.gStyle.SetPadTickX(1)
-ROOT.gStyle.SetPadTickY(1)
-
-
 pu = sys.argv[1]
+release = '93X'
 
-inputDir = '93X/30ps_PU200_TTbar_minTkPtCut/'
+inputDir = release+'/30ps_PU200_TTbar_minTkPtCut/'
 if (pu == 'noPU'):
-    inputDir = '93X/30ps_noPU_TTbar_minTkPtCut/'
+    inputDir = release+'/30ps_noPU_TTbar_minTkPtCut/'
+
+#inputDir = '10_4_0_mtd5/35ps_PU200_TTbar/'
+#if (pu == 'noPU'):
+#    inputDir = '10_4_0_mtd5/35ps_noPU_TTbar/'
 
 print inputDir
 
 dzs = ['05','1','2','3', '10']
+#dzs = ['05','1','2']
 dzvals = {'1': 1, '05': 0.5, '2':2, '3':3, '10':10 }
+
+
+minEff = 0.85
 
 f = {}
 roc = {}
@@ -58,17 +57,35 @@ col = { '05':ROOT.kOrange,
         '5' :ROOT.kMagenta,
         '10' :ROOT.kBlue}
 
+tl = ROOT.TLatex( 0.65, 0.88,'<PU> = 200')
+if (pu == 'noPU'):
+    tl = ROOT.TLatex( 0.65, 0.88,'noPU')
+tl.SetNDC()
+tl.SetTextSize(0.035)
+
+tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, t#bar{t}')
+tl2.SetNDC()
+tl2.SetTextSize(0.035)
+
+tt = {}
+tt[''] = ROOT.TLatex( 0.15, 0.16, '|#eta|<2.8')
+tt['barrel'] = ROOT.TLatex( 0.15, 0.16, '|#eta|<1.5')
+tt['endcap'] = ROOT.TLatex( 0.15, 0.16, '1.5 < |#eta| < 2.8')
+for reg in regions:
+    tt[reg].SetNDC()
+    tt[reg].SetTextSize(0.035)
+
 leg = {}
 
 for ireg,reg in enumerate(regions):
     roc[reg] = {}
     roc_dT[reg] = {}
-    leg[reg] = ROOT.TLegend(0.15, 0.7, 0.45, 0.89)
+    leg[reg] = ROOT.TLegend(0.15, 0.62, 0.50, 0.92)
     leg[reg].SetBorderSize(0)
     
-    c[reg] = ROOT.TCanvas('roc_comparison_dz_%s_%s'%(reg,pu),'roc_comparison_dz_%s_%s'%(reg,pu),700,700)
+    c[reg] = ROOT.TCanvas('roc_comparison_dz_%s_%s'%(reg,pu),'roc_comparison_dz_%s_%s'%(reg,pu))
     if (reg == ''):
-        c[reg] = ROOT.TCanvas('roc_comparison_dz_%s'%pu,'roc_comparison_dz_%s'%pu,700,700)
+        c[reg] = ROOT.TCanvas('roc_comparison_dz_%s'%pu,'roc_comparison_dz_%s'%pu)
     c[reg].SetGridx()
     c[reg].SetGridy()
 
@@ -105,6 +122,11 @@ for ireg,reg in enumerate(regions):
         roc_dT[reg][dz].SetFillColorAlpha(col[dz],0.0)
     
         if (idz == 0):
+            roc[reg][dz].GetXaxis().SetTitle('Prompt efficiency')
+            roc[reg][dz].GetYaxis().SetTitle('Non-prompt efficiency')
+            roc[reg][dz].GetYaxis().SetTitleOffset(1.4)
+            roc[reg][dz].GetXaxis().SetRangeUser(minEff,1.0)
+            roc[reg][dz].GetYaxis().SetRangeUser(0.0,0.1)
             roc[reg][dz].Draw('A C E3')
         else:
             roc[reg][dz].Draw('C E3 SAME')
@@ -112,20 +134,24 @@ for ireg,reg in enumerate(regions):
         roc_dT[reg][dz].Draw('C E3 same')
             
 
-        leg[reg].AddEntry(roc[reg][dz],'no MTD - |d_{z}| < %.01f mm'%dzvals[dz],'PL')
-        leg[reg].AddEntry(roc_dT[reg][dz],'with MTD - |d_{z}| < %.01f mm'%dzvals[dz],'PL')
-
+        leg[reg].AddEntry(roc[reg][dz],'no MTD - |#Deltaz| < %.01f mm'%dzvals[dz],'PL')
+        leg[reg].AddEntry(roc_dT[reg][dz],'with MTD - |#Deltaz| < %.01f mm'%dzvals[dz],'PL')
 
     leg[reg].Draw()
-
+    tt[reg].Draw()    
+    tl.Draw()
+    tl2.Draw()
+    CMS_lumi.CMS_lumi(c[reg], iPeriod, iPos)
+    
 
 #save plots
-dirname = 'RocsComparisonDz/'
+dirname = release+'/RocsComparisonDz/'
 os.system('mkdir %s'%dirname)
 shutil.copy('index.php', dirname)
 
 for reg in regions:
     c[reg].SaveAs(dirname+c[reg].GetName()+'.pdf')
     c[reg].SaveAs(dirname+c[reg].GetName()+'.png')
+    c[reg].SaveAs(dirname+c[reg].GetName()+'.C')
 
 raw_input('ok?')

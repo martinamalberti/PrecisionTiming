@@ -82,6 +82,8 @@ if (pu == 'noPU'):
     #fBkg = '../'+release+'/output_muIso_%s_noPU_%dps_fake.root' %(bkgProc,resolution)
     fSig = '../'+release+'//output_muIso_DYToLL_noPU_%dps_prompt_minTkPtCut.root '%resolution
     fBkg = '../'+release+'/output_muIso_%s_noPU_%dps_fake_minTkPtCut.root' %(bkgProc,resolution)
+    #fSig = '../'+release+'//output_muIso_DYToLL_noPU_%dps_prompt_minTkPtCut_muonPt10-20.root '%resolution
+    #fBkg = '../'+release+'/output_muIso_%s_noPU_%dps_fake_minTkPtCut_muonPt10-20.root' %(bkgProc,resolution)
 else:
     #fSig = '../'+release+'/output_muIso_DYToLL_%dps_prompt.root '%resolution
     #fBkg = '../'+release+'/output_muIso_%s_%dps_fake.root'  %(bkgProc,resolution)

@@ -9,14 +9,14 @@ import ROOT as rt
 cmsText     = "CMS";
 cmsTextFont   = 61  
 
-writeExtraText = True
-extraText   = "Preliminary"
+writeExtraText = False
+extraText   = " Phase-2 Simulation"
 extraTextFont = 52 
 
-lumiTextSize     = 0.6
+lumiTextSize     = 0.8
 lumiTextOffset   = 0.2
 
-cmsTextSize      = 0.75
+cmsTextSize      = 0.9
 cmsTextOffset    = 0.1
 
 relPosX    = 0.045
@@ -39,10 +39,12 @@ def CMS_lumi(pad,  iPeriod,  iPosX ):
     alignY_=3
     alignX_=2
     if( iPosX/10==0 ): alignX_=1
+    if( iPosX==0    ): alignX_=1
     if( iPosX==0    ): alignY_=1
     if( iPosX/10==1 ): alignX_=1
     if( iPosX/10==2 ): alignX_=2
     if( iPosX/10==3 ): alignX_=3
+    if( iPosX == 0  ): relPosX = 0.10
     align_ = 10*alignX_ + alignY_
 
     H = pad.GetWh()
@@ -88,7 +90,7 @@ def CMS_lumi(pad,  iPeriod,  iPosX ):
     elif ( iPeriod==0 ):
         lumiText += lumi_sqrtS
             
-    print lumiText
+    #print lumiText
 
     latex = rt.TLatex()
     latex.SetNDC()
