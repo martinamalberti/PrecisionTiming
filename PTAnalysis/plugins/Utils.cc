@@ -2,10 +2,10 @@
 #include "PrecisionTiming/PTAnalysis/interface/Utils.h"
 
 // --- matching to gen muon ----------------------------------------------------------------
-bool isPromptMuon(const reco::Muon& muon, const edm::View<reco::GenParticle>& genParticles)
+bool isPromptMuon(const reco::Muon& muon, const edm::View<reco::GenParticle>& genParticles, float & genpt)
 {
   bool isPrompt = false;
-
+  float drmin = 9999.;
   for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
     const reco::GenParticle& genp = genParticles[ip];
     if ( std::abs(genp.pdgId()) != 13) continue;
@@ -15,9 +15,14 @@ bool isPromptMuon(const reco::Muon& muon, const edm::View<reco::GenParticle>& ge
     if (dr > 0.2){
       continue;
     }
-    else{
-      isPrompt=true;
-      break;
+    //else{
+    //  isPrompt=true;
+    //  break;
+    //}
+    if (dr < drmin && dr < 0.2){
+      drmin = dr;
+      genpt = genp.pt();
+      isPrompt=true;   
     }
   }
 

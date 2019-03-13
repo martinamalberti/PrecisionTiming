@@ -32,6 +32,7 @@ process.analysis = cms.EDAnalyzer(
     isoConeDR = cms.untracked.double(0.3),
     saveTracks = cms.untracked.bool(True),
     maxDz = cms.untracked.double(0.1),
+    maxDxy = cms.untracked.double(9999.),
     minDr = cms.untracked.double(0.0),
     btlMinTrackPt = cms.untracked.double(0.7),
     etlMinTrackPt = cms.untracked.double(0.4),
@@ -39,7 +40,7 @@ process.analysis = cms.EDAnalyzer(
     useVertexClosestToGenZT = cms.untracked.bool(False),
     btlEfficiency = cms.untracked.double(1.0),
     etlEfficiency = cms.untracked.double(1.0)
-    #btlEfficiency = cms.untracked.double(0.90),
+    #btlEfficiency = cms.untracked.double(0.85),
     #etlEfficiency = cms.untracked.double(0.90)
 )
 

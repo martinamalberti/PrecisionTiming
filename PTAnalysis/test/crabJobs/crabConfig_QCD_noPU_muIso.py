@@ -19,6 +19,10 @@ config.Data.unitsPerJob = 180
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True
 #config.Data.outputDatasetTag = 'test_QCD_noPU_muIso'
-config.Data.outputDatasetTag = 'test_QCD_noPU_muIso_minPt'
+#config.Data.outputDatasetTag = 'test_QCD_noPU_muIso_minPt'
+config.Data.outputDatasetTag = 'test_QCD_noPU_muIso_btlEff100_etlEff100_noDxy'
 
 config.Site.storageSite = 'T2_CH_CERN'
+
+config.Site.ignoreGlobalBlacklist =  True
+config.Site.whitelist = ['T2_BR_*']

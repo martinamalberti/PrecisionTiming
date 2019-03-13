@@ -42,7 +42,7 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 
-bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
+bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles, float &genpt);
 bool isMatchedToGenJet(const reco::Muon &muon, const edm::View<reco::GenJet>& genJet);
 bool isFromTau(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);

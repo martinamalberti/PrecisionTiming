@@ -111,6 +111,7 @@ struct eventInfo
   vector<float> muon_dz4D;
   vector<float> muon_dxy4D;
   vector<float> muon_t;
+  vector<float> muon_genpt;
   vector<int> muon_isPrompt;
   vector<int> muon_isMatchedToGenJet;
   vector<int> muon_isFromTauDecay;
@@ -139,6 +140,8 @@ struct eventInfo
   vector<float> muon_chIso_dZ10_dT2s_simVtx;
   vector<float> muon_chIso_dZ10_dT3s_simVtx;
   vector<float> muon_chIso_dZ10_dT5s_simVtx;
+
+  vector<float> muon_chIso_dZ50_simVtx;
 
   vector<float> muon_chIso_dZ05;
   vector<float> muon_chIso_dZ05_dT2s;
@@ -229,6 +232,7 @@ private:
   double isoConeDR_;
   bool saveTracks_;
   double maxDz_;
+  double maxDxy_;
   double minDr_;
   double btlMinTrackPt_;
   double etlMinTrackPt_;

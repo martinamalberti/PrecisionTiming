@@ -48,7 +48,8 @@ int main(int argc, char** argv)
 
   float minMuonPt = 20.;
   float maxMuonPt = 9999.;
-  float relIsoCut = 0.05; 
+  // -- rel iso cut: 0.08 gives ~90% overall efficiency without dxy cut; 0.05 gives ~90% overall efficiency without dxy cut in iso sum
+  float relIsoCut = 0.08; 
 
   TH2F *hratio2D;
   if (applyPtReweighting){
@@ -122,6 +123,8 @@ int main(int argc, char** argv)
   vector<float> *muon_chIso03_dZ10_dT2s_simVtx;
   vector<float> *muon_chIso03_dZ10_dT3s_simVtx;
   vector<float> *muon_chIso03_dZ10_dT5s_simVtx;
+  
+  vector<float> *muon_chIso03_dZ50_simVtx;
 
   vector<float> *muon_chIso03_dZ05;
   vector<float> *muon_chIso03_dZ05_dT2s;
@@ -197,6 +200,7 @@ int main(int argc, char** argv)
   muon_chIso03_dZ10_dT2s_simVtx = 0;
   muon_chIso03_dZ10_dT3s_simVtx = 0;
   muon_chIso03_dZ10_dT5s_simVtx = 0;
+  muon_chIso03_dZ50_simVtx = 0;
 
   muon_chIso03_dZ05 = 0;
   muon_chIso03_dZ05_dT2s = 0;
@@ -286,10 +290,12 @@ int main(int argc, char** argv)
   chain->SetBranchStatus("muon_chIso03_dZ3_dT3s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ3_dT3s_simVtx",&muon_chIso03_dZ3_dT3s_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ3_dT5s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ3_dT5s_simVtx",&muon_chIso03_dZ3_dT5s_simVtx);
 
-  chain->SetBranchStatus("muon_chIso03_dZ10_simVtx",1);     chain->SetBranchAddress("muon_chIso03_dZ10_simVtx",    &muon_chIso03_dZ10_simVtx);
+  chain->SetBranchStatus("muon_chIso03_dZ10_simVtx",1);      chain->SetBranchAddress("muon_chIso03_dZ10_simVtx",    &muon_chIso03_dZ10_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ10_dT2s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ10_dT2s_simVtx",&muon_chIso03_dZ10_dT2s_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ10_dT3s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ10_dT3s_simVtx",&muon_chIso03_dZ10_dT3s_simVtx);
   chain->SetBranchStatus("muon_chIso03_dZ10_dT5s_simVtx",1); chain->SetBranchAddress("muon_chIso03_dZ10_dT5s_simVtx",&muon_chIso03_dZ10_dT5s_simVtx);
+
+  chain->SetBranchStatus("muon_chIso03_dZ50_simVtx",1);      chain->SetBranchAddress("muon_chIso03_dZ50_simVtx",    &muon_chIso03_dZ50_simVtx);
 
   chain->SetBranchStatus("muon_chIso03_dZ05",1);      chain->SetBranchAddress("muon_chIso03_dZ05",   &muon_chIso03_dZ05);
   chain->SetBranchStatus("muon_chIso03_dZ05_dT2s",1);   chain->SetBranchAddress("muon_chIso03_dZ05_dT2s",&muon_chIso03_dZ05_dT2s);
@@ -573,6 +579,18 @@ int main(int argc, char** argv)
   TH1F *h_muon_relChIso03_dZ10_dT5s_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ10_dT5s_simVtx_endcap","h_muon_relChIso03_dZ10_dT5s_simVtx_endcap",5000,0,5);
   h_muon_relChIso03_dZ10_dT5s_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
   
+
+  // -- dZ 5 cm (for cross check, almost equivalent to no cuts)
+  TH1F *h_muon_relChIso03_dZ50_simVtx = new TH1F("h_muon_relChIso03_dZ50_simVtx","h_muon_relChIso03_dZ50_simVtx",5000,0,5);
+  h_muon_relChIso03_dZ50_simVtx->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ50_simVtx_barrel = new TH1F("h_muon_relChIso03_dZ50_simVtx_barrel","h_muon_relChIso03_dZ50_simVtx_barrel",5000,0,5);
+  h_muon_relChIso03_dZ50_simVtx_barrel->GetXaxis()->SetTitle("relative charged isolation");
+
+  TH1F *h_muon_relChIso03_dZ50_simVtx_endcap = new TH1F("h_muon_relChIso03_dZ50_simVtx_endcap","h_muon_relChIso03_dZ50_simVtx_endcap",5000,0,5);
+  h_muon_relChIso03_dZ50_simVtx_endcap->GetXaxis()->SetTitle("relative charged isolation");
+
+
 
   // --- reco vtx closest to sim vertex
  
@@ -909,21 +927,29 @@ int main(int argc, char** argv)
 
 
   // eff vs line density
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel", 22, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel", 22, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel", 22, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel", 21, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel", 21, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel", 21, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel", 21, -0.05, 2.05);
 
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap", 22, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap", 22, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap", 22, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap", 21, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap", 21, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap", 21, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap", 21, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap", 21, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap", 21, -0.05, 2.05);
 
 
   // eff vs line muon pT
   TProfile *p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_barrel","p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_barrel", 50, 0., 100.);
+  TProfile *p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_barrel","p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_barrel", 50, 0., 100.);
   TProfile *p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_barrel","p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_barrel", 50, 0., 100.);
   TProfile *p_relChIsoEfficiency_vs_muonpt_dZ2_dT3s_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_muonpt_dZ2_dT3s_simVtx_barrel","p_relChIsoEfficiency_vs_muonpt_dZ2_dT3s_simVtx_barrel", 50, 0., 100.);
 
+  TProfile *p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_endcap","p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_endcap", 50, 0., 100.);
   TProfile *p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_endcap","p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_endcap", 50, 0., 100.);
+  TProfile *p_relChIsoEfficiency_vs_muonpt_dZ3_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_muonpt_dZ3_simVtx_endcap","p_relChIsoEfficiency_vs_muonpt_dZ3_simVtx_endcap", 50, 0., 100.);
+  TProfile *p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_endcap", 50, 0., 100.);
   TProfile *p_relChIsoEfficiency_vs_muonpt_dZ2_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_muonpt_dZ2_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_muonpt_dZ2_dT3s_simVtx_endcap", 50, 0., 100.);
   TProfile *p_relChIsoEfficiency_vs_muonpt_dZ3_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_muonpt_dZ3_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_muonpt_dZ3_dT3s_simVtx_endcap", 50, 0., 100.);
 
@@ -982,6 +1008,7 @@ int main(int argc, char** argv)
       bool pass3D = fabs(muon_dz3D->at(imu)) < maxdz && fabs(muon_dxy3D->at(imu)) < maxdxy && !vtx3D_isFake;
       bool pass4D = fabs(muon_dz4D->at(imu)) < maxdz && fabs(muon_dxy4D->at(imu)) < maxdxy && !vtx4D_isFake;
       
+      
       if (nMuonsInEvent == 1){
 
       	if (pass3D) h_vtx_dz3D->Fill( vtx3D_z - vtxGen_z);
@@ -1022,6 +1049,7 @@ int main(int argc, char** argv)
 	h_muon_relChIso03_dZ2_simVtx -> Fill(muon_chIso03_dZ2_simVtx->at(imu)/pt, w);
 	h_muon_relChIso03_dZ3_simVtx -> Fill(muon_chIso03_dZ3_simVtx->at(imu)/pt, w);
 	h_muon_relChIso03_dZ10_simVtx -> Fill(muon_chIso03_dZ10_simVtx->at(imu)/pt, w);
+	h_muon_relChIso03_dZ50_simVtx -> Fill(muon_chIso03_dZ50_simVtx->at(imu)/pt, w);
 	h_muon_relChIso03_dZ05 -> Fill(muon_chIso03_dZ05->at(imu)/pt, w);
 	h_muon_relChIso03_dZ1  -> Fill(muon_chIso03_dZ1->at(imu)/pt, w);
 	h_muon_relChIso03_dZ2  -> Fill(muon_chIso03_dZ2->at(imu)/pt, w);
@@ -1081,6 +1109,7 @@ int main(int argc, char** argv)
 	  h_muon_relChIso03_dZ2_simVtx_barrel -> Fill(muon_chIso03_dZ2_simVtx->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ3_simVtx_barrel -> Fill(muon_chIso03_dZ3_simVtx->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ10_simVtx_barrel -> Fill(muon_chIso03_dZ10_simVtx->at(imu)/pt, w);
+	  h_muon_relChIso03_dZ50_simVtx_barrel -> Fill(muon_chIso03_dZ50_simVtx->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ05_barrel -> Fill(muon_chIso03_dZ05->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ1_barrel  -> Fill(muon_chIso03_dZ1->at(imu)/pt, w);
 	  h_muon_relChIso03_dZ2_barrel  -> Fill(muon_chIso03_dZ2->at(imu)/pt, w);
@@ -1140,6 +1169,7 @@ int main(int argc, char** argv)
           h_muon_relChIso03_dZ2_simVtx_endcap -> Fill(muon_chIso03_dZ2_simVtx->at(imu)/pt, w);
           h_muon_relChIso03_dZ3_simVtx_endcap -> Fill(muon_chIso03_dZ3_simVtx->at(imu)/pt, w);
           h_muon_relChIso03_dZ10_simVtx_endcap -> Fill(muon_chIso03_dZ10_simVtx->at(imu)/pt, w);
+          h_muon_relChIso03_dZ50_simVtx_endcap -> Fill(muon_chIso03_dZ50_simVtx->at(imu)/pt, w);
           h_muon_relChIso03_dZ05_endcap -> Fill(muon_chIso03_dZ05->at(imu)/pt, w);
           h_muon_relChIso03_dZ1_endcap  -> Fill(muon_chIso03_dZ1->at(imu)/pt, w);
           h_muon_relChIso03_dZ2_endcap  -> Fill(muon_chIso03_dZ2->at(imu)/pt, w);
@@ -1235,6 +1265,7 @@ int main(int argc, char** argv)
       float linedensity = npu*TMath::Gaus(fabs(10*vtxGen_z), 0, 42., 1);
       if (pass3D){
 	if (fabs(muon_eta->at(imu)) < 1.5){
+	  // dz = 1
 	  if ((muon_chIso03_dZ1_simVtx->at(imu)/muon_pt->at(imu)) < relIsoCut) {
 	    p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel->Fill(linedensity, w);
 	    p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_barrel->Fill(muon_pt->at(imu), w);
@@ -1243,8 +1274,28 @@ int main(int argc, char** argv)
 	    p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel->Fill(linedensity, 0.);
 	    p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_barrel->Fill(muon_pt->at(imu), 0.);
 	  }
+
+	  // dz = 2
+	  if ((muon_chIso03_dZ2_simVtx->at(imu)/muon_pt->at(imu)) < relIsoCut) {
+	    p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel->Fill(linedensity, w);
+	    p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_barrel->Fill(muon_pt->at(imu), w);
+	  }
+	  else{
+	    p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel->Fill(linedensity, 0.);
+	    p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_barrel->Fill(muon_pt->at(imu), 0.);
+	  }
 	}
 	if (fabs(muon_eta->at(imu)) > 1.5){
+	  // dz = 1
+          if ((muon_chIso03_dZ1_simVtx->at(imu)/muon_pt->at(imu)) < relIsoCut) {
+            p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap->Fill(linedensity, w);
+            p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_endcap->Fill(muon_pt->at(imu), w);
+          }
+          else{
+            p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap->Fill(linedensity, 0.);
+            p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_endcap->Fill(muon_pt->at(imu), 0.);
+          }
+	  // dz = 2
           if ((muon_chIso03_dZ2_simVtx->at(imu)/muon_pt->at(imu)) < relIsoCut) {
             p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap->Fill(linedensity, w);
             p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_endcap->Fill(muon_pt->at(imu), w);
@@ -1252,6 +1303,15 @@ int main(int argc, char** argv)
           else{
             p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap->Fill(linedensity, 0.);
             p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_endcap->Fill(muon_pt->at(imu), 0.);
+          }
+	  // dz = 3
+          if ((muon_chIso03_dZ3_simVtx->at(imu)/muon_pt->at(imu)) < relIsoCut) {
+            p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap->Fill(linedensity, w);
+            p_relChIsoEfficiency_vs_muonpt_dZ3_simVtx_endcap->Fill(muon_pt->at(imu), w);
+          }
+          else{
+            p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap->Fill(linedensity, 0.);
+            p_relChIsoEfficiency_vs_muonpt_dZ3_simVtx_endcap->Fill(muon_pt->at(imu), 0.);
           }
         }
       }
@@ -1266,7 +1326,6 @@ int main(int argc, char** argv)
 	    p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel->Fill(linedensity, 0.);
 	    p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_barrel->Fill(muon_pt->at(imu), 0.);
 	  }
-
 	  // dz2
 	  if ((muon_chIso03_dZ2_dT3s_simVtx->at(imu)/muon_pt->at(imu)) < relIsoCut) {
 	    p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel->Fill(linedensity, w);
@@ -1279,6 +1338,15 @@ int main(int argc, char** argv)
 
 	}
 	if (fabs(muon_eta->at(imu)) > 1.5){
+	  //dz1
+          if ((muon_chIso03_dZ1_dT3s_simVtx->at(imu)/muon_pt->at(imu)) < relIsoCut) {
+            p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap->Fill(linedensity, w);
+            p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_endcap->Fill(muon_pt->at(imu), w);
+          }
+          else{
+            p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap->Fill(linedensity, 0.);
+            p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_endcap->Fill(muon_pt->at(imu), 0.);
+          }
 	  //dz2
           if ((muon_chIso03_dZ2_dT3s_simVtx->at(imu)/muon_pt->at(imu)) < relIsoCut) {
             p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap->Fill(linedensity, w);
@@ -1431,6 +1499,10 @@ int main(int argc, char** argv)
   h_muon_relChIso03_dZ10_dT5s_simVtx_endcap->Write();
 
 
+  h_muon_relChIso03_dZ50_simVtx->Write();
+  h_muon_relChIso03_dZ50_simVtx_barrel->Write();
+  h_muon_relChIso03_dZ50_simVtx_endcap->Write();
+
 
   h_muon_relChIso03_dZ05->Write();
   h_muon_relChIso03_dZ05_barrel->Write();
@@ -1569,18 +1641,26 @@ int main(int argc, char** argv)
 
   // eff vs line density, pT
   p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel->Write();
+  p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel->Write();
   p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel->Write();
   p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel->Write();
 
+  p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap->Write();
   p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap->Write();
+  p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap->Write();
+  p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap->Write();
   p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap->Write();
   p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap->Write();
 
   p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_barrel->Write();
+  p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_barrel->Write();
   p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_barrel->Write();
   p_relChIsoEfficiency_vs_muonpt_dZ2_dT3s_simVtx_barrel->Write();
 
+  p_relChIsoEfficiency_vs_muonpt_dZ1_simVtx_endcap->Write();
   p_relChIsoEfficiency_vs_muonpt_dZ2_simVtx_endcap->Write();
+  p_relChIsoEfficiency_vs_muonpt_dZ3_simVtx_endcap->Write();
+  p_relChIsoEfficiency_vs_muonpt_dZ1_dT3s_simVtx_endcap->Write();
   p_relChIsoEfficiency_vs_muonpt_dZ2_dT3s_simVtx_endcap->Write();
   p_relChIsoEfficiency_vs_muonpt_dZ3_dT3s_simVtx_endcap->Write();
 
