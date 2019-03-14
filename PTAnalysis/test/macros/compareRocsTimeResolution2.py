@@ -22,17 +22,18 @@ tdrstyle.setTDRStyle()
 
 release = '93X'
 
+#inputDir = '93X/tracksInCone_PU200_TTbar_minTrackPt_noDxy/'
+#inputDirNoPU = '93X/tracksInCone_noPU_TTbar_minTrackPt_noDxy/'
 
-inputDir = '93X/30ps_PU200_TTbar_minTkPtCut_noDxy/'
-inputDirNoPU = '93X/30ps_noPU_TTbar_minTkPtCut_noDxy/'
+inputDir = '93X/tracksInCone_PU200_QCD_minTrackPt_noDxy/'
+inputDirNoPU = '93X/tracksInCone_noPU_QCD_minTrackPt_noDxy/'
 
-#resolutions = ['30', '40', '50', '60']
-resolutions = ['40', '30']
-#resolutions = ['40']
+#resolutions = ['30', '40', '50', '60', '70']
+resolutions = ['30']
 
-canvasWithRatios = False
-minEffPrompt = 0.80
-maxEffFake = 0.035
+canvasWithRatios = True
+minEffPrompt = 0.85
+maxEffFake = 0.10
 
 dirname = release+'/RocsComparisonTimeResolution_noDxy/'
 os.system('mkdir %s'%dirname)
@@ -60,7 +61,7 @@ regions = ['barrel','endcap']
 
 
 col = {'30':ROOT.kRed,
-       '40':ROOT.kOrange+7,
+       '40':ROOT.kOrange+1,
        '50':ROOT.kGreen,
        '60':ROOT.kCyan,
        '70':ROOT.kBlue,
@@ -119,20 +120,18 @@ for ireg,reg in enumerate(regions):
 
     for ires,res in enumerate(resolutions):
         f[res] = ROOT.TFile.Open( (inputDir+'/roc_%sps_PU200.root'%(res)).replace('30',res) )
-        if (res == '30'): ROOT.TFile.Open('93X/30ps_PU200_TTbar_minTkPtCut_eff100_noDxy/roc_30ps_PU200.root' )
-
-        print  f[res].GetName() 
-        
+        print inputDirNoPU+'/roc_30ps_noPU.root'
         f_NoPU[res] = ROOT.TFile.Open(inputDirNoPU+'/roc_30ps_noPU.root')
         
         if (reg == 'barrel'):
-            gname  = 'g_roc_relChIso03_dZ2_simVtx_%s'%reg
-            gname_dT = 'g_roc_relChIso03_dZ2_simVtx_dT3s_%s'%reg
-            gnameNoPU  = 'g_roc_relChIso03_dZ10_simVtx_%s'%reg
+            gname  = 'g_roc_relChIso03_dZ1_%s'%reg
+            gname_dT = 'g_roc_relChIso03_dZ1_dT3s_%s'%reg
+            gnameNoPU  = 'g_roc_relChIso03_dZ1_%s'%reg
         else:
-            gname  = 'g_roc_relChIso03_dZ3_simVtx_%s'%reg
-            gname_dT = 'g_roc_relChIso03_dZ3_simVtx_dT3s_%s'%reg
-            gnameNoPU  = 'g_roc_relChIso03_dZ10_simVtx_%s'%reg
+            gname  = 'g_roc_relChIso03_dZ1_%s'%reg
+            gname_dT = 'g_roc_relChIso03_dZ1_dT3s_%s'%reg
+            gnameNoPU  = 'g_roc_relChIso03_dZ1_%s'%reg
+
             
             
         roc[reg][res] = f[res].Get(gname) 
@@ -154,7 +153,7 @@ for ireg,reg in enumerate(regions):
             roc_dT[reg][res].GetPoint(i,eff_prompt_dT, eff_fake_dT)
             g_prompt_vs_fake[reg][res].SetPoint(i,eff_fake,eff_prompt )
             g_prompt_vs_fake_dT[reg][res].SetPoint(i,eff_fake_dT,eff_prompt_dT )
-            if (eff_prompt > minEffPrompt):
+            if (eff_prompt > 0.65):
                 g_ratio_prompt[reg][res].SetPoint(n,  g_prompt_vs_fake_dT[reg][res].Eval(eff_fake)/g_prompt_vs_fake[reg][res].Eval(eff_fake) , eff_fake)
                 n = n+1
             g_ratio_fake[reg][res].SetPoint(i, eff_prompt,  roc_dT[reg][res].Eval(eff_prompt)/roc[reg][res].Eval(eff_prompt))
@@ -184,22 +183,18 @@ for ireg,reg in enumerate(regions):
         if (ires == 0):
             roc[reg][res].GetXaxis().SetTitle('Prompt efficiency')
             roc[reg][res].GetYaxis().SetTitle('Non-prompt efficiency')
-            roc[reg][res].GetYaxis().SetTitleOffset(1.23)
             if (canvasWithRatios):
                 pad1.cd()
             roc[reg][res].GetXaxis().SetRangeUser(minEffPrompt,1.0)
             roc[reg][res].GetYaxis().SetRangeUser(0.0,maxEffFake)
-            roc[reg][res].Draw('A L E3')
+            roc[reg][res].Draw('A C E3')
             leg[reg].AddEntry(roc[reg][res],'no MTD','FL')
-            #roc_NoPU[reg][res].Draw('C E3 same')
-            #leg[reg].AddEntry(roc_NoPU[reg][res],'no MTD, noPU','FL')
+            roc_NoPU[reg][res].Draw('C E3 same')
+            leg[reg].AddEntry(roc_NoPU[reg][res],'no MTD, noPU','FL')
         if (canvasWithRatios):
             pad1.cd()  
-        roc_dT[reg][res].Draw('L E3 same')
-        #leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps'%res,'L')
-        if (res != '30'): leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps'%res,'L')
-        if (res == '30'): leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps, eff = 100%%'%res,'L')
-        #if (res != '30'): leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps, #epsilon = 85(90)%% BTL(ETL)'%res,'L')
+        roc_dT[reg][res].Draw('C E3 same')
+        leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps'%res,'FL')
 
         if (canvasWithRatios):
             pad2.cd()
@@ -242,8 +237,11 @@ for ireg,reg in enumerate(regions):
     #c[reg].SaveAs(dirname+c[reg].GetName()+'_timeResol.pdf')
     #c[reg].SaveAs(dirname+c[reg].GetName()+'_timeResol.png')
     #c[reg].SaveAs(dirname+c[reg].GetName()+'_timeResol.C')
-
-raw_input('ok?')
-    
+#    raw_input('ok?')
 
 
+
+#for reg in regions:
+#    c[reg].SaveAs(dirname+c[reg].GetName()+'.pdf')
+#    c[reg].SaveAs(dirname+c[reg].GetName()+'.png')
+#raw_input('ok?')

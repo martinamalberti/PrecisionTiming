@@ -25,9 +25,13 @@ ROOT.gStyle.SetOptTitle(0)
 pu = sys.argv[1]
 release = '93X'
 
-inputDir = release+'/30ps_PU200_TTbar_minTkPtCut/'
+#inputDir = release+'/30ps_PU200_TTbar_minTkPtCut_noDxy/'
+#if (pu == 'noPU'):
+#    inputDir = release+'/30ps_noPU_TTbar_minTkPtCut_noDxy/'
+
+inputDir = release+'/30ps_PU200_QCD_minTkPtCut_noDxy/'
 if (pu == 'noPU'):
-    inputDir = release+'/30ps_noPU_TTbar_minTkPtCut/'
+    inputDir = release+'/30ps_noPU_QCD_minTkPtCut_noDxy/'
 
 #inputDir = '10_4_0_mtd5/35ps_PU200_TTbar/'
 #if (pu == 'noPU'):
@@ -35,12 +39,12 @@ if (pu == 'noPU'):
 
 print inputDir
 
-dzs = ['05','1','2','3', '10']
-#dzs = ['05','1','2']
-dzvals = {'1': 1, '05': 0.5, '2':2, '3':3, '10':10 }
+#dzs = ['05','1','2','3', '10', '50']
+dzs = ['05','1','2','3','10']
+dzvals = {'1': 1, '05': 0.5, '2':2, '3':3, '10':10, '50': 50}
 
 
-minEff = 0.85
+minEff = 0.80
 
 f = {}
 roc = {}
@@ -55,7 +59,8 @@ col = { '05':ROOT.kOrange,
         '2' :ROOT.kGreen,
         '3' :ROOT.kCyan,
         '5' :ROOT.kMagenta,
-        '10' :ROOT.kBlue}
+        '10' :ROOT.kBlue,
+        '50' :ROOT.kBlue+2}
 
 tl = ROOT.TLatex( 0.65, 0.88,'<PU> = 200')
 if (pu == 'noPU'):
@@ -63,7 +68,8 @@ if (pu == 'noPU'):
 tl.SetNDC()
 tl.SetTextSize(0.035)
 
-tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, t#bar{t}')
+#tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, t#bar{t}')
+tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, QCD')
 tl2.SetNDC()
 tl2.SetTextSize(0.035)
 
@@ -80,7 +86,7 @@ leg = {}
 for ireg,reg in enumerate(regions):
     roc[reg] = {}
     roc_dT[reg] = {}
-    leg[reg] = ROOT.TLegend(0.15, 0.62, 0.50, 0.92)
+    leg[reg] = ROOT.TLegend(0.15, 0.65, 0.50, 0.92)
     leg[reg].SetBorderSize(0)
     
     c[reg] = ROOT.TCanvas('roc_comparison_dz_%s_%s'%(reg,pu),'roc_comparison_dz_%s_%s'%(reg,pu))
@@ -109,12 +115,14 @@ for ireg,reg in enumerate(regions):
         roc[reg][dz] = f[dz].Get(gname) 
         roc_dT[reg][dz] = f[dz].Get(gname_dT)
 
-                    
+
+        roc[reg][dz].SetMarkerColor(col[dz])
         roc[reg][dz].SetLineColor(col[dz])
         roc[reg][dz].SetLineWidth(2)
         roc[reg][dz].SetFillStyle(0)
         roc[reg][dz].SetFillColorAlpha(col[dz],0.0)
-    
+
+        roc_dT[reg][dz].SetMarkerColor(col[dz])
         roc_dT[reg][dz].SetLineColor(col[dz])
         roc_dT[reg][dz].SetLineWidth(2)
         roc_dT[reg][dz].SetLineStyle(2)
@@ -124,18 +132,18 @@ for ireg,reg in enumerate(regions):
         if (idz == 0):
             roc[reg][dz].GetXaxis().SetTitle('Prompt efficiency')
             roc[reg][dz].GetYaxis().SetTitle('Non-prompt efficiency')
-            roc[reg][dz].GetYaxis().SetTitleOffset(1.4)
+            roc[reg][dz].GetYaxis().SetTitleOffset(1.1)
             roc[reg][dz].GetXaxis().SetRangeUser(minEff,1.0)
             roc[reg][dz].GetYaxis().SetRangeUser(0.0,0.1)
             roc[reg][dz].Draw('A C E3')
         else:
             roc[reg][dz].Draw('C E3 SAME')
 
-        roc_dT[reg][dz].Draw('C E3 same')
+        #roc_dT[reg][dz].Draw('C E3 same')
             
 
-        leg[reg].AddEntry(roc[reg][dz],'no MTD - |#Deltaz| < %.01f mm'%dzvals[dz],'PL')
-        leg[reg].AddEntry(roc_dT[reg][dz],'with MTD - |#Deltaz| < %.01f mm'%dzvals[dz],'PL')
+        leg[reg].AddEntry(roc[reg][dz],'no MTD - |#Deltaz| < %.01f mm'%dzvals[dz],'L')
+        #leg[reg].AddEntry(roc_dT[reg][dz],'with MTD - |#Deltaz| < %.01f mm'%dzvals[dz],'L')
 
     leg[reg].Draw()
     tt[reg].Draw()    
@@ -150,8 +158,13 @@ os.system('mkdir %s'%dirname)
 shutil.copy('index.php', dirname)
 
 for reg in regions:
-    c[reg].SaveAs(dirname+c[reg].GetName()+'.pdf')
-    c[reg].SaveAs(dirname+c[reg].GetName()+'.png')
-    c[reg].SaveAs(dirname+c[reg].GetName()+'.C')
+    if ('TTbar' in inputDir):
+        c[reg].SaveAs(dirname+c[reg].GetName()+'.pdf')
+        c[reg].SaveAs(dirname+c[reg].GetName()+'.png')
+        c[reg].SaveAs(dirname+c[reg].GetName()+'.C')
+    if ('QCD' in inputDir):
+        c[reg].SaveAs(dirname+c[reg].GetName()+'_QCD.pdf')
+        c[reg].SaveAs(dirname+c[reg].GetName()+'_QCD.png')
+        c[reg].SaveAs(dirname+c[reg].GetName()+'_QCD.C')
 
 raw_input('ok?')

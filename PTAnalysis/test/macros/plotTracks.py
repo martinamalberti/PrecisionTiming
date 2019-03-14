@@ -9,28 +9,17 @@ import time
 
 
 import ROOT
+import CMS_lumi, tdrstyle
 
-ROOT.gStyle.SetOptTitle(0)
+CMS_lumi.writeExtraText = True
+iPeriod = 0
+iPos = 0
 
+#set the tdr style
+tdrstyle.setTDRStyle()
 ROOT.gStyle.SetOptStat(0)
-#ROOT.gStyle.SetStatX(0.6);
-#ROOT.gStyle.SetStatY(0.6);
-#ROOT.gStyle.SetStatW(0.3);
-#ROOT.gStyle.SetStatH(0.3);
-
 ROOT.gStyle.SetOptFit(0)
-ROOT.gStyle.SetFitFormat("4.4g")
 
-ROOT.gStyle.SetLabelSize(0.04,'X')
-ROOT.gStyle.SetLabelSize(0.04,'Y')
-ROOT.gStyle.SetTitleSize(0.04,'X')
-ROOT.gStyle.SetTitleSize(0.04,'Y')
-#ROOT.gStyle.SetTitleOffset(1.0,'X')
-#ROOT.gStyle.SetTitleOffset(1.0,'Y')
-#ROOT.gStyle.SetTextFont(42)
-ROOT.gStyle.SetPadLeftMargin(0.10)
-ROOT.gStyle.SetPadTickX(1)
-ROOT.gStyle.SetPadTickY(1)
 
 
 def makeRoc(hsig, hbkg, graph):
@@ -59,48 +48,55 @@ def makeRoc(hsig, hbkg, graph):
 
 # ==== MAIN  =====
 
-#release = '93X'
-release = '10_4_0_mtd5'
+release = '93X'
+#release = '10_4_0_mtd5'
 
 
 pu = sys.argv[1]
 bkgProc = sys.argv[2]
 
-#fSig = '../'+release+'/testTracks_DYToLL_PU200_dT3sigma.root'
-#fBkg = '../'+release+'/testTracks_%s_PU200_dT3sigma.root'%bkgProc
-fSig = '../'+release+'/testTracks_DYToLL_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_fix.root'
-fBkg = '../'+release+'/testTracks_%s_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_fix.root'%bkgProc
+fSig = '../'+release+'/testTracks_DYToLL_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_noDxy.root'
+fBkg = '../'+release+'/testTracks_%s_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_noDxy.root'%bkgProc
+#fSig = '../'+release+'/testTracks_DYToLL_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_fix.root'
+#fBkg = '../'+release+'/testTracks_%s_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_fix.root'%bkgProc
 
 
 if (pu == 'noPU'):
-    fSig = '../'+release+'/testTracks_DYToLL_noPU_dT3sigma_minTrackPt.root'
-    fBkg = '../'+release+'/testTracks_%s_noPU_dT3sigma_minTrackPt.root'%bkgProc
+    fSig = '../'+release+'/testTracks_DYToLL_noPU_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_noDxy.root'
+    fBkg = '../'+release+'/testTracks_%s_noPU_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_noDxy.root'%bkgProc
     #fSig = '../'+release+'/testTracks_DYToLL_noPU_dT3sigma_minMuonPt10_maxMuonPt15_minTrackPt.root'
     #fBkg = '../'+release+'/testTracks_%s_noPU_dT3sigma_minMuonPt10_maxMuonPt15_minTrackPt.root'%bkgProc
     
-    
+
 plotdir = release+'/tracksInCone_%s_%s'%(pu,bkgProc)
-if ('minTrackPt' in fSig):
-    plotdir = plotdir+'_minTrackPt'
+if ('minTrackPt_noDxy' in fSig):
+    plotdir = plotdir+'_minTrackPt_noDxy'
     
 os.system('mkdir %s'%plotdir)
 shutil.copy('index.php', plotdir)
     
-tl = ROOT.TLatex( 0.70, 0.84,'<PU> = 200')
+tl = ROOT.TLatex( 0.65, 0.86,'<PU> = 200')
 if ('noPU' in fSig):
-    tl = ROOT.TLatex( 0.70, 0.84,'<PU> = 0')
+    tl = ROOT.TLatex( 0.65, 0.86,'<PU> = 0')
 tl.SetNDC()
 tl.SetTextSize(0.035)
 
 tl2 = {}
-tl2['barrel'] = ROOT.TLatex( 0.69, 0.78,'barrel muons')
+tl2['barrel'] = ROOT.TLatex( 0.65, 0.82,'barrel muons')
 tl2['barrel'] .SetNDC()
 tl2['barrel'] .SetTextSize(0.030)
 
-tl2['endcap'] = ROOT.TLatex( 0.68, 0.78,'endcap muons')
+tl2['endcap'] = ROOT.TLatex( 0.65, 0.82,'endcap muons')
 tl2['endcap'] .SetNDC()
 tl2['endcap'] .SetTextSize(0.030)
 
+tl3 = {}
+tl3['prompt'] = ROOT.TLatex( 0.65, 0.78,'Z#rightarrow#mu#mu')
+tl3['prompt'] .SetNDC()
+tl3['prompt'] .SetTextSize(0.030)
+tl3['fake'] = ROOT.TLatex( 0.65, 0.78,'t#bar{t}')
+tl3['fake'] .SetNDC()
+tl3['fake'] .SetTextSize(0.030)
 
 f = {}
 f['prompt'] = ROOT.TFile.Open(fSig)
@@ -234,7 +230,7 @@ for id,d in enumerate(['barrel', 'endcap']):
                             p_tracks_kept_pt[d], p_tracks_kept_n[d], p_tracks_kept_sumpt[d]   ]):
         print h['prompt'].GetName()
         cname = h['prompt'].GetName().replace('h_','')
-        c[cname] = ROOT.TCanvas(cname,cname,500,500)
+        c[cname] = ROOT.TCanvas(cname,cname)
         h['prompt'].SetLineColor(ROOT.kBlue)
         h['fake'].SetLineColor(ROOT.kRed)
         h['prompt'].SetMarkerColor(ROOT.kBlue)
@@ -267,6 +263,7 @@ for id,d in enumerate(['barrel', 'endcap']):
             leg1.Draw('same')
         tl.Draw()
         tl2[d].Draw()
+        CMS_lumi.CMS_lumi(c[cname], iPeriod, iPos)
         c[cname].Update()
         #raw_input('ok?')
 
@@ -292,13 +289,13 @@ for id, d in enumerate(['barrel', 'endcap']):
     c_tracks_sumpt_vs_linedensity[d] = {}
     for ip,proc in enumerate(['prompt', 'fake']):
     
-        c_tracks_pt[d][proc] = ROOT.TCanvas('tracks_pt_%s_%s'%(proc,d),'tracks_pt_%s_%s'%(proc,d),500,500)
-        c_tracks_n[d][proc] = ROOT.TCanvas('tracks_n_%s_%s'%(proc,d), 'tracks_n_%s_%s'%(proc,d),500,500)
-        c_tracks_sumpt[d][proc] = ROOT.TCanvas('tracks_sumpt_%s_%s'%(proc,d),'tracks_sumpt_%s_%s'%(proc,d),500,500 )
+        c_tracks_pt[d][proc] = ROOT.TCanvas('tracks_pt_%s_%s'%(proc,d),'tracks_pt_%s_%s'%(proc,d))
+        c_tracks_n[d][proc] = ROOT.TCanvas('tracks_n_%s_%s'%(proc,d), 'tracks_n_%s_%s'%(proc,d))
+        c_tracks_sumpt[d][proc] = ROOT.TCanvas('tracks_sumpt_%s_%s'%(proc,d),'tracks_sumpt_%s_%s'%(proc,d))
 
-        c_tracks_pt_vs_linedensity[d][proc] = ROOT.TCanvas('tracks_pt_vs_linedensity_%s_%s'%(proc,d),'tracks_pt_vs_linedensity_%s_%s'%(proc,d),500,500)
-        c_tracks_n_vs_linedensity[d][proc] = ROOT.TCanvas('tracks_n_vs_linedensity_%s_%s'%(proc,d), 'tracks_n_vs_linedensity_%s_%s'%(proc,d),500,500)
-        c_tracks_sumpt_vs_linedensity[d][proc] = ROOT.TCanvas('tracks_sumpt_vs_linedensity_%s_%s'%(proc,d),'tracks_vs_linedensity_sumpt_%s_%s'%(proc,d),500,500 )
+        c_tracks_pt_vs_linedensity[d][proc] = ROOT.TCanvas('tracks_pt_vs_linedensity_%s_%s'%(proc,d),'tracks_pt_vs_linedensity_%s_%s'%(proc,d))
+        c_tracks_n_vs_linedensity[d][proc] = ROOT.TCanvas('tracks_n_vs_linedensity_%s_%s'%(proc,d), 'tracks_n_vs_linedensity_%s_%s'%(proc,d))
+        c_tracks_sumpt_vs_linedensity[d][proc] = ROOT.TCanvas('tracks_sumpt_vs_linedensity_%s_%s'%(proc,d),'tracks_vs_linedensity_sumpt_%s_%s'%(proc,d) )
         
         c_tracks_pt[d][proc].cd()
         h_tracks_pt[d][proc].GetXaxis().SetRangeUser(0.0, 10.)
@@ -314,6 +311,7 @@ for id, d in enumerate(['barrel', 'endcap']):
         leg2[proc].Draw() 
         tl.Draw()
         tl2[d].Draw()
+        CMS_lumi.CMS_lumi(c_tracks_pt[d][proc], iPeriod, iPos)
         
         c_tracks_n[d][proc].cd()
         h_tracks_n[d][proc].GetXaxis().SetRangeUser(0,10)
@@ -324,6 +322,7 @@ for id, d in enumerate(['barrel', 'endcap']):
         leg2[proc].Draw()
         tl.Draw()
         tl2[d].Draw()
+        CMS_lumi.CMS_lumi(c_tracks_n[d][proc], iPeriod, iPos)
         
         c_tracks_sumpt[d][proc].cd()
         c_tracks_sumpt[d][proc].SetLogy()
@@ -335,6 +334,7 @@ for id, d in enumerate(['barrel', 'endcap']):
         leg2[proc].Draw()
         tl.Draw()
         tl2[d].Draw()
+        CMS_lumi.CMS_lumi(c_tracks_sumpt[d][proc], iPeriod, iPos)
         
         c_tracks_pt_vs_linedensity[d][proc].cd()
         p_tracks_pt[d][proc].GetYaxis().SetRangeUser(0.0001,p_tracks_pt[d][proc].GetMaximum()*1.2)
@@ -349,6 +349,7 @@ for id, d in enumerate(['barrel', 'endcap']):
         leg3[proc].Draw()
         tl.Draw()
         tl2[d].Draw()
+        CMS_lumi.CMS_lumi(c_tracks_pt_vs_linedensity[d][proc], iPeriod, iPos)
         
         c_tracks_n_vs_linedensity[d][proc].cd()
         p_tracks_n[d][proc].GetYaxis().SetRangeUser(0.0001,p_tracks_n[d][proc].GetMaximum()*1.2)
@@ -358,16 +359,19 @@ for id, d in enumerate(['barrel', 'endcap']):
         leg3[proc].Draw()
         tl.Draw()
         tl2[d].Draw()
+        CMS_lumi.CMS_lumi(c_tracks_n_vs_linedensity[d][proc], iPeriod, iPos)
         
         c_tracks_sumpt_vs_linedensity[d][proc].cd()
-        p_tracks_sumpt[d][proc].GetYaxis().SetRangeUser(0.0001,p_tracks_sumpt[d][proc].GetMaximum()*1.2)
+        c_tracks_sumpt_vs_linedensity[d][proc].SetLogy()
+        #p_tracks_sumpt[d][proc].GetYaxis().SetRangeUser(0.001,p_tracks_sumpt[d][proc].GetMaximum()*100)
+        p_tracks_sumpt[d][proc].GetYaxis().SetRangeUser(0.01,10000)
         p_tracks_sumpt[d][proc].Draw()
         p_tracks_removed_sumpt[d][proc].SetMarkerStyle(24)
         p_tracks_removed_sumpt[d][proc].Draw('same')
         leg3[proc].Draw()
         tl.Draw()
         tl2[d].Draw()
-        
+        CMS_lumi.CMS_lumi(c_tracks_sumpt_vs_linedensity[d][proc], iPeriod, iPos)
         # raw_input('ok?')
         
 
@@ -375,7 +379,7 @@ for id, d in enumerate(['barrel', 'endcap']):
 for id,d in enumerate(['barrel', 'endcap']):
     for proc in ['prompt','fake']:
         cname = h2_tracks_dzvtx_dtvtx[d][proc].GetName().replace('h2_','')+'_'+proc
-        c[cname] = ROOT.TCanvas(cname,cname,500,500)
+        c[cname] = ROOT.TCanvas(cname,cname)
         h2_tracks_dzvtx_dtvtx[d][proc].GetXaxis().SetRangeUser(-0.1,0.1)
         h2_tracks_dzvtx_dtvtx[d][proc].GetYaxis().SetRangeUser(-0.2,0.2)
         h2_tracks_dzvtx_dtvtx[d][proc].GetXaxis().SetTitle('z_{track} - z_{vtx4D}')
@@ -403,7 +407,7 @@ for d in 'barrel','endcap':
     tpv[d] = {}
     for proc in ['prompt','fake']:
         cname = h_tracks_dt_mu[d]['prompt'].GetName().replace('h_','') + '_' + proc
-        cc[d][proc]= ROOT.TCanvas(cname,cname,500,500)
+        cc[d][proc]= ROOT.TCanvas(cname,cname)
         h_tracks_dt_mu[d][proc].GetYaxis().SetRangeUser(0.0000001,h_tracks_dt_mu[d][proc].GetMaximum()*1.5)
         h_tracks_dt_mu[d][proc].GetXaxis().SetTitle('t_{track} - t_{#mu} (ns)')
         fitfun2[d][proc] = h_tracks_dt_mu[d][proc].GetFunction('fitfun2_%s'%d)
@@ -438,12 +442,12 @@ for d in 'barrel','endcap':
         print 'Number of PU tracks per muon : %.02f +/- %.02f'%(ntracks_pu, ntracks_pu_err) 
     
         
-        tpv[d][proc] = ROOT.TLatex( 0.12, 0.82, '#splitline{PV tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pv, ntracks_pv))
+        tpv[d][proc] = ROOT.TLatex( 0.15, 0.85, '#splitline{PV tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pv, ntracks_pv))
         tpv[d][proc].SetTextColor(ROOT.kGreen+1)
         tpv[d][proc].SetNDC()
         tpv[d][proc].SetTextSize(0.030)
         
-        tpu[d][proc] = ROOT.TLatex( 0.12, 0.72, '#splitline{PU tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pu, ntracks_pu))
+        tpu[d][proc] = ROOT.TLatex( 0.15, 0.75, '#splitline{PU tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pu, ntracks_pu))
         tpu[d][proc].SetTextColor(2)
         tpu[d][proc].SetNDC()
         tpu[d][proc].SetTextSize(0.030)
@@ -452,6 +456,8 @@ for d in 'barrel','endcap':
         tpv[d][proc].Draw()
         tl.Draw()
         tl2[d].Draw()
+        tl3[proc].Draw()
+        CMS_lumi.CMS_lumi(cc[d][proc], iPeriod, iPos)
         #raw_input('ok?')
 
 
@@ -474,10 +480,10 @@ for d in 'barrel','endcap':
     ttpv[d] = {}
     for proc in ['prompt','fake']:
         cname = h_tracks_dt_vtx[d]['prompt'].GetName().replace('h_','') + '_' + proc
-        ccc[d][proc]= ROOT.TCanvas(cname,cname,500,500)
+        ccc[d][proc]= ROOT.TCanvas(cname,cname)
         ccc[d][proc].SetLogy()
         ROOT.gStyle.SetOptFit(0)
-        h_tracks_dt_vtx[d][proc].GetYaxis().SetRangeUser(0.00001,h_tracks_dt_vtx[d][proc].GetMaximum()*1.5)
+        h_tracks_dt_vtx[d][proc].GetYaxis().SetRangeUser(0.0001,h_tracks_dt_vtx[d][proc].GetMaximum()*1.5)
         #h_tracks_dt_vtx[d][proc].GetXaxis().SetTitle('t_{track} - t_{vtx4D} (ns)')
         h_tracks_dt_vtx[d][proc].GetXaxis().SetTitle('t_{track} - t_{vtxGen} (ns)')
         fitfun[d][proc] = h_tracks_dt_vtx[d][proc].GetFunction('fitfun_%s'%d)
@@ -517,9 +523,9 @@ for d in 'barrel','endcap':
         sigmat_pv_err = fitfun[d][proc].GetParError(2)*1000.
         sigmat_pu_err = fitfun[d][proc].GetParError(5)*1000.
         
-        #ntracks_pv = ffpv[d][proc].Integral(-10,10)/h_tracks_dt_vtx[d][proc].GetBinWidth(1)
+        ntracks_pv = ffpv[d][proc].Integral(-10,10)/h_tracks_dt_vtx[d][proc].GetBinWidth(1)
         ntracks_pu = ffpu[d][proc].Integral(-10,10)/h_tracks_dt_vtx[d][proc].GetBinWidth(1)
-        ntracks_pv = h_tracks_dt_vtx[d][proc].Integral() - ntracks_pu
+        #ntracks_pv = h_tracks_dt_vtx[d][proc].Integral() - ntracks_pu
 
         ntracks_pv_err = ffpv[d][proc].IntegralError(-10,10)/h_tracks_dt_vtx[d][proc].GetBinWidth(1)
         ntracks_pu_err = ffpu[d][proc].IntegralError(-10,10)/h_tracks_dt_vtx[d][proc].GetBinWidth(1)
@@ -531,12 +537,12 @@ for d in 'barrel','endcap':
         print 'Number of PU tracks per muon : %.02f +/- %.02f'%(ntracks_pu, ntracks_pu_err) 
     
         
-        ttpv[d][proc] = ROOT.TLatex( 0.12, 0.82, '#splitline{PV tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pv, ntracks_pv))
+        ttpv[d][proc] = ROOT.TLatex( 0.15, 0.85, '#splitline{PV tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pv, ntracks_pv))
         ttpv[d][proc].SetTextColor(ROOT.kGreen+1)
         ttpv[d][proc].SetNDC()
         ttpv[d][proc].SetTextSize(0.030)
         
-        ttpu[d][proc] = ROOT.TLatex( 0.12, 0.72, '#splitline{PU tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pu, ntracks_pu))
+        ttpu[d][proc] = ROOT.TLatex( 0.15, 0.75, '#splitline{PU tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pu, ntracks_pu))
         #if (  ntracks_pu < 0.01 or sigmat_pu < 0 ) :
         #    ttpu[d][proc] = ROOT.TLatex( 0.12, 0.72, '#splitline{PU tracks}{#sigma_{t} = n.a. ps, <n/ev> = 0}')
 
@@ -548,8 +554,10 @@ for d in 'barrel','endcap':
         ttpv[d][proc].Draw()
         tl.Draw()
         tl2[d].Draw()
+        tl3[proc].Draw() 
+        CMS_lumi.CMS_lumi(ccc[d][proc], iPeriod, iPos)
 
-        raw_input('ok?')
+        #raw_input('ok?')
 
 
 
@@ -608,15 +616,21 @@ for id, d in enumerate(['barrel','endcap']):
     g_roc_relChIso03_dZ1[d].GetXaxis().SetTitle("#epsilon_{prompt}")
     g_roc_relChIso03_dZ1[d].GetYaxis().SetTitle("#epsilon_{fake}")
     g_roc_relChIso03_dZ1[d].SetLineColor(ROOT.kBlue)
+    g_roc_relChIso03_dZ1[d].SetFillColorAlpha(ROOT.kBlue,0.35)
+    g_roc_relChIso03_dZ1[d].SetFillStyle(1001)
     g_roc_relChIso03_dZ1_dT3s[d].SetLineColor(ROOT.kRed)
-    g_roc_relChIso03_dZ1[d].Draw()
-    g_roc_relChIso03_dZ1_dT3s[d].Draw('same')
+    g_roc_relChIso03_dZ1_dT3s[d].SetFillColorAlpha(ROOT.kRed,0.35)
+    g_roc_relChIso03_dZ1_dT3s[d].SetFillStyle(1001)
+    g_roc_relChIso03_dZ1[d].Draw(' A L E3')
+    g_roc_relChIso03_dZ1_dT3s[d].Draw('L E3 same')
     leg4[d] = ROOT.TLegend(0.15, 0.7, 0.45, 0.89)
     leg4[d].SetBorderSize(0)
-    leg4[d].AddEntry( g_roc_relChIso03_dZ1[d],'no MTD','PL')
-    leg4[d].AddEntry( g_roc_relChIso03_dZ1_dT3s[d],'MTD, #sigma_{t} = 30 ps','PL')
+    leg4[d].AddEntry( g_roc_relChIso03_dZ1[d],'no MTD','L')
+    leg4[d].AddEntry( g_roc_relChIso03_dZ1_dT3s[d],'MTD, #sigma_{t} = 30 ps','L')
     leg4[d].Draw()
-    
+    tl.Draw()
+    tl2[d].Draw()
+
     c_roc_rawChIso03_dZ1_dT3s[d] = ROOT.TCanvas('roc_rawChIso03_dZ1_dT3s_%s'%d, 'roc_rawChIso03_dZ1_dT3s_%s'%d, 500, 500)
     c_roc_rawChIso03_dZ1_dT3s[d].SetGridx()
     c_roc_rawChIso03_dZ1_dT3s[d].SetGridy()
