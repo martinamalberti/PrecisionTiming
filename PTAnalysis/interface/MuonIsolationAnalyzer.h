@@ -85,6 +85,7 @@ struct eventInfo
   vector<float> track_dxy3D;
   vector<float> track_dxy4D;
   vector<float> track_t;
+  vector<float> track_tFastSim;
   vector<float> track_dRmu;
   vector<int> track_muIndex;
   vector<int> track_isMatchedToGenParticle;

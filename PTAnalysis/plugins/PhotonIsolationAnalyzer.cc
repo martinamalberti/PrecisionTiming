@@ -59,8 +59,10 @@ PhotonIsolationAnalyzer::PhotonIsolationAnalyzer(const edm::ParameterSet& iConfi
   isoConeDR_       = iConfig.getUntrackedParameter<double>("isoConeDR");
   saveTracks_      = iConfig.getUntrackedParameter<bool>("saveTracks");
   maxDz_           = iConfig.getUntrackedParameter<double>("maxDz");
+  maxDxy_          = iConfig.getUntrackedParameter<double>("maxDxy");
   minDr_           = iConfig.getUntrackedParameter<double>("minDr");
-  minTrackPt_      = iConfig.getUntrackedParameter<double>("minTrackPt");
+  btlMinTrackPt_   = iConfig.getUntrackedParameter<double>("btlMinTrackPt");
+  etlMinTrackPt_   = iConfig.getUntrackedParameter<double>("etlMinTrackPt");
   useVertexClosestToGenZ_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZ");
   useVertexClosestToGenZT_ = iConfig.getUntrackedParameter<bool>("useVertexClosestToGenZT");
   btlEfficiency_ = iConfig.getUntrackedParameter<double>("btlEfficiency");
@@ -88,13 +90,6 @@ PhotonIsolationAnalyzer::~PhotonIsolationAnalyzer()
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
 
-  //cout << "PhotonIsolationAnalyzer destructor" <<endl;
-  //for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
-  //cout << iRes << "  " << evInfo[iRes]->npu <<endl;
-  //cout << iRes << "  " << eventTree[iRes]->GetEntries()<<endl;
-  ////  delete eventTree[iRes];
-  ////delete evInfo[iRes];
-  //}
   cout << "CIAO CIAO" << endl; 
 }
 
@@ -148,7 +143,6 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
   // -- get the gen vertex collection
   Handle<vector<SimVertex> > GenVertexCollectionH;
   iEvent.getByToken( genVertexToken_, GenVertexCollectionH );
-  //const vector<SimVertex>& genVertices = *GenVertexCollectionH;
 
   // -- get the genXYZ
   Handle<genXYZ> genXYZH;
@@ -270,7 +264,6 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   const int nResol = timeResolutions_.size();
 
-
   // --- start loop over photon candidates
   edm::View<reco::Photon> photons ; 
 
@@ -363,8 +356,9 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	if ( !(trackRef->quality(reco::TrackBase::highPurity)) ) continue;
 	
 	//-- use tracks with pT above thtreshold
-	if ( pfcand.pt() < minTrackPt_) continue;
-	
+	if ( std::abs(pfcand.eta()) < 1.48 && pfcand.pt() < btlMinTrackPt_) continue;
+	if ( std::abs(pfcand.eta()) > 1.48 && pfcand.pt() < etlMinTrackPt_) continue;
+
 	// -- compute dz, dxy 
 	float dz4D  = std::abs( trackRef->dz(vtx4D.position()) );
 	float dz3D  = std::abs( trackRef->dz(vtx3D.position()) );
@@ -379,14 +373,14 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	// --- no timing 
 	if (dr > minDr_ && dr < isoConeDR_){
 	  // -- sim vertex 
-	  if (dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_simVtx+= pfcand.pt(); }
-	  if (dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_simVtx+= pfcand.pt(); }
-	  if (dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_simVtx+= pfcand.pt(); }
+	  if (dzsim < 0.05 && dxysim < maxDxy_) { chIso_dZ05_simVtx+= pfcand.pt(); }
+	  if (dzsim < 0.1  && dxysim < maxDxy_) { chIso_dZ1_simVtx+= pfcand.pt(); }
+	  if (dzsim < 0.2  && dxysim < maxDxy_) { chIso_dZ2_simVtx+= pfcand.pt(); }
 	  
 	  // -- reco vtx closest to the sim one
-	  if (dz3D < 0.05  &&  dxy3D < 0.02) { chIso_dZ05+= pfcand.pt(); }
-	  if (dz3D < 0.1   &&  dxy3D < 0.02) { chIso_dZ1+= pfcand.pt(); }
-	  if (dz3D < 0.2   &&  dxy3D < 0.02) { chIso_dZ2+= pfcand.pt(); }
+	  if (dz3D < 0.05  &&  dxy3D < maxDxy_) { chIso_dZ05+= pfcand.pt(); }
+	  if (dz3D < 0.1   &&  dxy3D < maxDxy_) { chIso_dZ1+= pfcand.pt(); }
+	  if (dz3D < 0.2   &&  dxy3D < maxDxy_) { chIso_dZ2+= pfcand.pt(); }
 	  
 	}
 	
@@ -425,33 +419,33 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	    }
 	    
 	    // -- sim vertex
-	    if (dtsim < 2.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT2s_simVtx[iRes]+= pfcand.pt();}
-	    if (dtsim < 2.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT2s_simVtx[iRes]+= pfcand.pt();}
-	    if (dtsim < 2.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT2s_simVtx[iRes]+= pfcand.pt();}
+	    if (dtsim < 2.*targetTimeResol && dzsim < 0.05 && dxysim < maxDxy_) { chIso_dZ05_dT2s_simVtx[iRes]+= pfcand.pt();}
+	    if (dtsim < 2.*targetTimeResol && dzsim < 0.1  && dxysim < maxDxy_) { chIso_dZ1_dT2s_simVtx[iRes]+= pfcand.pt();}
+	    if (dtsim < 2.*targetTimeResol && dzsim < 0.2  && dxysim < maxDxy_) { chIso_dZ2_dT2s_simVtx[iRes]+= pfcand.pt();}
 	    
-	    if (dtsim < 3.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT3s_simVtx[iRes]+= pfcand.pt();}
-	    if (dtsim < 3.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT3s_simVtx[iRes]+= pfcand.pt();}
-	    if (dtsim < 3.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT3s_simVtx[iRes]+= pfcand.pt();}
+	    if (dtsim < 3.*targetTimeResol && dzsim < 0.05 && dxysim < maxDxy_) { chIso_dZ05_dT3s_simVtx[iRes]+= pfcand.pt();}
+	    if (dtsim < 3.*targetTimeResol && dzsim < 0.1  && dxysim < maxDxy_) { chIso_dZ1_dT3s_simVtx[iRes]+= pfcand.pt();}
+	    if (dtsim < 3.*targetTimeResol && dzsim < 0.2  && dxysim < maxDxy_) { chIso_dZ2_dT3s_simVtx[iRes]+= pfcand.pt();}
 	    
-	    if (dtsim < 5.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT5s_simVtx[iRes]+= pfcand.pt();}
-	    if (dtsim < 5.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT5s_simVtx[iRes]+= pfcand.pt();}
-	    if (dtsim < 5.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT5s_simVtx[iRes]+= pfcand.pt();}
+	    if (dtsim < 5.*targetTimeResol && dzsim < 0.05 && dxysim < maxDxy_) { chIso_dZ05_dT5s_simVtx[iRes]+= pfcand.pt();}
+	    if (dtsim < 5.*targetTimeResol && dzsim < 0.1  && dxysim < maxDxy_) { chIso_dZ1_dT5s_simVtx[iRes]+= pfcand.pt();}
+	    if (dtsim < 5.*targetTimeResol && dzsim < 0.2  && dxysim < maxDxy_) { chIso_dZ2_dT5s_simVtx[iRes]+= pfcand.pt();}
 	    
 	    // -- reco vtx closest to the sim one
-	    if (dt < 2.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT2s[iRes]+= pfcand.pt(); }
-	    if (dt < 2.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT2s[iRes]+= pfcand.pt(); }
-	    if (dt < 2.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT2s[iRes]+= pfcand.pt(); }
+	    if (dt < 2.*targetTimeResol && dz4D < 0.05 &&  dxy4D < maxDxy_) { chIso_dZ05_dT2s[iRes]+= pfcand.pt(); }
+	    if (dt < 2.*targetTimeResol && dz4D < 0.1  &&  dxy4D < maxDxy_) { chIso_dZ1_dT2s[iRes]+= pfcand.pt(); }
+	    if (dt < 2.*targetTimeResol && dz4D < 0.2  &&  dxy4D < maxDxy_) { chIso_dZ2_dT2s[iRes]+= pfcand.pt(); }
 	    
-	    if (dt < 3.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT3s[iRes]+= pfcand.pt(); }
-	    if (dt < 3.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT3s[iRes]+= pfcand.pt(); }
-	    if (dt < 3.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT3s[iRes]+= pfcand.pt(); }
+	    if (dt < 3.*targetTimeResol && dz4D < 0.05 &&  dxy4D < maxDxy_) { chIso_dZ05_dT3s[iRes]+= pfcand.pt(); }
+	    if (dt < 3.*targetTimeResol && dz4D < 0.1  &&  dxy4D < maxDxy_) { chIso_dZ1_dT3s[iRes]+= pfcand.pt(); }
+	    if (dt < 3.*targetTimeResol && dz4D < 0.2  &&  dxy4D < maxDxy_) { chIso_dZ2_dT3s[iRes]+= pfcand.pt(); }
 	    
-	    if (dt < 5.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT5s[iRes]+= pfcand.pt(); }
-	    if (dt < 5.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT5s[iRes]+= pfcand.pt(); }
-	    if (dt < 5.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT5s[iRes]+= pfcand.pt(); }
+	    if (dt < 5.*targetTimeResol && dz4D < 0.05 &&  dxy4D < maxDxy_) { chIso_dZ05_dT5s[iRes]+= pfcand.pt(); }
+	    if (dt < 5.*targetTimeResol && dz4D < 0.1  &&  dxy4D < maxDxy_) { chIso_dZ1_dT5s[iRes]+= pfcand.pt(); }
+	    if (dt < 5.*targetTimeResol && dz4D < 0.2  &&  dxy4D < maxDxy_) { chIso_dZ2_dT5s[iRes]+= pfcand.pt(); }
 	    
 	    // -- save info for tracks in the isolation cone (only for DR = 0.3)
-	    if (saveTracks_ && (dz4D < 1.0 || dz3D < 1. ) ) { // save a subset of tracks with loose dz selection
+	    if (saveTracks_ && (dz4D < 1.0 || dz3D < 1. || dzsim < 1.) ) { // save a subset of tracks with loose dz selection
 	      evInfo[iRes]->track_t.push_back(time[iRes]); 
 	      evInfo[iRes]->track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
 	      evInfo[iRes]->track_dz3D.push_back(trackRef->dz( vtx3D.position() )); 
@@ -528,7 +522,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
     evInfo[iRes]->vtx3D_z = vtx3D.z();
     evInfo[iRes]->vtx3D_zErr = vtx3D.zError();
     evInfo[iRes]->vtxGen_z = genPV.position().z();
-    evInfo[iRes]->vtxGen_t = genPV.position().t();
+    evInfo[iRes]->vtxGen_t = genPV.position().t() * 1.E09;
     evInfo[iRes]->vtx3D_isFake = vtx3D.isFake();
     evInfo[iRes]->vtx4D_isFake = vtx4D.isFake();
   }

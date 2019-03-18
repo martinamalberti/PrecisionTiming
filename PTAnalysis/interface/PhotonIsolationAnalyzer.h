@@ -180,8 +180,10 @@ private:
   double isoConeDR_;
   bool saveTracks_;
   double maxDz_;
+  double maxDxy_;
   double minDr_;
-  double minTrackPt_;
+  double btlMinTrackPt_;
+  double etlMinTrackPt_;
   bool useVertexClosestToGenZ_;
   bool useVertexClosestToGenZT_;
   double btlEfficiency_;

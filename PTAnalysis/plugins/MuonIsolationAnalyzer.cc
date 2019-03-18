@@ -361,6 +361,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float chIso_dZmu5_dTmu[nResol];
     float chIso_dZmu10_dTmu[nResol];
     float time[nResol]; 
+    float timeFastSim[nResol]; 
     
     // -- initialize 
     for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){
@@ -404,6 +405,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       chIso_dZmu5_dTmu[iRes] = 0.;
       chIso_dZmu10_dTmu[iRes] = 0.;
       time[iRes] = 0.;
+      timeFastSim[iRes] = 0.;
     }
 
     
@@ -445,26 +447,14 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
       float dr  = deltaR(muon.eta(), muon.phi(), pfcand.eta(), pfcand.phi());
 
+      float pfcandtimeFastSim = pfcand.time();
+      float pfcandtimeErrFastSim = pfcand.timeError();
+      cout << pfcandtimeFastSim << "  " << pfcandtimeErrFastSim <<endl;
       float pfcandtime = pfcand.time();
       float pfcandtimeErr = pfcand.timeError();
-      //float puid3dmva = 0;
-      //float puid4dmva = 0;
       if (mtd5sample_ ){
 	pfcandtime    = (*trackTimeValueMap)[trackRef] ;
 	pfcandtimeErr = (*trackTimeErrValueMap)[trackRef] ;
-	/*if(trackPUID4DMVAValueMap->contains(trackRef.id())) {
-	  puid4dmva = (*trackPUID4DMVAValueMap)[trackRef] ;
-	  puid4dmva = puid4dmva + 0; 
-	  cout << icand << "  " << puid4dmva <<endl;
-	  }
-	else{
-	  cout << "trackRef not found!!!" << endl;
-	  cout << trackRef->pt() << "  " << trackRef->eta() << "  " << pfcandtime << endl;
-	  }*/
-	//puid4dmva = (*trackPUID4DMVAValueMap)[trackRef] ;
-	//cout << icand << "  " << pfcandtime << "  " << pfcandtimeErr << " " << puid3dmva << "  " << puid4dmva <<endl; 
-	//cout << "pfcandtime    = " << pfcand.time() << "  " <<  pfcandtime <<endl;
-	//cout << "pfcandtimeErr = " << pfcand.timeError() << "  " << pfcandtimeErr <<endl;
       }
 
 
@@ -500,18 +490,21 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
 	for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
 	  double targetTimeResol = timeResolutions_[iRes];
+	  double defaultTimeResolFastSim  = double(pfcand.timeError());
 	  double defaultTimeResol  = 0.;
-	  //if ( pfcand.isTimeValid() ) {
 	  if ( pfcandtimeErr !=-1 ) {
 	    defaultTimeResol  = double(pfcand.timeError()); 
 	    if (mtd5sample_) defaultTimeResol = 0.035;
 	  }	  
+	  double extra_resol_FastSim = 0.;
 	  double extra_resol = 0.;
 	  if ( targetTimeResol > defaultTimeResol) { extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol); }
+	  if ( targetTimeResol > defaultTimeResolFastSim) { extra_resol_FastSim = sqrt(targetTimeResol*targetTimeResol - defaultTimeResolFastSim*defaultTimeResolFastSim); }
 	  double dtsim = 0.;
 	  double dt = 0.;
 	  double dtmu = 0.;
 	  time[iRes] = -999.;
+	  timeFastSim[iRes] = -999.;
 	  //	  if ( pfcand.isTimeValid() && !isnan( pfcand.time() )) {
 	  if ( pfcandtimeErr !=-1 ) {
 	    // -- emulate BTL and ETL efficiency
@@ -521,9 +514,10 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	    if ( std::abs(pfcand.eta()) > 1.5 && rndEff > etlEfficiency_ ) keepTrack = false; 	
 	    if (keepTrack) {
 	      // -- extra smearing to emulate different time resolution
+	      double rndFastSim = gRandom->Gaus(0., extra_resol_FastSim);
 	      double rnd   = gRandom->Gaus(0., extra_resol);
 	      double rndmu = gRandom->Gaus(0., extra_resol);
-	      //cout << "target time resol = "<< targetTimeResol << "  extra_resol = "<< extra_resol << "  rnd = " << rnd <<endl;
+	      if (pfcandtimeErrFastSim !=-1)	timeFastSim[iRes] = pfcandtimeFastSim + rndFastSim;
 	      time[iRes] = pfcandtime + rnd;
 	      dtsim = std::abs(time[iRes] - genPV.position().t()*1000000000.);
 	      dt    = std::abs(time[iRes] - vtx4D.t());
@@ -597,13 +591,12 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  
 	  
 	  // -- save info for tracks in the isolation cone (only for DR = 0.3)
-	  //if (saveTracks_ && (dzsim < 1.0 || dz4D < 1.0 || dz3D < 1. || dzmu < 1. ) ) { // save a subset of tracks with loose dz selection
-	  if (saveTracks_ && (dz4D < 1.0 || dz3D < 1. || dzmu < 1. ) ) { // save a subset of tracks with loose dz selection
-
+	  if (saveTracks_ && (dzsim < 1.0 || dz4D < 1.0 || dz3D < 1. || dzmu < 1. ) ) { // save a subset of tracks with loose dz selection
 	    bool genMatching  = isMatchedToGenParticle(pfcand, genParticles);
 	    bool genUnmatching  = isUnmatchedToGenParticle(pfcand, genParticles);
-
+	    
 	    evInfo[iRes]->track_t.push_back(time[iRes]); 
+	    evInfo[iRes]->track_tFastSim.push_back(timeFastSim[iRes]); 
 	    evInfo[iRes]->track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
 	    evInfo[iRes]->track_dz3D.push_back(trackRef->dz( vtx3D.position() )); 
 	    evInfo[iRes]->track_dxy4D.push_back(trackRef->dxy( vtx4D.position() )); 
@@ -850,6 +843,7 @@ MuonIsolationAnalyzer::beginJob()
 
     if (saveTracks_){
       eventTree[iRes]->Branch( "track_t",      &evInfo[iRes]->track_t);
+      eventTree[iRes]->Branch( "track_tFastSim",      &evInfo[iRes]->track_tFastSim);
       eventTree[iRes]->Branch( "track_dz4D",   &evInfo[iRes]->track_dz4D);
       eventTree[iRes]->Branch( "track_dz3D",   &evInfo[iRes]->track_dz3D);
       eventTree[iRes]->Branch( "track_dxy4D",  &evInfo[iRes]->track_dxy4D);
@@ -988,6 +982,7 @@ MuonIsolationAnalyzer::initEventStructure()
 
     if (saveTracks_){
       evInfo[iRes]->track_t.clear();
+      evInfo[iRes]->track_tFastSim.clear();
       evInfo[iRes]->track_dz4D.clear();
       evInfo[iRes]->track_dz3D.clear();
       evInfo[iRes]->track_dxy4D.clear();
