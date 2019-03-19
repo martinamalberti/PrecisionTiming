@@ -125,7 +125,7 @@ g_roc.GetYaxis().SetRangeUser(0.0,0.10)
 g_roc.GetXaxis().SetTitle('#tau_{h} efficiency')
 g_roc.GetYaxis().SetTitle('Jet efficiency')
 g_roc.Draw('al')
-g_roc_dT.Draw('lsame')
+#g_roc_dT.Draw('lsame')
 g_roc_dT_scaled.Draw('lsame')
 
 leg = ROOT.TLegend(0.15, 0.70, 0.45, 0.92)

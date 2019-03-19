@@ -25,13 +25,13 @@ ROOT.gStyle.SetOptTitle(0)
 pu = sys.argv[1]
 release = '93X'
 
-#inputDir = release+'/30ps_PU200_TTbar_minTkPtCut_noDxy/'
-#if (pu == 'noPU'):
-#    inputDir = release+'/30ps_noPU_TTbar_minTkPtCut_noDxy/'
-
-inputDir = release+'/30ps_PU200_QCD_minTkPtCut_noDxy/'
+inputDir = release+'/30ps_PU200_TTbar_minTkPtCut_noDxy/'
 if (pu == 'noPU'):
-    inputDir = release+'/30ps_noPU_QCD_minTkPtCut_noDxy/'
+    inputDir = release+'/30ps_noPU_TTbar_minTkPtCut_noDxy/'
+
+#inputDir = release+'/30ps_PU200_QCD_minTkPtCut_noDxy/'
+#if (pu == 'noPU'):
+#    inputDir = release+'/30ps_noPU_QCD_minTkPtCut_noDxy/'
 
 #inputDir = '10_4_0_mtd5/35ps_PU200_TTbar/'
 #if (pu == 'noPU'):
@@ -68,8 +68,8 @@ if (pu == 'noPU'):
 tl.SetNDC()
 tl.SetTextSize(0.035)
 
-#tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, t#bar{t}')
-tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, QCD')
+tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, t#bar{t}')
+#tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, QCD')
 tl2.SetNDC()
 tl2.SetTextSize(0.035)
 

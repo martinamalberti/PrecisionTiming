@@ -26,8 +26,8 @@ release = '93X'
 inputDir = '93X/30ps_PU200_TTbar_minTkPtCut_noDxy/'
 inputDirNoPU = '93X/30ps_noPU_TTbar_minTkPtCut_noDxy/'
 
-#resolutions = ['30', '40', '50', '60']
-resolutions = ['40', '30']
+resolutions = ['30', '40', '50', '60']
+#resolutions = ['40', '30']
 #resolutions = ['40']
 
 canvasWithRatios = False
@@ -119,7 +119,7 @@ for ireg,reg in enumerate(regions):
 
     for ires,res in enumerate(resolutions):
         f[res] = ROOT.TFile.Open( (inputDir+'/roc_%sps_PU200.root'%(res)).replace('30',res) )
-        if (res == '30'): ROOT.TFile.Open('93X/30ps_PU200_TTbar_minTkPtCut_eff100_noDxy/roc_30ps_PU200.root' )
+        #if (res == '30'): ROOT.TFile.Open('93X/30ps_PU200_TTbar_minTkPtCut_eff100_noDxy/roc_30ps_PU200.root' )
 
         print  f[res].GetName() 
         
@@ -196,9 +196,9 @@ for ireg,reg in enumerate(regions):
         if (canvasWithRatios):
             pad1.cd()  
         roc_dT[reg][res].Draw('L E3 same')
-        #leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps'%res,'L')
-        if (res != '30'): leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps'%res,'L')
-        if (res == '30'): leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps, eff = 100%%'%res,'L')
+        leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps'%res,'L')
+        #if (res != '30'): leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps'%res,'L')
+        #if (res == '30'): leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps, eff = 100%%'%res,'L')
         #if (res != '30'): leg[reg].AddEntry(roc_dT[reg][res],'MTD, #sigma_{t} = %s ps, #epsilon = 85(90)%% BTL(ETL)'%res,'L')
 
         if (canvasWithRatios):
@@ -236,12 +236,12 @@ for ireg,reg in enumerate(regions):
     tl2.Draw()
     CMS_lumi.CMS_lumi(c[reg], iPeriod, iPos)
     c[reg].Update()
-    c[reg].SaveAs(dirname+c[reg].GetName()+'.pdf')
-    c[reg].SaveAs(dirname+c[reg].GetName()+'.png')
-    c[reg].SaveAs(dirname+c[reg].GetName()+'.C')
-    #c[reg].SaveAs(dirname+c[reg].GetName()+'_timeResol.pdf')
-    #c[reg].SaveAs(dirname+c[reg].GetName()+'_timeResol.png')
-    #c[reg].SaveAs(dirname+c[reg].GetName()+'_timeResol.C')
+    #c[reg].SaveAs(dirname+c[reg].GetName()+'.pdf')
+    #c[reg].SaveAs(dirname+c[reg].GetName()+'.png')
+    #c[reg].SaveAs(dirname+c[reg].GetName()+'.C')
+    c[reg].SaveAs(dirname+c[reg].GetName()+'_timeResol.pdf')
+    c[reg].SaveAs(dirname+c[reg].GetName()+'_timeResol.png')
+    c[reg].SaveAs(dirname+c[reg].GetName()+'_timeResol.C')
 
 raw_input('ok?')
     
