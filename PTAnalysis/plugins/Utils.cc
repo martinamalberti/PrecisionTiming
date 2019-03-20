@@ -192,3 +192,50 @@ bool isMatchedToMTDCluster(const reco::PFCandidate &pfcand, FTLClusterCollection
 }
 
 //-------------------------------------------------------------------------------------------
+
+
+
+// --- matching to gen photon -------------------------------------------------------------------
+bool isPromptPhoton(const reco::Photon& photon, const edm::View<reco::GenParticle>& genParticles)
+{
+  bool isPrompt = false;
+
+  for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
+    const reco::GenParticle& genp = genParticles[ip];
+    if ( std::abs(genp.pdgId()) != 22) continue;
+    if (genp.status() != 1 || !genp.isLastCopy() ) continue; // -- from Simone
+    if ( !genp.isPromptFinalState() ) continue;
+    double dr = deltaR(photon,genp);
+    if (dr > 0.2){ 
+      continue;
+    }
+    else{ 
+      isPrompt=true;
+      break;
+    }
+  }
+  
+  return isPrompt;
+}
+
+
+// --- matching to gen jet ---------------------------------------------------------------------
+bool isPhotonMatchedToGenJet(const reco::Photon& photon, const edm::View<reco::GenJet>& genJets)
+{
+  bool isMatched = false;
+
+  for(unsigned int ip=0; ip < genJets.size(); ip++ ){
+    const reco::GenJet& genj = genJets[ip];
+    if ( genj.pt() < 15.0  || genj.hadEnergy()/genj.energy() < 0.3) continue;
+    double dr = deltaR(photon,genj);
+    if (dr > 0.3){ 
+      continue;
+    }
+    else{ 
+      isMatched=true;
+      break;
+    }
+  }
+  
+  return isMatched;
+}

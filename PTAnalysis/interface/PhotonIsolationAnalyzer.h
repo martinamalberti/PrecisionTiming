@@ -48,6 +48,8 @@
 
 #include "DataFormats/Common/interface/View.h"
 
+#include "PrecisionTiming/PTAnalysis/interface/Utils.h"
+
 #include <vector>
 #include "TTree.h"
 #include <TRandom.h>
@@ -81,6 +83,7 @@ struct eventInfo
   vector<float> track_dxy4D;
   vector<float> track_t;
   vector<int> track_phoIndex;
+  vector<int> track_isMatchedToGenParticle;
 
   float vtxGen_z;
   float vtxGen_t;
@@ -169,6 +172,8 @@ private:
   EDGetTokenT<View<reco::GenJet> > genJetsToken_;
   EDGetTokenT<View<reco::Photon> > barrelPhotonsToken_;
   EDGetTokenT<View<reco::Photon> > endcapPhotonsToken_;
+  EDGetTokenT<ValueMap<float> > trackTimeToken_;
+  EDGetTokenT<ValueMap<float> > trackTimeErrToken_;
   
   //--- outputs
   edm::Service<TFileService> fs_;
@@ -195,5 +200,5 @@ private:
 
 };
 
-bool isPromptPhoton(const reco::Photon &photon, const edm::View<reco::GenParticle>& genParticles);
-bool isMatchedToGenJet(const reco::Photon &photon, const edm::View<reco::GenJet>& genJet);
+//bool isPromptPhoton(const reco::Photon &photon, const edm::View<reco::GenParticle>& genParticles);
+//bool isMatchedToGenJet(const reco::Photon &photon, const edm::View<reco::GenJet>& genJet);

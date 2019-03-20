@@ -4,13 +4,13 @@ process = cms.Process("Analysis")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 100 )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1 )
 
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
-        '/store/mc/PhaseIITDRFall17DR/GluGluHToGG_M125_14TeV_amcatnloFXFX_pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2_ext1-v2/50000/FCB2FC8B-96D9-E711-9929-0CC47A7C34E6.root' 
+        '/store/mc/PhaseIIMTDTDRAutumn18DR/GluGluToHHTo2B2G_node_SM_14TeV-madgraph/FEVT/PU200_103X_upgrade2023_realistic_v2-v1/280000/01A75567-3B61-9D4E-89B7-D7309FDB0438.root' 
  )
 )
 
@@ -27,18 +27,22 @@ process.analysis = cms.EDAnalyzer(
     genXYZTag = cms.untracked.InputTag("genParticles", "xyz0", "HLT"),
     genT0Tag = cms.untracked.InputTag("genParticles", "t0", "HLT"),
     genJetsTag = cms.untracked.InputTag("ak4GenJets", "", "HLT"),
-    timeResolutions = cms.untracked.vdouble(0.030, 0.040, 0.050, 0.060, 0.070, 0.200),
+    TrackTimeValueMapTag = cms.InputTag("trackTimeValueMapProducer", "generalTracksConfigurableFlatResolutionModel", "RECO"), # time at vertex smeared by 30 ps (FastSim)
+    TrackTimeErrValueMapTag = cms.InputTag("trackTimeValueMapProducer", "generalTracksConfigurableFlatResolutionModelResolution", "RECO"), # time at vertex smeared by 30 ps (FastSim)  
+    #TrackTimeValueMapTag = cms.InputTag("tofPID", "t0", "PAT"),
+    #TrackTimeErrValueMapTag = cms.InputTag("tofPID", "sigmat0", "PAT"),
+    timeResolutions = cms.untracked.vdouble(0.030),
     isoConeDR = cms.untracked.double(0.3),
     saveTracks = cms.untracked.bool(True),
     maxDz = cms.untracked.double(0.1),
+    maxDxy = cms.untracked.double(9999.),
     minDr = cms.untracked.double(0.01),
-    minTrackPt = cms.untracked.double(0.0),
-    useVertexClosestToGenZ = cms.untracked.bool(True),
-    useVertexClosestToGenZT = cms.untracked.bool(False),
+    btlMinTrackPt = cms.untracked.double(0.0),
+    etlMinTrackPt = cms.untracked.double(0.0),
+    useVertexClosestToGenZ = cms.untracked.bool(False),
+    useVertexClosestToGenZT = cms.untracked.bool(True),
     btlEfficiency = cms.untracked.double(1.0),
     etlEfficiency = cms.untracked.double(1.0)
-    #btlEfficiency = cms.untracked.double(0.90),
-    #etlEfficiency = cms.untracked.double(0.90)
 )
 
 # Output TFile

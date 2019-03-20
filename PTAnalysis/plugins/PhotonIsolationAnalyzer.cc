@@ -53,7 +53,9 @@ PhotonIsolationAnalyzer::PhotonIsolationAnalyzer(const edm::ParameterSet& iConfi
   genT0Token_(consumes<float>(iConfig.getUntrackedParameter<edm::InputTag>("genT0Tag"))),      
   genJetsToken_(consumes<View<reco::GenJet> >(iConfig.getUntrackedParameter<InputTag>("genJetsTag"))),
   barrelPhotonsToken_(consumes<View<reco::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("barrelPhotonsTag"))),
-  endcapPhotonsToken_(consumes<View<reco::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("endcapPhotonsTag")))
+  endcapPhotonsToken_(consumes<View<reco::Photon> >(iConfig.getUntrackedParameter<edm::InputTag>("endcapPhotonsTag"))),
+  trackTimeToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeValueMapTag" ) ) ),
+  trackTimeErrToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeErrValueMapTag" ) ) )
 {
   timeResolutions_ = iConfig.getUntrackedParameter<vector<double> >("timeResolutions");
   isoConeDR_       = iConfig.getUntrackedParameter<double>("isoConeDR");
@@ -157,6 +159,14 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
   iEvent.getByToken(genJetsToken_, GenJetCollectionH);
   const edm::View<reco::GenJet>& genJets = *GenJetCollectionH;
   
+  // -- get the trackTimeValueMap
+  Handle<ValueMap<float> > trackTimeValueMap;
+  iEvent.getByToken( trackTimeToken_, trackTimeValueMap );
+
+  // -- get the trackTimeErrValueMap
+  Handle<ValueMap<float> > trackTimeErrValueMap;
+  iEvent.getByToken( trackTimeErrToken_, trackTimeErrValueMap );
+
   // -- initialize output tree
   initEventStructure();
 
@@ -283,7 +293,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
       
       // -- check if prompt or fake photon
       bool isPromptPho = isPromptPhoton(photon,genParticles);
-      bool isMatched   = isMatchedToGenJet(photon, genJets);
+      bool isMatched   = isPhotonMatchedToGenJet(photon, genJets);
       
       // -- compute charged isolations
       float chIso_dZ05_simVtx = 0.;
@@ -370,6 +380,13 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	
 	float dr  = deltaR(photon.eta(), photon.phi(), pfcand.eta(), pfcand.phi());
 	
+
+	// -- time 
+	float pfcandtime    = (*trackTimeValueMap)[trackRef] ;
+        float pfcandtimeErr = (*trackTimeErrValueMap)[trackRef] ;
+
+
+
 	// --- no timing 
 	if (dr > minDr_ && dr < isoConeDR_){
 	  // -- sim vertex 
@@ -390,12 +407,14 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	  for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
 	    double targetTimeResol = timeResolutions_[iRes];
 	    double defaultTimeResol  = 0.;
-	    if ( pfcand.isTimeValid() ) defaultTimeResol  = double(pfcand.timeError()); 
+	    //if ( pfcand.isTimeValid() ) defaultTimeResol  = double(pfcand.timeError()); 
+	    if ( pfcandtimeErr ) defaultTimeResol  = double(pfcandtimeErr); 
 	    double extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol);                 
 	    double dtsim = 0.;
 	    double dt = 0.;
 	    time[iRes] = -999.;
-	    if ( pfcand.isTimeValid() && !isnan( pfcand.time() )) {
+	    //if ( pfcand.isTimeValid() && !isnan( pfcand.time() )) {
+	    if ( pfcandtimeErr != -1 && !isnan( pfcandtime )) {
 	      // -- emulate BTL and ETL efficiency
 	      bool keepTrack = true;
 	      double rndEff = gRandom2->Uniform(0.,1.); 
@@ -404,7 +423,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	      if (keepTrack) {
 		// -- extra smearing to emulate different time resolution
 		double rnd   = gRandom->Gaus(0., extra_resol);
-		time[iRes] = pfcand.time() + rnd;
+		time[iRes] = pfcandtime + rnd;
 		dtsim = std::abs(time[iRes] - genPV.position().t()*1000000000.);
 		dt    = std::abs(time[iRes] - vtx4D.t());
 	      }
@@ -446,6 +465,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	    
 	    // -- save info for tracks in the isolation cone (only for DR = 0.3)
 	    if (saveTracks_ && (dz4D < 1.0 || dz3D < 1. || dzsim < 1.) ) { // save a subset of tracks with loose dz selection
+	      bool genMatching  = isMatchedToGenParticle(pfcand, genParticles);
 	      evInfo[iRes]->track_t.push_back(time[iRes]); 
 	      evInfo[iRes]->track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
 	      evInfo[iRes]->track_dz3D.push_back(trackRef->dz( vtx3D.position() )); 
@@ -455,6 +475,7 @@ PhotonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
 	      evInfo[iRes]->track_eta.push_back(pfcand.eta());
 	      evInfo[iRes]->track_phi.push_back(pfcand.phi());
 	      evInfo[iRes]->track_phoIndex.push_back(photonIndex);
+	      evInfo[iRes]->track_isMatchedToGenParticle.push_back(genMatching);
 	    }
 	    
 	  }// end loop over time resolutions                                                                                                                                    
@@ -608,6 +629,7 @@ PhotonIsolationAnalyzer::beginJob()
       eventTree[iRes]->Branch( "track_eta",    &evInfo[iRes]->track_eta);
       eventTree[iRes]->Branch( "track_phi",    &evInfo[iRes]->track_phi);
       eventTree[iRes]->Branch( "track_phoIndex",&evInfo[iRes]->track_phoIndex);
+      eventTree[iRes]->Branch( "track_isMatchedToGenParticle",&evInfo[iRes]->track_isMatchedToGenParticle);
     }
   
   }
@@ -702,12 +724,13 @@ PhotonIsolationAnalyzer::initEventStructure()
       evInfo[iRes]->track_eta.clear();
       evInfo[iRes]->track_phi.clear();
       evInfo[iRes]->track_phoIndex.clear();
+      evInfo[iRes]->track_isMatchedToGenParticle.clear();
     }
   }
 }
 
 
-
+/*
 // --- matching to gen photon
 bool isPromptPhoton(const reco::Photon& photon, const edm::View<reco::GenParticle>& genParticles)
 {
@@ -754,7 +777,7 @@ bool isMatchedToGenJet(const reco::Photon& photon, const edm::View<reco::GenJet>
 }
 
 
-
+*/
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(PhotonIsolationAnalyzer);

@@ -223,6 +223,8 @@ private:
   EDGetTokenT<View<reco::Muon> > muonsToken_; 
   EDGetTokenT<ValueMap<float> > trackTimeToken_;
   EDGetTokenT<ValueMap<float> > trackTimeErrToken_;
+  EDGetTokenT<ValueMap<float> > trackFastSimTimeToken_;
+  EDGetTokenT<ValueMap<float> > trackFastSimTimeErrToken_;
   EDGetTokenT<ValueMap<float> > trackPUID3DMVAToken_;
   EDGetTokenT<ValueMap<float> > trackPUID4DMVAToken_;
   
@@ -237,6 +239,7 @@ private:
   double isoConeDR_;
   bool saveTracks_;
   double maxDz_;
+  double maxDxy_;
   double minDr_;
   double btlMinTrackPt_;
   double etlMinTrackPt_;

@@ -26,6 +26,7 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 
 #include "DataFormats/FTLRecHit/interface/FTLClusterCollections.h"
@@ -44,6 +45,8 @@ using namespace reco;
 
 bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenJet(const reco::Muon &muon, const edm::View<reco::GenJet>& genJet);
+bool isPromptPhoton(const reco::Photon &photon, const edm::View<reco::GenParticle>& genParticles);
+bool isPhotonMatchedToGenJet(const reco::Photon &photon, const edm::View<reco::GenJet>& genJet);
 bool isFromTau(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
 bool isMatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);
 bool isUnmatchedToGenParticle(const reco::PFCandidate &pfcand, const edm::View<reco::GenParticle>& genParticles);

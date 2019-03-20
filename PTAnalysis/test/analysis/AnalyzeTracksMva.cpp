@@ -35,47 +35,50 @@ using namespace std;
 
 int main(int argc, char** argv){
 
-  float timeResolution = 0.035;
+  float timeResolution = 0.040;
   int nsigma = 3;
 
   float minMuonPt = 20.;
   float maxMuonPt = 9999.;
-  float maxDz = 0.1;
-  float maxDxy = 0.02;
-  //  float maxDzMu  = 0.5;
+  float maxDzBtl = 0.2;
+  float maxDzEtl = 0.3;
+  float maxDxy = 9999.;
   float btlMinTrackPt = 0.7;
-  float etlMinTrackPt = 0.5;
-  
+  float etlMinTrackPt = 0.4;
+  float btlEfficiency = 0.85;
+  float etlEfficiency = 0.90;
+
   string process = argv[1];
   bool prompt = false;
 
   string pu = argv[2];
   
   // -- get TChain
-  //  TChain* chain = new TChain("analysis/tree_35ps","tree");
   TChain* chain = new TChain("MuonIsolationAnalyzer/tree_35ps","tree");
   if (process.find("DYToLL") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190223_141704/0000/muonIsolation*.root");
-    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_noPU_muIso/190223_143203/0000/muonIsolation*.root");
+    //    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190318_094930/0000/muonIsolation*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190319_125803/0000/muonIsolation*.root");
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_noPU_muIso/190225_100631/0000/muonIsolation*.root");
     prompt = true;
   }
   
   if (process.find("TTbar") != std::string::npos) {
-    //    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190207_152546/0000/muonIsolation_*.root");
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190223_141815/0000/muonIsolation*.root");
-    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190223_141815/0000/muonIsolation*.root");
+    //    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190318_102605/0000/muonIsolation*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190319_140929/0000/muonIsolation*.root");
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190225_134157/0000/muonIsolation*.root");
     prompt = false;
   }
   
   if (process.find("QCD") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Pt-15To7000_TuneCP5_Flat_14TeV-pythia8/test_QCD_muIso/190206_095346/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/QCD_Pt-15To7000_TuneCP5_Flat_14TeV-pythia8/test_QCD_muIso/190318_110758/0000/muonIsolation_*.root");
     if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_noPU_muIso/190111_164240/0000/muonIsolation_*.root");
     prompt = false; 
+    maxDzBtl = 0.1;
+    maxDzEtl = 0.1;
   }
   
   cout << "Using prompt muons = " << prompt <<endl;
-  
-  
+    
   // -- tree vars
   int npu;
   float vtx3D_z;
@@ -106,6 +109,7 @@ int main(int argc, char** argv){
   vector<float> *track_dxy3D;
   vector<float> *track_dxy4D;
   vector<float> *track_t;
+  vector<float> *track_tFastSim;
   vector<int> *track_muIndex;
   vector<int> *track_isMatchedToGenParticle;
   vector<float> *track_puid3dmva;
@@ -131,6 +135,7 @@ int main(int argc, char** argv){
   track_dxy3D = 0;
   track_dxy4D = 0;
   track_t = 0;
+  track_tFastSim = 0;
   track_muIndex = 0;
   track_isMatchedToGenParticle = 0;
   track_puid3dmva = 0;
@@ -167,6 +172,7 @@ int main(int argc, char** argv){
   chain->SetBranchStatus("track_dxy3D",1);            chain->SetBranchAddress("track_dxy3D",    &track_dxy3D);
   chain->SetBranchStatus("track_dxy4D",1);            chain->SetBranchAddress("track_dxy4D",    &track_dxy4D);
   chain->SetBranchStatus("track_t",1);                chain->SetBranchAddress("track_t",        &track_t);
+  chain->SetBranchStatus("track_tFastSim",1);         chain->SetBranchAddress("track_tFastSim", &track_tFastSim);
   chain->SetBranchStatus("track_muIndex",1);          chain->SetBranchAddress("track_muIndex",  &track_muIndex);
   chain->SetBranchStatus("track_isMatchedToGenParticle",1);  chain->SetBranchAddress("track_isMatchedToGenParticle",  &track_isMatchedToGenParticle);
 
@@ -197,14 +203,47 @@ int main(int argc, char** argv){
   TH2F *h2_tracks_dzvtx_dtvtx_barrel = new TH2F("h2_tracks_dzvtx_dtvtx_barrel","h2_tracks_dzvtx_dtvtx_barrel",1000,-1,1, 1000, -1, 1);
   TH2F *h2_tracks_dzvtx_dtvtx_endcap = new TH2F("h2_tracks_dzvtx_dtvtx_endcap","h2_tracks_dzvtx_dtvtx_endcap",1000,-1,1, 1000, -1, 1);
 
-  TH1F *h_matched_tracks_dt_vtx_barrel = new TH1F("h_matched_tracks_dt_vtx_barrel","h_matched_tracks_dt_vtx_barrel",500, -1.0, 1.0);
-  TH1F *h_matched_tracks_dt_vtx_endcap = new TH1F("h_matched_tracks_dt_vtx_endcap","h_matched_tracks_dt_vtx_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_genmatched_dt_vtx_barrel = new TH1F("h_tracks_genmatched_dt_vtx_barrel","h_tracks_genmatched_dt_vtx_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_genmatched_dt_vtx_endcap = new TH1F("h_tracks_genmatched_dt_vtx_endcap","h_tracks_genmatched_dt_vtx_endcap",500, -1.0, 1.0);
 
   TH1F *h_tracks_puid3dmva_barrel = new TH1F("h_tracks_puid3dmva_barrel","h_tracks_puid3dmva_barrel", 100, -1, 1);
   TH1F *h_tracks_puid4dmva_barrel = new TH1F("h_tracks_puid4dmva_barrel","h_tracks_puid4dmva_barrel", 100, -1, 1);
 
   TH1F *h_tracks_puid3dmva_endcap = new TH1F("h_tracks_puid3dmva_endcap","h_tracks_puid3dmva_endcap", 100, -1, 1);
   TH1F *h_tracks_puid4dmva_endcap = new TH1F("h_tracks_puid4dmva_endcap","h_tracks_puid4dmva_endcap", 100, -1, 1);
+
+  TH1F *h_tracks_genmatched_puid3dmva_barrel = new TH1F("h_tracks_genmatched_puid3dmva_barrel","h_tracks_genmatched_puid3dmva_barrel", 100, -1, 1);
+  TH1F *h_tracks_genmatched_puid4dmva_barrel = new TH1F("h_tracks_genmatched_puid4dmva_barrel","h_tracks_genmatched_puid4dmva_barrel", 100, -1, 1);
+
+  TH1F *h_tracks_genmatched_puid3dmva_endcap = new TH1F("h_tracks_genmatched_puid3dmva_endcap","h_tracks_genmatched_puid3dmva_endcap", 100, -1, 1);
+  TH1F *h_tracks_genmatched_puid4dmva_endcap = new TH1F("h_tracks_genmatched_puid4dmva_endcap","h_tracks_genmatched_puid4dmva_endcap", 100, -1, 1);
+
+
+  TH1F *h_tracks_pass3dmva_dt_vtx_barrel = new TH1F("h_tracks_pass3dmva_dt_vtx_barrel","h_tracks_pass3dmva_dt_vtx_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_pass3dmva_dz_vtx_barrel = new TH1F("h_tracks_pass3dmva_dz_vtx_barrel","h_tracks_pass3dmva_dz_vtx_barrel",500, -1.0, 1.0);
+
+  TH1F *h_tracks_pass3dmva_dt_vtx_endcap = new TH1F("h_tracks_pass3dmva_dt_vtx_endcap","h_tracks_pass3dmva_dt_vtx_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_pass3dmva_dz_vtx_endcap = new TH1F("h_tracks_pass3dmva_dz_vtx_endcap","h_tracks_pass3dmva_dz_vtx_endcap",500, -1.0, 1.0);
+
+  TH1F *h_tracks_pass4dmva_dt_vtx_barrel = new TH1F("h_tracks_pass4dmva_dt_vtx_barrel","h_tracks_pass4dmva_dt_vtx_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_pass4dmva_dz_vtx_barrel = new TH1F("h_tracks_pass4dmva_dz_vtx_barrel","h_tracks_pass4dmva_dz_vtx_barrel",500, -1.0, 1.0);
+
+  TH1F *h_tracks_pass4dmva_dt_vtx_endcap = new TH1F("h_tracks_pass4dmva_dt_vtx_endcap","h_tracks_pass4dmva_dt_vtx_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_pass4dmva_dz_vtx_endcap = new TH1F("h_tracks_pass4dmva_dz_vtx_endcap","h_tracks_pass4dmva_dz_vtx_endcap",500, -1.0, 1.0);
+
+
+  TH1F *h_tracks_pass3dmva_pt_barrel = new TH1F("h_tracks_pass3dmva_pt_barrel","h_tracks_pass3dmva_pt_barrel",400, 0, 20);
+  TH1F *h_tracks_pass3dmva_pt_endcap = new TH1F("h_tracks_pass3dmva_pt_endcap","h_tracks_pass3dmva_pt_endcap",400, 0, 20);
+
+  TH1F *h_tracks_pass4dmva_pt_barrel = new TH1F("h_tracks_pass4dmva_pt_barrel","h_tracks_pass4dmva_pt_barrel",400, 0, 20);
+  TH1F *h_tracks_pass4dmva_pt_endcap = new TH1F("h_tracks_pass4dmva_pt_endcap","h_tracks_pass4dmva_pt_endcap",400, 0, 20);
+
+  TH1F *h_tracks_pass3dmva_eta_barrel = new TH1F("h_tracks_pass3dmva_eta_barrel","h_tracks_pass3dmva_eta_barrel",100, -4, 4);
+  TH1F *h_tracks_pass3dmva_eta_endcap = new TH1F("h_tracks_pass3dmva_eta_endcap","h_tracks_pass3dmva_eta_endcap",100, -4, 4);
+  TH1F *h_tracks_pass4dmva_eta_barrel = new TH1F("h_tracks_pass4dmva_eta_barrel","h_tracks_pass4dmva_eta_barrel",100, -4, 4);
+  TH1F *h_tracks_pass4dmva_eta_endcap = new TH1F("h_tracks_pass4dmva_eta_endcap","h_tracks_pass4dmva_eta_endcap",100, -4, 4);
+
+  
 
 
   // -- to debug tracks in cone 
@@ -259,21 +298,55 @@ int main(int argc, char** argv){
 
 
   // chargedIso for rocs
-  TH1F *h_muon_relChIso03_dZ1_barrel = new TH1F("h_muon_relChIso03_dZ1_barrel","h_muon_relChIso03_dZ1_barrel",5000, 0, 5); 
-  TH1F *h_muon_relChIso03_dZ1_endcap = new TH1F("h_muon_relChIso03_dZ1_endcap","h_muon_relChIso03_dZ1_endcap",5000,0,5); 
+  const int NCUTSDZ = 3;
+  float dzCut[NCUTSDZ] = {0.1, 0.2, 0.3};
+  TH1F *h_muon_relChIso03_dZ_barrel[NCUTSDZ];
+  TH1F *h_muon_relChIso03_dZ_endcap[NCUTSDZ];
+  TH1F *h_muon_relChIso03_dZ_dT3s_barrel[NCUTSDZ];
+  TH1F *h_muon_relChIso03_dZ_dT3s_endcap[NCUTSDZ];
+  for (int i = 0; i < NCUTSDZ; i++){
+    h_muon_relChIso03_dZ_barrel[i] = new TH1F(Form("h_muon_relChIso03_dZ%.00f_barrel", dzCut[i]*10) , Form("h_muon_relChIso03_dZ%.00f_barrel", dzCut[i]*10) ,5000, 0, 5);
+    h_muon_relChIso03_dZ_endcap[i] = new TH1F(Form("h_muon_relChIso03_dZ%.00f_endcap", dzCut[i]*10) , Form("h_muon_relChIso03_dZ%.00f_endcap", dzCut[i]*10) ,5000, 0, 5);
+    h_muon_relChIso03_dZ_dT3s_barrel[i] = new TH1F(Form("h_muon_relChIso03_dZ%.00f_dT3s_barrel", dzCut[i]*10) , Form("h_muon_relChIso03_dZ%.00f_dT3s_barrel", dzCut[i]*10) ,5000, 0, 5);
+    h_muon_relChIso03_dZ_dT3s_endcap[i] = new TH1F(Form("h_muon_relChIso03_dZ%.00f_dT3s_endcap", dzCut[i]*10) , Form("h_muon_relChIso03_dZ%.00f_dT3s_endcap", dzCut[i]*10) ,5000, 0, 5);
+  }
 
-  TH1F *h_muon_relChIso03_dZ1_dT3s_barrel = new TH1F("h_muon_relChIso03_dZ1_dT3s_barrel","h_muon_relChIso03_dT3s_dZ1_barrel",5000, 0, 5); 
-  TH1F *h_muon_relChIso03_dZ1_dT3s_endcap = new TH1F("h_muon_relChIso03_dZ1_dT3s_endcap","h_muon_relChIso03_dT3s_dZ1_endcap",5000,0,5); 
+  /*TH1F *h_muon_relChIso03_dZ_barrel = new TH1F("h_muon_relChIso03_dZ_barrel","h_muon_relChIso03_dZ_barrel",5000, 0, 5); 
+  TH1F *h_muon_relChIso03_dZ_endcap = new TH1F("h_muon_relChIso03_dZ_endcap","h_muon_relChIso03_dZ_endcap",5000,0,5); 
+  TH1F *h_muon_relChIso03_dZ_dT3s_barrel = new TH1F("h_muon_relChIso03_dZ_dT3s_barrel","h_muon_relChIso03_dT3s_dZ_barrel",5000, 0, 5); 
+  TH1F *h_muon_relChIso03_dZ_dT3s_endcap = new TH1F("h_muon_relChIso03_dZ_dT3s_endcap","h_muon_relChIso03_dT3s_dZ_endcap",5000,0,5); 
+  */
 
-  TH1F *h_muon_relChIso03_mva3D_barrel = new TH1F("h_muon_relChIso03_mva3D_barrel","h_muon_relChIso03_mva3D_barrel",5000, 0, 5); 
-  TH1F *h_muon_relChIso03_mva3D_endcap = new TH1F("h_muon_relChIso03_mva3D_endcap","h_muon_relChIso03_mva3D_endcap",5000,0,5); 
+  const int NCUTSMVA = 21;
+  TH1F *h_muon_relChIso03_mva3D_barrel[NCUTSMVA];
+  TH1F *h_muon_relChIso03_mva3D_endcap[NCUTSMVA];
+  TH1F *h_muon_relChIso03_mva4D_barrel[NCUTSMVA];
+  TH1F *h_muon_relChIso03_mva4D_endcap[NCUTSMVA];
+  float mvaCut3D[NCUTSMVA] = {0.7228171, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.725, 0.75, 0.775, 0.80, 0.825, 0.85, 0.875, 0.90, 0.925, 0.95};
+  float mvaCut4D[NCUTSMVA] = {0.7534892, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.725, 0.75, 0.775, 0.80, 0.825, 0.85, 0.875, 0.90, 0.925, 0.95};
+  for (int i = 0; i < NCUTSMVA; i++){
+    h_muon_relChIso03_mva3D_barrel[i] = new TH1F(Form("h_muon_relChIso03_mva3D_%.03f_barrel", mvaCut3D[i]) , Form("h_muon_relChIso03_mva3D_%.03f_barrel", mvaCut3D[i]) ,5000, 0, 5);
+    h_muon_relChIso03_mva3D_endcap[i] = new TH1F(Form("h_muon_relChIso03_mva3D_%.03f_endcap", mvaCut3D[i]) , Form("h_muon_relChIso03_mva3D_%.03f_endcap", mvaCut3D[i]) ,5000, 0, 5);
+    h_muon_relChIso03_mva4D_barrel[i] = new TH1F(Form("h_muon_relChIso03_mva4D_%.03f_barrel", mvaCut4D[i]) , Form("h_muon_relChIso03_mva4D_%.03f_barrel", mvaCut4D[i]) ,5000, 0, 5);
+    h_muon_relChIso03_mva4D_endcap[i] = new TH1F(Form("h_muon_relChIso03_mva4D_%.03f_endcap", mvaCut4D[i]) , Form("h_muon_relChIso03_mva4D_%.03f_endcap", mvaCut4D[i]) ,5000, 0, 5);    
+  }
 
-  TH1F *h_muon_relChIso03_mva4D_barrel = new TH1F("h_muon_relChIso03_mva4D_barrel","h_muon_relChIso03_mva4D_barrel",5000, 0, 5); 
-  TH1F *h_muon_relChIso03_mva4D_endcap = new TH1F("h_muon_relChIso03_mva4D_endcap","h_muon_relChIso03_mva4D_endcap",5000,0,5); 
-  
+  TH1F *h_muon_relChIso03_mva3D_weighted_barrel = new TH1F("h_muon_relChIso03_mva3D_weighted_barrel","h_muon_relChIso03_mva3D_weighted_barrel",5000, 0, 5); 
+  TH1F *h_muon_relChIso03_mva3D_weighted_endcap = new TH1F("h_muon_relChIso03_mva3D_weighted_endcap","h_muon_relChIso03_mva3D_weighted_endcap",5000,0,5); 
+
+  TH1F *h_muon_relChIso03_mva4D_weighted_barrel = new TH1F("h_muon_relChIso03_mva4D_weighted_barrel","h_muon_relChIso03_mva4D_weighted_barrel",5000, 0, 5); 
+  TH1F *h_muon_relChIso03_mva4D_weighted_endcap = new TH1F("h_muon_relChIso03_mva4D_weighted_endcap","h_muon_relChIso03_mva4D_weighted_endcap",5000,0,5); 
+
+
+
 
   cout << "Analyzing " << chain->GetEntries() << "  events" <<endl;
     
+
+
+  TRandom *gRandom  = new TRandom();
+  TRandom *gRandom2  = new TRandom();
+
   int maxEntries = chain->GetEntries();
   //  maxEntries = 500000;
   for (int ientry = 0; ientry< maxEntries; ientry++) {
@@ -295,10 +368,7 @@ int main(int argc, char** argv){
       if (fabs(muon_dz4D->at(imu)) > 0.5 ) continue;
       if (fabs(muon_dxy4D->at(imu)) > 0.2 ) continue;
       if (vtx4D_isFake || vtx3D_isFake) continue;
-      // add selection to keep only gen metched vtx
       
-      bool isBarrel = fabs(muon_eta->at(imu)) < 1.5;
-
       bool pass = false;
       if ( prompt) pass = muon_isPrompt->at(imu);
       if (!prompt) pass = !muon_isPrompt->at(imu) && muon_isMatchedToGenJet->at(imu) && !muon_isFromTauDecay->at(imu);
@@ -310,10 +380,12 @@ int main(int argc, char** argv){
       h_vtx_dt4D_sim -> Fill( vtx4D_t - vtxGen_t*1000000000.);
 
 
-
+      // use only evenst with vtx0 matched to gen vtx
       if (fabs(vtx4D_z - vtxGen_z) > 0.01) continue;
       if (fabs(vtx3D_z - vtxGen_z) > 0.01) continue;
 
+
+      bool isBarrel = fabs(muon_eta->at(imu)) < 1.5;
       if ( isBarrel) h_muon_pt_barrel   -> Fill(muon_pt->at(imu));
       if ( !isBarrel) h_muon_pt_endcap   -> Fill(muon_pt->at(imu));
       h_muon_dz3D -> Fill(muon_dz3D->at(imu));
@@ -321,19 +393,38 @@ int main(int argc, char** argv){
       h_muon_dt4D -> Fill(muon_t->at(imu) -  vtx4D_t);
        
 
-      // dz < 1mm
-      int ntracks_dz1 = 0;
-      int ntracks_dz1_removed = 0;
-      int ntracks_dz1_kept = 0;
-      float sumpt_dz1 = 0.;
-      float sumpt_dz1_removed = 0.;
-      float sumpt_dz1_kept = 0.;
+      // dz < X mm
+      int ntracks_dz[NCUTSDZ];
+      int ntracks_dz_removed[NCUTSDZ];
+      int ntracks_dz_kept[NCUTSDZ];
+      float sumpt_dz[NCUTSDZ];
+      float sumpt_dz_removed[NCUTSDZ];
+      float sumpt_dz_kept[NCUTSDZ];
+
+      for (int icut = 0; icut < NCUTSDZ; icut++){
+	ntracks_dz[icut] = 0;
+	ntracks_dz_removed[icut] = 0;
+	ntracks_dz_kept[icut] = 0;
+	sumpt_dz[icut] = 0;
+	sumpt_dz_removed[icut] = 0;
+	sumpt_dz_kept[icut] = 0;
+      }
 
       // mva
-      int ntracks_mva = 0;
-      int ntracks_mva_kept = 0;
-      float sumpt_mva = 0.;
-      float sumpt_mva_kept = 0.;
+      int ntracks_mva3d_kept[NCUTSMVA] ;
+      int ntracks_mva4d_kept[NCUTSMVA] ;
+      float sumpt_mva3d_kept[NCUTSMVA] ;
+      float sumpt_mva4d_kept[NCUTSMVA] ;
+      float sumpt_mva3d_weighted = 0.;
+      float sumpt_mva4d_weighted = 0.;
+
+      for (int icut = 0; icut < NCUTSMVA; icut++){
+	ntracks_mva3d_kept[icut] = 0;
+	ntracks_mva4d_kept[icut] = 0;
+	sumpt_mva3d_kept[icut] = 0.;
+	sumpt_mva4d_kept[icut] = 0.;
+      }
+
 
       // start loop over tracks in isolation cone
       for (unsigned int itk = 0; itk < track_pt->size(); itk++){
@@ -341,8 +432,6 @@ int main(int argc, char** argv){
 	// -- exclude tracks corresponding to the isolation cone of the other muon(s)
 	if (track_muIndex ->at(itk) != int(imu)) continue;
 	
-	if (isnan(track_t->at(itk))) cout << " track time = " << track_t->at(itk) <<endl;
-
 	float deta = fabs(muon_eta->at(imu) - track_eta->at(itk));
 	float dphi = fabs(muon_phi->at(imu) - track_phi->at(itk));
 	if (dphi > TMath::Pi()) dphi = 2*TMath::Pi()- dphi;
@@ -351,156 +440,263 @@ int main(int argc, char** argv){
 	
 	if ( dr > 0.3 ) continue;
 	
-	if ( fabs(track_eta->at(itk)) < 1.48 && track_pt->at(itk) < btlMinTrackPt ) continue;
-	if ( fabs(track_eta->at(itk)) > 1.48 && track_pt->at(itk) < etlMinTrackPt ) continue;
+	if ( fabs(track_eta->at(itk)) < 1.5 && track_pt->at(itk) < btlMinTrackPt ) continue;
+	if ( fabs(track_eta->at(itk)) > 1.5 && track_pt->at(itk) < etlMinTrackPt ) continue;
 
-	float dz = track_dz4D->at(itk);
-	float dxy = track_dxy4D->at(itk);
-	float dt = track_t->at(itk) - vtx4D_t;
+	// -- emulate BTL and ETL efficiency
+	bool useTrackTime = true;
+	double rndEff = gRandom2->Uniform(0.,1.); 
+	if ( fabs(track_eta->at(itk)) < 1.5 && rndEff > btlEfficiency ) useTrackTime = false; 
+	if ( fabs(track_eta->at(itk)) > 1.5 && rndEff > etlEfficiency ) useTrackTime = false; 
+
+
+	float dxy   = track_dxy4D->at(itk);
+	float dz    = track_dz4D->at(itk);
 	float dzsim = track_dz4D->at(itk) + vtx4D_z - vtxGen_z;
-	float dtsim = track_t->at(itk) - vtxGen_t*1000000000.;
-	
-	dz = dzsim;
+	float trackTime = track_tFastSim->at(itk);
+	// -- extra-smearing not needed beacuase it's already added at ntuple prod.
+	//if (trackTime!=-999)  {
+	  //	  float extra_smearing = sqrt( timeResolution*timeResolution - 0.030*0.030); // smear up to match 40 ps time resolution
+	  //trackTime= trackTime + gRandom->Gaus(0, extra_smearing );
+	//	}
+
+	float dt    = trackTime - vtx4D_t;
+	float dtsim = trackTime - vtxGen_t*1000000000.;
+
 	dt = dtsim;
+	
+	// --- dz, dt bix cuts with timing FastSim
+	if (fabs(dxy) < maxDxy) {
 
-	// ---only tracks within dz < 0.1 cm from PV
-	if (fabs(dz) < maxDz && fabs(dxy) < maxDxy) {
-
-	  // -- barrel
-          if (isBarrel){
-	    h_tracks_dz_vtx_barrel -> Fill(dz);
-	    if (track_t->at(itk) != -999){
-	      h_tracks_dt_vtx_barrel->Fill(dt);
-	      if (track_isMatchedToGenParticle->at(itk)) h_matched_tracks_dt_vtx_barrel->Fill(dt);
-	      h2_tracks_dzvtx_dtvtx_barrel->Fill(dz, dt);
-	    }
+	  for (int icut = 0; icut < NCUTSDZ; icut++){
 	    
-	    // -- all tracks
-	    h_tracks_pt_barrel -> Fill( track_pt->at(itk) );
-	    p_tracks_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
-	    ntracks_dz1++;
-	    sumpt_dz1+=track_pt->at(itk);
-	    // -- removed tracks
-	    if ( track_t->at(itk) != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
-	      h_tracks_removed_pt_barrel -> Fill( track_pt->at(itk) );
-	      p_tracks_removed_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
-	      ntracks_dz1_removed++;
-	      sumpt_dz1_removed+=track_pt->at(itk);
-	    }
-	    else{
-	      h_tracks_kept_pt_barrel -> Fill( track_pt->at(itk) );
-	      p_tracks_kept_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
-	      ntracks_dz1_kept++;
-	      sumpt_dz1_kept+=track_pt->at(itk);
-	    }
-	  }// end if barrel
-	  // -- endcap
-          else{
-	    h_tracks_dz_vtx_endcap -> Fill(dz);
-            if (track_t->at(itk) != -999){
-              h_tracks_dt_vtx_endcap->Fill(dt);
-	      if (track_isMatchedToGenParticle->at(itk)) h_matched_tracks_dt_vtx_endcap->Fill(dt);
-              h2_tracks_dzvtx_dtvtx_endcap->Fill(dz, dt);
-            }
-            // -- all tracks
-            h_tracks_pt_endcap -> Fill( track_pt->at(itk) );
-            p_tracks_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
-            ntracks_dz1++;
-            sumpt_dz1+=track_pt->at(itk);
-            // -- removed tracks
-            if ( track_t->at(itk) != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
-              h_tracks_removed_pt_endcap -> Fill( track_pt->at(itk) );
-              p_tracks_removed_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
-              ntracks_dz1_removed++;
-              sumpt_dz1_removed+=track_pt->at(itk);
-            }
-	    else{
-	      h_tracks_kept_pt_endcap -> Fill( track_pt->at(itk) );
-              p_tracks_kept_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
-              ntracks_dz1_kept++;
-              sumpt_dz1_kept+=track_pt->at(itk);
-	    }
-	  }// end endcap
+	    // -- barrel
+	    if (isBarrel && fabs(dz) < dzCut[icut]){
+	      
+	      if (icut == 0){ 
+		h_tracks_dz_vtx_barrel -> Fill(dz);
+		if ( trackTime!= -999){
+		  h_tracks_dt_vtx_barrel->Fill(dt);
+		  if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_dt_vtx_barrel->Fill(dt);
+		  h2_tracks_dzvtx_dtvtx_barrel->Fill(dz, dt);
+		}
+		h_tracks_pt_barrel -> Fill( track_pt->at(itk) );
+		p_tracks_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
+	      }
+	      ntracks_dz[icut]++;
+	      sumpt_dz[icut]+=track_pt->at(itk);
+
+	      // -- removed tracks
+	      if ( useTrackTime && trackTime != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
+		if (icut == 0){
+		  h_tracks_removed_pt_barrel -> Fill( track_pt->at(itk) );
+		  p_tracks_removed_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
+		}
+		ntracks_dz_removed[icut]++;
+		sumpt_dz_removed[icut]+=track_pt->at(itk);
+	      }
+	      // -- kept tracks
+	      else{
+		if (icut == 0){
+		  h_tracks_kept_pt_barrel -> Fill( track_pt->at(itk) );
+		  p_tracks_kept_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
+		}
+		ntracks_dz_kept[icut]++;
+		sumpt_dz_kept[icut]+=track_pt->at(itk);
+	      }
+	    }// end if barrel
+	    // -- endcap
+	    if (!isBarrel && fabs(dz) < dzCut[icut]){
+	      if (icut == 0){ 
+		h_tracks_dz_vtx_endcap -> Fill(dz);
+		if ( trackTime!= -999){
+		  h_tracks_dt_vtx_endcap->Fill(dt);
+		  if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_dt_vtx_endcap->Fill(dt);
+		  h2_tracks_dzvtx_dtvtx_endcap->Fill(dz, dt);
+		}
+		h_tracks_pt_endcap -> Fill( track_pt->at(itk) );
+		p_tracks_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
+	      }
+	      ntracks_dz[icut]++;
+	      sumpt_dz[icut]+=track_pt->at(itk);
+	      
+	      // -- removed tracks
+	      if ( useTrackTime && trackTime != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
+		if (icut == 0){
+		  h_tracks_removed_pt_endcap -> Fill( track_pt->at(itk) );
+		  p_tracks_removed_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
+		}
+		ntracks_dz_removed[icut]++;
+		sumpt_dz_removed[icut]+=track_pt->at(itk);
+	      }
+	      // -- kept tracks
+	      else{
+		if (icut == 0){
+		  h_tracks_kept_pt_endcap -> Fill( track_pt->at(itk) );
+		  p_tracks_kept_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
+		}
+		ntracks_dz_kept[icut]++;
+		sumpt_dz_kept[icut]+=track_pt->at(itk);
+	      }
+	    }// end endcap
+	  }// end loop over dz cuts
 	}
 
 	
-	// cut on 3Dmva and 4Dmva
+	// BDT 3D and 4D
+	float dz3D = fabs(track_dz3D->at(itk));
+	float dz4D = fabs(track_dz4D->at(itk));
 	if (isBarrel) { 
-	  h_tracks_puid3dmva_barrel ->Fill(track_puid3dmva->at(itk));
-	  h_tracks_puid4dmva_barrel ->Fill(track_puid4dmva->at(itk));
+	  if ( dz3D < 1.0 ) {
+	    h_tracks_puid3dmva_barrel ->Fill(track_puid3dmva->at(itk));
+	    if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_puid3dmva_barrel ->Fill(track_puid3dmva->at(itk));
+	  }
+	  if ( dz4D < 1.0 ) {
+	    h_tracks_puid4dmva_barrel ->Fill(track_puid4dmva->at(itk));
+	    if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_puid4dmva_barrel ->Fill(track_puid4dmva->at(itk));
+	  }
 	}
 	else{
-	  h_tracks_puid3dmva_endcap ->Fill(track_puid3dmva->at(itk));
-          h_tracks_puid4dmva_endcap ->Fill(track_puid4dmva->at(itk));
-	}
-
-	if ( track_puid3dmva->at(itk) > 0.7228171 ){
-	  // -- all tracks
-	  ntracks_mva++;
-	  sumpt_mva+=track_pt->at(itk);
-	}
-
-	if ( track_puid4dmva->at(itk) > 0.7534892 ){
-	  // -- all tracks
-	  ntracks_mva_kept++;
-	  sumpt_mva_kept+=track_pt->at(itk);
+	  if ( dz3D < 1.0 ) {
+	    h_tracks_puid3dmva_endcap ->Fill(track_puid3dmva->at(itk));
+	    if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_puid3dmva_endcap ->Fill(track_puid3dmva->at(itk));
+	  }
+	  if ( dz4D < 1.0 ) {
+	    h_tracks_puid4dmva_endcap ->Fill(track_puid4dmva->at(itk));
+	    if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_puid4dmva_endcap ->Fill(track_puid4dmva->at(itk));
+	  }
 	}
 	
+	if (dz3D < 1.0){
+	  sumpt_mva3d_weighted+=track_pt->at(itk)*track_puid3dmva->at(itk);
+	} 
+
+	if (dz4D < 1.0){
+	  sumpt_mva4d_weighted+=track_pt->at(itk)*track_puid4dmva->at(itk);
+	} 
+
+	// 3D MVA
+	for (int icut = 0; icut < NCUTSMVA; icut++){
+	  //if ( dz3D < 1.0  && track_puid3dmva->at(itk) > 0.7228171 ){
+	  if ( dz3D < 1.0  && (track_puid3dmva->at(itk) == -1 || track_puid3dmva->at(itk) > mvaCut3D[icut]) ){
+	    // -- all tracks kept by mva cut
+	    ntracks_mva3d_kept[icut]++;
+	    sumpt_mva3d_kept[icut]+=track_pt->at(itk);
+	    if (isBarrel){
+	      if (icut == 0){
+		h_tracks_pass3dmva_dz_vtx_barrel ->Fill(dz);
+		h_tracks_pass3dmva_dt_vtx_barrel ->Fill(dt);
+		h_tracks_pass3dmva_pt_barrel->Fill(track_pt->at(itk));
+		h_tracks_pass3dmva_eta_barrel->Fill(track_eta->at(itk));
+	      }
+	    }
+	    else{
+	      if (icut==0){
+		h_tracks_pass3dmva_dz_vtx_endcap ->Fill(dz);
+		h_tracks_pass3dmva_dt_vtx_endcap ->Fill(dt);
+		h_tracks_pass3dmva_pt_endcap->Fill(track_pt->at(itk));
+		h_tracks_pass3dmva_eta_endcap->Fill(track_eta->at(itk));
+	      }
+	    }
+	  }
+	}
+
+
+	// 4D MVA
+        for (int icut = 0; icut < NCUTSMVA; icut++){
+	  //if ( dz4D < 1.0 && track_puid4dmva->at(itk) > 0.7534892 ){
+	  if ( dz4D < 1.0  && (track_puid4dmva->at(itk) == -1 ||  track_puid4dmva->at(itk) > mvaCut4D[icut] ) ){	  
+	    // -- all tracks kept by mva cut 
+	    ntracks_mva4d_kept[icut]++;
+	    sumpt_mva4d_kept[icut]+=track_pt->at(itk);
+	    if (isBarrel){
+	      if (icut==0){
+		h_tracks_pass4dmva_dz_vtx_barrel ->Fill(dz);
+		h_tracks_pass4dmva_dt_vtx_barrel ->Fill(dt);
+		h_tracks_pass4dmva_pt_barrel->Fill(track_pt->at(itk));
+		h_tracks_pass4dmva_eta_barrel->Fill(track_eta->at(itk));
+	      }
+	    }
+	    else{
+	      if (icut==0){
+		h_tracks_pass4dmva_dz_vtx_endcap ->Fill(dz);
+		h_tracks_pass4dmva_dt_vtx_endcap ->Fill(dt);
+		h_tracks_pass4dmva_pt_endcap->Fill(track_pt->at(itk));
+		h_tracks_pass4dmva_eta_endcap->Fill(track_eta->at(itk));
+	      }
+	    }
+	  }
+	}
+		  
       }// end loop over tracks
+      
 
-
-
-
-
-
+      // --- Fill histograms
+ 
       if (isBarrel){
 	// -- all tracks in isolation cone
-	h_tracks_n_barrel -> Fill( ntracks_dz1 );
-	h_tracks_sumpt_barrel -> Fill( sumpt_dz1 );
-	p_tracks_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz1 );
-	p_tracks_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz1 );
+	h_tracks_n_barrel -> Fill( ntracks_dz[0] );
+	h_tracks_sumpt_barrel -> Fill( sumpt_dz[0] );
+	p_tracks_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz[0] );
+	p_tracks_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz[0] );
 
 	// -- tracks removed from isolation cone
-	h_tracks_removed_n_barrel -> Fill( ntracks_dz1_removed );
-	h_tracks_removed_sumpt_barrel -> Fill( sumpt_dz1_removed );
-	p_tracks_removed_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz1_removed );
-	p_tracks_removed_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz1_removed );
+	h_tracks_removed_n_barrel -> Fill( ntracks_dz_removed[0] );
+	h_tracks_removed_sumpt_barrel -> Fill( sumpt_dz_removed[0] );
+	p_tracks_removed_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz_removed[0] );
+	p_tracks_removed_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz_removed[0] );
 
 	// -- tracks kept from isolation cone
-	h_tracks_kept_n_barrel -> Fill( ntracks_dz1_kept );
-	h_tracks_kept_sumpt_barrel -> Fill( sumpt_dz1_kept );
-	p_tracks_kept_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz1_kept );
-	p_tracks_kept_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz1_kept );
+	h_tracks_kept_n_barrel -> Fill( ntracks_dz_kept[0] );
+	h_tracks_kept_sumpt_barrel -> Fill( sumpt_dz_kept[0] );
+	p_tracks_kept_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz_kept[0] );
+	p_tracks_kept_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz_kept[0] );
 
 	// -- rel chIso
-	h_muon_relChIso03_dZ1_barrel ->Fill(sumpt_dz1/muon_pt->at(imu));
-	h_muon_relChIso03_dZ1_dT3s_barrel ->Fill(sumpt_dz1_kept/muon_pt->at(imu));
+	for (int icut = 0; icut < NCUTSDZ; icut++){
+	  h_muon_relChIso03_dZ_barrel[icut] ->Fill(sumpt_dz[icut]/muon_pt->at(imu));
+	  h_muon_relChIso03_dZ_dT3s_barrel[icut] ->Fill(sumpt_dz_kept[icut]/muon_pt->at(imu));
+	}
 
-	h_muon_relChIso03_mva3D_barrel ->Fill(sumpt_mva/muon_pt->at(imu));
-	h_muon_relChIso03_mva4D_barrel ->Fill(sumpt_mva_kept/muon_pt->at(imu));
+	h_muon_relChIso03_mva3D_weighted_barrel ->Fill(sumpt_mva3d_weighted/muon_pt->at(imu));
+	h_muon_relChIso03_mva4D_weighted_barrel ->Fill(sumpt_mva4d_weighted/muon_pt->at(imu));
+      
+	for (int icut = 0; icut < NCUTSMVA; icut++){
+	  h_muon_relChIso03_mva3D_barrel[icut] ->Fill(sumpt_mva3d_kept[icut]/muon_pt->at(imu));
+	  h_muon_relChIso03_mva4D_barrel[icut] ->Fill(sumpt_mva4d_kept[icut]/muon_pt->at(imu));
+	}
+
       }
       else{
-	h_tracks_n_endcap -> Fill( ntracks_dz1 );
-	h_tracks_sumpt_endcap -> Fill( sumpt_dz1 );
-	p_tracks_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz1 );
-	p_tracks_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz1 );
+	h_tracks_n_endcap -> Fill( ntracks_dz[0] );
+	h_tracks_sumpt_endcap -> Fill( sumpt_dz[0] );
+	p_tracks_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz[0] );
+	p_tracks_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz[0] );
 
-	h_tracks_removed_n_endcap -> Fill( ntracks_dz1_removed );
-	h_tracks_removed_sumpt_endcap -> Fill( sumpt_dz1_removed);
-	p_tracks_removed_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz1_removed );
-	p_tracks_removed_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz1_removed );
+	h_tracks_removed_n_endcap -> Fill( ntracks_dz_removed[0] );
+	h_tracks_removed_sumpt_endcap -> Fill( sumpt_dz_removed[0]);
+	p_tracks_removed_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz_removed[0] );
+	p_tracks_removed_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz_removed[0] );
 
-	h_tracks_kept_n_endcap -> Fill( ntracks_dz1_kept );
-	h_tracks_kept_sumpt_endcap -> Fill( sumpt_dz1_kept );
-	p_tracks_kept_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz1_kept );
-	p_tracks_kept_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz1_kept );
+	h_tracks_kept_n_endcap -> Fill( ntracks_dz_kept[0] );
+	h_tracks_kept_sumpt_endcap -> Fill( sumpt_dz_kept[0] );
+	p_tracks_kept_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz_kept[0] );
+	p_tracks_kept_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz_kept[0] );
 
 	// -- rel chIso
-	h_muon_relChIso03_dZ1_endcap ->Fill(sumpt_dz1/muon_pt->at(imu));
-	h_muon_relChIso03_dZ1_dT3s_endcap ->Fill(sumpt_dz1_kept/muon_pt->at(imu));
-	
-	h_muon_relChIso03_mva3D_endcap ->Fill(sumpt_mva/muon_pt->at(imu));
-        h_muon_relChIso03_mva4D_endcap ->Fill(sumpt_mva_kept/muon_pt->at(imu));
+	for (int icut = 0; icut < NCUTSDZ; icut++){
+	  h_muon_relChIso03_dZ_endcap[icut] ->Fill(sumpt_dz[icut]/muon_pt->at(imu));
+	  h_muon_relChIso03_dZ_dT3s_endcap[icut] ->Fill(sumpt_dz_kept[icut]/muon_pt->at(imu));
+	}	
+
+	h_muon_relChIso03_mva3D_weighted_endcap ->Fill(sumpt_mva3d_weighted/muon_pt->at(imu));
+	h_muon_relChIso03_mva4D_weighted_endcap ->Fill(sumpt_mva4d_weighted/muon_pt->at(imu));
+
+	for (int icut = 0; icut < NCUTSMVA; icut++){
+	  h_muon_relChIso03_mva3D_endcap[icut] ->Fill(sumpt_mva3d_kept[icut]/muon_pt->at(imu));
+	  h_muon_relChIso03_mva4D_endcap[icut] ->Fill(sumpt_mva4d_kept[icut]/muon_pt->at(imu));
+	}
+
       }
     }// end loop over muons
 
@@ -530,7 +726,7 @@ int main(int argc, char** argv){
   std::string foutName = "testTracksMva_" + process + "_" + pu + "_dT"+ std::to_string(nsigma)+"sigma"+
                          "_minMuonPt"+std::to_string(int(minMuonPt))+
                          "_maxMuonPt"+std::to_string(int(maxMuonPt))+
-                         "_minTrackPt.root";
+                         "_minTrackPt_noDxy.root";
 
   TFile *fout = new TFile(foutName.c_str(),"recreate");
 
@@ -555,9 +751,8 @@ int main(int argc, char** argv){
   h2_tracks_dzvtx_dtvtx_barrel-> Write();
   h2_tracks_dzvtx_dtvtx_endcap-> Write();
 
-  h_matched_tracks_dt_vtx_barrel->Write();
-  h_matched_tracks_dt_vtx_endcap->Write();
-
+  h_tracks_genmatched_dt_vtx_barrel->Write();
+  h_tracks_genmatched_dt_vtx_endcap->Write();
 
   h_tracks_pt_barrel ->Write();
   h_tracks_removed_pt_barrel ->Write();
@@ -610,12 +805,13 @@ int main(int argc, char** argv){
 
 
 
+  for (int icut = 0; icut < NCUTSDZ; icut++){
+    h_muon_relChIso03_dZ_barrel[icut] -> Write();
+    h_muon_relChIso03_dZ_dT3s_barrel[icut] -> Write();
 
-  h_muon_relChIso03_dZ1_barrel -> Write();
-  h_muon_relChIso03_dZ1_dT3s_barrel -> Write();
-
-  h_muon_relChIso03_dZ1_endcap -> Write();
-  h_muon_relChIso03_dZ1_dT3s_endcap -> Write();
+    h_muon_relChIso03_dZ_endcap[icut] -> Write();
+    h_muon_relChIso03_dZ_dT3s_endcap[icut] -> Write();
+  }
 
 
   h_tracks_puid3dmva_barrel ->Write();
@@ -625,13 +821,48 @@ int main(int argc, char** argv){
   h_tracks_puid4dmva_endcap ->Write();
 
 
-  h_muon_relChIso03_mva3D_barrel -> Write();
-  h_muon_relChIso03_mva4D_barrel -> Write();
+  h_tracks_genmatched_puid3dmva_barrel ->Write();
+  h_tracks_genmatched_puid4dmva_barrel ->Write();
 
-  h_muon_relChIso03_mva3D_endcap -> Write();
-  h_muon_relChIso03_mva4D_endcap -> Write();
+  h_tracks_genmatched_puid3dmva_endcap ->Write();
+  h_tracks_genmatched_puid4dmva_endcap ->Write();
+
+  h_muon_relChIso03_mva3D_weighted_barrel -> Write();
+  h_muon_relChIso03_mva4D_weighted_barrel -> Write();
+
+  h_muon_relChIso03_mva3D_weighted_endcap -> Write();
+  h_muon_relChIso03_mva4D_weighted_endcap -> Write();
+
+  for (int icut = 0; icut < NCUTSMVA; icut++){
+    h_muon_relChIso03_mva3D_barrel[icut]->Write();
+    h_muon_relChIso03_mva4D_barrel[icut]->Write();
+    h_muon_relChIso03_mva3D_endcap[icut]->Write();
+    h_muon_relChIso03_mva4D_endcap[icut]->Write();
+  }
 
 
+  h_tracks_pass3dmva_dz_vtx_barrel->Write();
+  h_tracks_pass3dmva_dz_vtx_endcap->Write();
+
+  h_tracks_pass3dmva_dt_vtx_barrel->Write();
+  h_tracks_pass3dmva_dt_vtx_endcap->Write();
+
+  h_tracks_pass4dmva_dz_vtx_barrel->Write();
+  h_tracks_pass4dmva_dz_vtx_endcap->Write();
+
+  h_tracks_pass4dmva_dt_vtx_barrel->Write();
+  h_tracks_pass4dmva_dt_vtx_endcap->Write();
+
+
+
+  h_tracks_pass3dmva_pt_barrel->Write();
+  h_tracks_pass3dmva_pt_endcap->Write();
+  h_tracks_pass4dmva_pt_barrel->Write();
+  h_tracks_pass4dmva_pt_endcap->Write();
+  h_tracks_pass3dmva_eta_barrel->Write();
+  h_tracks_pass3dmva_eta_endcap->Write();
+  h_tracks_pass4dmva_eta_barrel->Write();
+  h_tracks_pass4dmva_eta_endcap->Write();
 
   fout->Close();
   

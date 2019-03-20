@@ -55,6 +55,8 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   muonsToken_(consumes<View<reco::Muon> >(iConfig.getUntrackedParameter<edm::InputTag>("muonsTag"))),
   trackTimeToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeValueMapTag" ) ) ),
   trackTimeErrToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackTimeErrValueMapTag" ) ) ),
+  trackFastSimTimeToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackFastSimTimeValueMapTag" ) ) ),
+  trackFastSimTimeErrToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackFastSimTimeErrValueMapTag" ) ) ),
   trackPUID3DMVAToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackPUID3DMVAValueMapTag" ) ) ),
   trackPUID4DMVAToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackPUID4DMVAValueMapTag" ) ) )
 {
@@ -63,6 +65,7 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   isoConeDR_       = iConfig.getUntrackedParameter<double>("isoConeDR");
   saveTracks_      = iConfig.getUntrackedParameter<bool>("saveTracks");
   maxDz_           = iConfig.getUntrackedParameter<double>("maxDz");
+  maxDxy_          = iConfig.getUntrackedParameter<double>("maxDxy");
   minDr_           = iConfig.getUntrackedParameter<double>("minDr");
   btlMinTrackPt_   = iConfig.getUntrackedParameter<double>("btlMinTrackPt");
   etlMinTrackPt_   = iConfig.getUntrackedParameter<double>("etlMinTrackPt");
@@ -171,6 +174,14 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   Handle<ValueMap<float> > trackTimeErrValueMap;
   iEvent.getByToken( trackTimeErrToken_, trackTimeErrValueMap );
 
+  // -- get the trackTimeValueMap
+  Handle<ValueMap<float> > trackFastSimTimeValueMap;
+  iEvent.getByToken( trackFastSimTimeToken_, trackFastSimTimeValueMap );
+
+  // -- get the trackTimeErrValueMap
+  Handle<ValueMap<float> > trackFastSimTimeErrValueMap;
+  iEvent.getByToken( trackFastSimTimeErrToken_, trackFastSimTimeErrValueMap );
+
   // -- get the trackPUID3DMVAValueMap
   Handle<ValueMap<float> > trackPUID3DMVAValueMap;
   iEvent.getByToken( trackPUID3DMVAToken_, trackPUID3DMVAValueMap );
@@ -269,11 +280,11 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   // -- if PV index == -1, use highest ranked vertex 
   if (pv_index_3D==-1) {
-    cout << "pv_index_3D = " << pv_index_3D <<endl;
+    //cout << "pv_index_3D = " << pv_index_3D <<endl;
     pv_index_3D = 0;
   }
   if (pv_index_4D==-1) {
-    cout << "pv_index_4D = " << pv_index_4D <<endl;
+    //cout << "pv_index_4D = " << pv_index_4D <<endl;
     pv_index_4D = 0;
   }
 
@@ -447,35 +458,34 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
       float dr  = deltaR(muon.eta(), muon.phi(), pfcand.eta(), pfcand.phi());
 
-      float pfcandtimeFastSim = pfcand.time();
-      float pfcandtimeErrFastSim = pfcand.timeError();
-      cout << pfcandtimeFastSim << "  " << pfcandtimeErrFastSim <<endl;
       float pfcandtime = pfcand.time();
       float pfcandtimeErr = pfcand.timeError();
       if (mtd5sample_ ){
 	pfcandtime    = (*trackTimeValueMap)[trackRef] ;
 	pfcandtimeErr = (*trackTimeErrValueMap)[trackRef] ;
       }
-
+      float pfcandtimeFastSim = (*trackFastSimTimeValueMap)[trackRef];
+      float pfcandtimeErrFastSim = (*trackFastSimTimeErrValueMap)[trackRef] ;
+      //cout << pfcandtimeFastSim << "  " << pfcandtimeErrFastSim <<endl;
 
       // --- no timing 
       if (dr > minDr_ && dr < isoConeDR_){
 	// -- sim vertex 
-	if (dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_simVtx+= pfcand.pt(); }
-	if (dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_simVtx+= pfcand.pt(); }
-	if (dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_simVtx+= pfcand.pt(); }
-        if (dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_simVtx+= pfcand.pt(); }
-        if (dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_simVtx+= pfcand.pt(); }
+	if (dzsim < 0.05 && dxysim < maxDxy_) { chIso_dZ05_simVtx+= pfcand.pt(); }
+	if (dzsim < 0.1  && dxysim < maxDxy_) { chIso_dZ1_simVtx+= pfcand.pt(); }
+	if (dzsim < 0.2  && dxysim < maxDxy_) { chIso_dZ2_simVtx+= pfcand.pt(); }
+        if (dzsim < 0.3  && dxysim < maxDxy_) { chIso_dZ3_simVtx+= pfcand.pt(); }
+        if (dzsim < 1.0  && dxysim < maxDxy_) { chIso_dZ10_simVtx+= pfcand.pt(); }
 	
 	// -- reco vtx closest to the sim one
-	if (dz3D < 0.05  &&  dxy3D < 0.02) { chIso_dZ05+= pfcand.pt(); }
-	if (dz3D < 0.1   &&  dxy3D < 0.02) { chIso_dZ1+= pfcand.pt(); }
-	if (dz3D < 0.2   &&  dxy3D < 0.02) { chIso_dZ2+= pfcand.pt(); }
-        if (dz3D < 0.3   &&  dxy3D < 0.02) { chIso_dZ3+= pfcand.pt(); }
-	if (dz3D < 1.0   &&  dxy3D < 0.02) { chIso_dZ10+= pfcand.pt(); }
+	if (dz3D < 0.05  &&  dxy3D < maxDxy_) { chIso_dZ05+= pfcand.pt(); }
+	if (dz3D < 0.1   &&  dxy3D < maxDxy_) { chIso_dZ1+= pfcand.pt(); }
+	if (dz3D < 0.2   &&  dxy3D < maxDxy_) { chIso_dZ2+= pfcand.pt(); }
+        if (dz3D < 0.3   &&  dxy3D < maxDxy_) { chIso_dZ3+= pfcand.pt(); }
+	if (dz3D < 1.0   &&  dxy3D < maxDxy_) { chIso_dZ10+= pfcand.pt(); }
 
 	// -- using reco vtx closest to the sim one and cut on relative dz  
-	if (dz3Drel < 3.0  && dxy3D < 0.02) { chIso_reldZ+= pfcand.pt(); } 
+	if (dz3Drel < 3.0  && dxy3D < maxDxy_) { chIso_reldZ+= pfcand.pt(); } 
 	
 	// -- dz wrt to muon
 	if (dzmu < 0.05) { chIso_dZmu05+= pfcand.pt(); }
@@ -490,7 +500,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
 	for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
 	  double targetTimeResol = timeResolutions_[iRes];
-	  double defaultTimeResolFastSim  = double(pfcand.timeError());
+	  double defaultTimeResolFastSim  = pfcandtimeErrFastSim;
 	  double defaultTimeResol  = 0.;
 	  if ( pfcandtimeErr !=-1 ) {
 	    defaultTimeResol  = double(pfcand.timeError()); 
@@ -505,20 +515,23 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  double dtmu = 0.;
 	  time[iRes] = -999.;
 	  timeFastSim[iRes] = -999.;
-	  //	  if ( pfcand.isTimeValid() && !isnan( pfcand.time() )) {
+	  // -- fast sim timing
+	  if ( pfcandtimeErrFastSim !=-1 ) {
+	    double rndFastSim = gRandom->Gaus(0., extra_resol_FastSim);
+	    timeFastSim[iRes] = pfcandtimeFastSim + rndFastSim;
+	  }
+	  // -- full sim timing
 	  if ( pfcandtimeErr !=-1 ) {
+	    // -- extra smearing to emulate different time resolution
+	    double rnd   = gRandom->Gaus(0., extra_resol);
+	    double rndmu = gRandom->Gaus(0., extra_resol);
+	    time[iRes] = pfcandtime + rnd;
 	    // -- emulate BTL and ETL efficiency
 	    bool keepTrack = true;
 	    double rndEff = gRandom2->Uniform(0.,1.); 
 	    if ( std::abs(pfcand.eta()) < 1.5 && rndEff > btlEfficiency_ ) keepTrack = false; 	
 	    if ( std::abs(pfcand.eta()) > 1.5 && rndEff > etlEfficiency_ ) keepTrack = false; 	
 	    if (keepTrack) {
-	      // -- extra smearing to emulate different time resolution
-	      double rndFastSim = gRandom->Gaus(0., extra_resol_FastSim);
-	      double rnd   = gRandom->Gaus(0., extra_resol);
-	      double rndmu = gRandom->Gaus(0., extra_resol);
-	      if (pfcandtimeErrFastSim !=-1)	timeFastSim[iRes] = pfcandtimeFastSim + rndFastSim;
-	      time[iRes] = pfcandtime + rnd;
 	      dtsim = std::abs(time[iRes] - genPV.position().t()*1000000000.);
 	      dt    = std::abs(time[iRes] - vtx4D.t());
 	      if ( muonTime > -999. && !isnan(muonTime) ){
@@ -541,46 +554,46 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  }
 	   
 	  // -- sim vertex
-	  if (dtsim < 2.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT2s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 2.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT2s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 2.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT2s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 2.*targetTimeResol && dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_dT2s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 2.*targetTimeResol && dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_dT2s_simVtx[iRes]+= pfcand.pt();}
+	  if (dtsim < 2.*targetTimeResol && dzsim < 0.05 && dxysim < maxDxy_) { chIso_dZ05_dT2s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 2.*targetTimeResol && dzsim < 0.1  && dxysim < maxDxy_) { chIso_dZ1_dT2s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 2.*targetTimeResol && dzsim < 0.2  && dxysim < maxDxy_) { chIso_dZ2_dT2s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 2.*targetTimeResol && dzsim < 0.3  && dxysim < maxDxy_) { chIso_dZ3_dT2s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 2.*targetTimeResol && dzsim < 1.0  && dxysim < maxDxy_) { chIso_dZ10_dT2s_simVtx[iRes]+= pfcand.pt();}
 
-          if (dtsim < 3.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT3s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 3.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT3s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 3.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT3s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 3.*targetTimeResol && dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_dT3s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 3.*targetTimeResol && dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_dT3s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 3.*targetTimeResol && dzsim < 0.05 && dxysim < maxDxy_) { chIso_dZ05_dT3s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 3.*targetTimeResol && dzsim < 0.1  && dxysim < maxDxy_) { chIso_dZ1_dT3s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 3.*targetTimeResol && dzsim < 0.2  && dxysim < maxDxy_) { chIso_dZ2_dT3s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 3.*targetTimeResol && dzsim < 0.3  && dxysim < maxDxy_) { chIso_dZ3_dT3s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 3.*targetTimeResol && dzsim < 1.0  && dxysim < maxDxy_) { chIso_dZ10_dT3s_simVtx[iRes]+= pfcand.pt();}
 
-          if (dtsim < 5.*targetTimeResol && dzsim < 0.05 && dxysim < 0.02) { chIso_dZ05_dT5s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 5.*targetTimeResol && dzsim < 0.1  && dxysim < 0.02) { chIso_dZ1_dT5s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 5.*targetTimeResol && dzsim < 0.2  && dxysim < 0.02) { chIso_dZ2_dT5s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 5.*targetTimeResol && dzsim < 0.3  && dxysim < 0.02) { chIso_dZ3_dT5s_simVtx[iRes]+= pfcand.pt();}
-          if (dtsim < 5.*targetTimeResol && dzsim < 1.0  && dxysim < 0.02) { chIso_dZ10_dT5s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 5.*targetTimeResol && dzsim < 0.05 && dxysim < maxDxy_) { chIso_dZ05_dT5s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 5.*targetTimeResol && dzsim < 0.1  && dxysim < maxDxy_) { chIso_dZ1_dT5s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 5.*targetTimeResol && dzsim < 0.2  && dxysim < maxDxy_) { chIso_dZ2_dT5s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 5.*targetTimeResol && dzsim < 0.3  && dxysim < maxDxy_) { chIso_dZ3_dT5s_simVtx[iRes]+= pfcand.pt();}
+          if (dtsim < 5.*targetTimeResol && dzsim < 1.0  && dxysim < maxDxy_) { chIso_dZ10_dT5s_simVtx[iRes]+= pfcand.pt();}
 	  
 	  // -- reco vtx closest to the sim one
-          if (dt < 2.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT2s[iRes]+= pfcand.pt(); }
-          if (dt < 2.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT2s[iRes]+= pfcand.pt(); }
-          if (dt < 2.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT2s[iRes]+= pfcand.pt(); }
-          if (dt < 2.*targetTimeResol && dz4D < 0.3  &&  dxy4D < 0.02) { chIso_dZ3_dT2s[iRes]+= pfcand.pt(); }
-          if (dt < 2.*targetTimeResol && dz4D < 1.0  &&  dxy4D < 0.02) { chIso_dZ10_dT2s[iRes]+= pfcand.pt(); }
+          if (dt < 2.*targetTimeResol && dz4D < 0.05 &&  dxy4D < maxDxy_) { chIso_dZ05_dT2s[iRes]+= pfcand.pt(); }
+          if (dt < 2.*targetTimeResol && dz4D < 0.1  &&  dxy4D < maxDxy_) { chIso_dZ1_dT2s[iRes]+= pfcand.pt(); }
+          if (dt < 2.*targetTimeResol && dz4D < 0.2  &&  dxy4D < maxDxy_) { chIso_dZ2_dT2s[iRes]+= pfcand.pt(); }
+          if (dt < 2.*targetTimeResol && dz4D < 0.3  &&  dxy4D < maxDxy_) { chIso_dZ3_dT2s[iRes]+= pfcand.pt(); }
+          if (dt < 2.*targetTimeResol && dz4D < 1.0  &&  dxy4D < maxDxy_) { chIso_dZ10_dT2s[iRes]+= pfcand.pt(); }
 
-          if (dt < 3.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT3s[iRes]+= pfcand.pt(); }
-          if (dt < 3.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT3s[iRes]+= pfcand.pt(); }
-          if (dt < 3.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT3s[iRes]+= pfcand.pt(); }
-          if (dt < 3.*targetTimeResol && dz4D < 0.3  &&  dxy4D < 0.02) { chIso_dZ3_dT3s[iRes]+= pfcand.pt(); }
-          if (dt < 3.*targetTimeResol && dz4D < 1.0  &&  dxy4D < 0.02) { chIso_dZ10_dT3s[iRes]+= pfcand.pt(); }
+          if (dt < 3.*targetTimeResol && dz4D < 0.05 &&  dxy4D < maxDxy_) { chIso_dZ05_dT3s[iRes]+= pfcand.pt(); }
+          if (dt < 3.*targetTimeResol && dz4D < 0.1  &&  dxy4D < maxDxy_) { chIso_dZ1_dT3s[iRes]+= pfcand.pt(); }
+          if (dt < 3.*targetTimeResol && dz4D < 0.2  &&  dxy4D < maxDxy_) { chIso_dZ2_dT3s[iRes]+= pfcand.pt(); }
+          if (dt < 3.*targetTimeResol && dz4D < 0.3  &&  dxy4D < maxDxy_) { chIso_dZ3_dT3s[iRes]+= pfcand.pt(); }
+          if (dt < 3.*targetTimeResol && dz4D < 1.0  &&  dxy4D < maxDxy_) { chIso_dZ10_dT3s[iRes]+= pfcand.pt(); }
 
-          if (dt < 5.*targetTimeResol && dz4D < 0.05 &&  dxy4D < 0.02) { chIso_dZ05_dT5s[iRes]+= pfcand.pt(); }
-          if (dt < 5.*targetTimeResol && dz4D < 0.1  &&  dxy4D < 0.02) { chIso_dZ1_dT5s[iRes]+= pfcand.pt(); }
-          if (dt < 5.*targetTimeResol && dz4D < 0.2  &&  dxy4D < 0.02) { chIso_dZ2_dT5s[iRes]+= pfcand.pt(); }
-          if (dt < 5.*targetTimeResol && dz4D < 0.3  &&  dxy4D < 0.02) { chIso_dZ3_dT5s[iRes]+= pfcand.pt(); }
-          if (dt < 5.*targetTimeResol && dz4D < 1.0  &&  dxy4D < 0.02) { chIso_dZ10_dT5s[iRes]+= pfcand.pt(); }
+          if (dt < 5.*targetTimeResol && dz4D < 0.05 &&  dxy4D < maxDxy_) { chIso_dZ05_dT5s[iRes]+= pfcand.pt(); }
+          if (dt < 5.*targetTimeResol && dz4D < 0.1  &&  dxy4D < maxDxy_) { chIso_dZ1_dT5s[iRes]+= pfcand.pt(); }
+          if (dt < 5.*targetTimeResol && dz4D < 0.2  &&  dxy4D < maxDxy_) { chIso_dZ2_dT5s[iRes]+= pfcand.pt(); }
+          if (dt < 5.*targetTimeResol && dz4D < 0.3  &&  dxy4D < maxDxy_) { chIso_dZ3_dT5s[iRes]+= pfcand.pt(); }
+          if (dt < 5.*targetTimeResol && dz4D < 1.0  &&  dxy4D < maxDxy_) { chIso_dZ10_dT5s[iRes]+= pfcand.pt(); }
 
 	  
 	  // -- using reco vtx closest to the sim one   and cut on relative dz
-	  if (dt < 3.*targetTimeResol && dz4Drel < 3.0  && dxy4D < 0.02) { chIso_reldZ_dT[iRes]+= pfcand.pt(); }
+	  if (dt < 3.*targetTimeResol && dz4Drel < 3.0  && dxy4D < maxDxy_) { chIso_reldZ_dT[iRes]+= pfcand.pt(); }
 	  
 	  // -- dT wrt to muon 
 	  if ( dtmu < sqrt(2)*3.*targetTimeResol && dzmu < 0.05) { chIso_dZmu05_dTmu[iRes]+= pfcand.pt(); }
