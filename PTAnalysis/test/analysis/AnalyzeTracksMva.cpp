@@ -47,7 +47,7 @@ int main(int argc, char** argv){
   float etlMinTrackPt = 0.4;
   float btlEfficiency = 0.85;
   float etlEfficiency = 0.90;
-
+ 
   string process = argv[1];
   bool prompt = false;
 
@@ -56,22 +56,21 @@ int main(int argc, char** argv){
   // -- get TChain
   TChain* chain = new TChain("MuonIsolationAnalyzer/tree_35ps","tree");
   if (process.find("DYToLL") != std::string::npos) {
-    //    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190318_094930/0000/muonIsolation*.root");
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190319_125803/0000/muonIsolation*.root");
-    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_noPU_muIso/190225_100631/0000/muonIsolation*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_muIso/190320_223157/0000/muonIsolation*.root");
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/DYToLL_M-50_14TeV_TuneCP5_pythia8/test_DYToLL_noPU_muIso/190321_100924/0000/muonIsolation*.root");
     prompt = true;
   }
   
   if (process.find("TTbar") != std::string::npos) {
-    //    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190318_102605/0000/muonIsolation*.root");
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190319_140929/0000/muonIsolation*.root");
-    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190225_134157/0000/muonIsolation*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190320_223713/0000/muonIsolation*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/TTbar_14TeV_TuneCP5_Pythia8/test_TTbar_muIso/190320_223713/0001/muonIsolation*.root");
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/RelValTTbar_Tauola_14TeV/test_TTbar_noPU_muIso/190321_080855/0000/muonIsolation*.root");
     prompt = false;
   }
   
   if (process.find("QCD") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/QCD_Pt-15To7000_TuneCP5_Flat_14TeV-pythia8/test_QCD_muIso/190318_110758/0000/muonIsolation_*.root");
-    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/QCD_Flat_Pt-15to7000_TuneCUETP8M1_14TeV_pythia8/test_QCD_noPU_muIso/190111_164240/0000/muonIsolation_*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/QCD_Pt-15To7000_TuneCP5_Flat_14TeV-pythia8/test_QCD_muIso/190320_224211/0000/muonIsolation*.root");
+    if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/1040mtd5/QCD_Pt-15To7000_TuneCP5_Flat_14TeV-pythia8/test_QCD_muIso/190320_224211/0000/muonIsolation*.root");
     prompt = false; 
     maxDzBtl = 0.1;
     maxDzEtl = 0.1;
@@ -195,16 +194,20 @@ int main(int argc, char** argv){
   TH1F *h_vtx_dt4D_sim = new TH1F("h_vtx_dt4D_sim","h_vtx_dt4D_sim",10000, -1.0, 1.0);
   
   TH1F *h_tracks_dt_vtx_barrel = new TH1F("h_tracks_dt_vtx_barrel","h_tracks_dt_vtx_barrel",500, -1.0, 1.0);
-  TH1F *h_tracks_dz_vtx_barrel = new TH1F("h_tracks_dz_vtx_barrel","h_tracks_dz_vtx_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_dz_vtx_barrel = new TH1F("h_tracks_dz_vtx_barrel","h_tracks_dz_vtx_barrel",2000, -1.0, 1.0);
 
   TH1F *h_tracks_dt_vtx_endcap = new TH1F("h_tracks_dt_vtx_endcap","h_tracks_dt_vtx_endcap",500, -1.0, 1.0);
-  TH1F *h_tracks_dz_vtx_endcap = new TH1F("h_tracks_dz_vtx_endcap","h_tracks_dz_vtx_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_dz_vtx_endcap = new TH1F("h_tracks_dz_vtx_endcap","h_tracks_dz_vtx_endcap",2000, -1.0, 1.0);
   
+  TH1F *h_tracks_genmatched_dt_vtx_barrel = new TH1F("h_tracks_genmatched_dt_vtx_barrel","h_tracks_genmatched_dt_vtx_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_genmatched_dz_vtx_barrel = new TH1F("h_tracks_genmatched_dz_vtx_barrel","h_tracks_genmatched_dz_vtx_barrel",2000, -1.0, 1.0);
+
+  TH1F *h_tracks_genmatched_dt_vtx_endcap = new TH1F("h_tracks_genmatched_dt_vtx_endcap","h_tracks_genmatched_dt_vtx_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_genmatched_dz_vtx_endcap = new TH1F("h_tracks_genmatched_dz_vtx_endcap","h_tracks_genmatched_dz_vtx_endcap",2000, -1.0, 1.0);
+
+
   TH2F *h2_tracks_dzvtx_dtvtx_barrel = new TH2F("h2_tracks_dzvtx_dtvtx_barrel","h2_tracks_dzvtx_dtvtx_barrel",1000,-1,1, 1000, -1, 1);
   TH2F *h2_tracks_dzvtx_dtvtx_endcap = new TH2F("h2_tracks_dzvtx_dtvtx_endcap","h2_tracks_dzvtx_dtvtx_endcap",1000,-1,1, 1000, -1, 1);
-
-  TH1F *h_tracks_genmatched_dt_vtx_barrel = new TH1F("h_tracks_genmatched_dt_vtx_barrel","h_tracks_genmatched_dt_vtx_barrel",500, -1.0, 1.0);
-  TH1F *h_tracks_genmatched_dt_vtx_endcap = new TH1F("h_tracks_genmatched_dt_vtx_endcap","h_tracks_genmatched_dt_vtx_endcap",500, -1.0, 1.0);
 
   TH1F *h_tracks_puid3dmva_barrel = new TH1F("h_tracks_puid3dmva_barrel","h_tracks_puid3dmva_barrel", 100, -1, 1);
   TH1F *h_tracks_puid4dmva_barrel = new TH1F("h_tracks_puid4dmva_barrel","h_tracks_puid4dmva_barrel", 100, -1, 1);
@@ -219,17 +222,24 @@ int main(int argc, char** argv){
   TH1F *h_tracks_genmatched_puid4dmva_endcap = new TH1F("h_tracks_genmatched_puid4dmva_endcap","h_tracks_genmatched_puid4dmva_endcap", 100, -1, 1);
 
 
-  TH1F *h_tracks_pass3dmva_dt_vtx_barrel = new TH1F("h_tracks_pass3dmva_dt_vtx_barrel","h_tracks_pass3dmva_dt_vtx_barrel",500, -1.0, 1.0);
-  TH1F *h_tracks_pass3dmva_dz_vtx_barrel = new TH1F("h_tracks_pass3dmva_dz_vtx_barrel","h_tracks_pass3dmva_dz_vtx_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_pass3dmva_dt_vtx_fullSim_barrel = new TH1F("h_tracks_pass3dmva_dt_vtx_fullSim_barrel","h_tracks_pass3dmva_dt_vtx_fullSim_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_pass3dmva_dz_vtx_fullSim_barrel = new TH1F("h_tracks_pass3dmva_dz_vtx_fullSim_barrel","h_tracks_pass3dmva_dz_vtx_fullSim_barrel",500, -1.0, 1.0);
 
-  TH1F *h_tracks_pass3dmva_dt_vtx_endcap = new TH1F("h_tracks_pass3dmva_dt_vtx_endcap","h_tracks_pass3dmva_dt_vtx_endcap",500, -1.0, 1.0);
-  TH1F *h_tracks_pass3dmva_dz_vtx_endcap = new TH1F("h_tracks_pass3dmva_dz_vtx_endcap","h_tracks_pass3dmva_dz_vtx_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_pass3dmva_dt_vtx_fullSim_endcap = new TH1F("h_tracks_pass3dmva_dt_vtx_fullSim_endcap","h_tracks_pass3dmva_dt_vtx_fullSim_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_pass3dmva_dz_vtx_fullSim_endcap = new TH1F("h_tracks_pass3dmva_dz_vtx_fullSim_endcap","h_tracks_pass3dmva_dz_vtx_fullSim_endcap",500, -1.0, 1.0);
 
-  TH1F *h_tracks_pass4dmva_dt_vtx_barrel = new TH1F("h_tracks_pass4dmva_dt_vtx_barrel","h_tracks_pass4dmva_dt_vtx_barrel",500, -1.0, 1.0);
-  TH1F *h_tracks_pass4dmva_dz_vtx_barrel = new TH1F("h_tracks_pass4dmva_dz_vtx_barrel","h_tracks_pass4dmva_dz_vtx_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_pass4dmva_dt_vtx_fullSim_barrel = new TH1F("h_tracks_pass4dmva_dt_vtx_fullSim_barrel","h_tracks_pass4dmva_dt_vtx_fullSim_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_pass4dmva_dz_vtx_fullSim_barrel = new TH1F("h_tracks_pass4dmva_dz_vtx_fullSim_barrel","h_tracks_pass4dmva_dz_vtx_fullSim_barrel",500, -1.0, 1.0);
 
-  TH1F *h_tracks_pass4dmva_dt_vtx_endcap = new TH1F("h_tracks_pass4dmva_dt_vtx_endcap","h_tracks_pass4dmva_dt_vtx_endcap",500, -1.0, 1.0);
-  TH1F *h_tracks_pass4dmva_dz_vtx_endcap = new TH1F("h_tracks_pass4dmva_dz_vtx_endcap","h_tracks_pass4dmva_dz_vtx_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_pass4dmva_dt_vtx_fullSim_endcap = new TH1F("h_tracks_pass4dmva_dt_vtx_fullSim_endcap","h_tracks_pass4dmva_dt_vtx_fullSim_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_pass4dmva_dz_vtx_fullSim_endcap = new TH1F("h_tracks_pass4dmva_dz_vtx_fullSim_endcap","h_tracks_pass4dmva_dz_vtx_fullSim_endcap",500, -1.0, 1.0);
+
+
+  TH1F *h_tracks_genmatched_dt_vtx_fullSim_barrel = new TH1F("h_tracks_genmatched_dt_vtx_fullSim_barrel","h_tracks_genmatched_dt_vtx_fullSim_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_genmatched_dz_vtx_fullSim_barrel = new TH1F("h_tracks_genmatched_dz_vtx_fullSim_barrel","h_tracks_genmatched_dz_vtx_fullSim_barrel",500, -1.0, 1.0);
+
+  TH1F *h_tracks_genmatched_dt_vtx_fullSim_endcap = new TH1F("h_tracks_genmatched_dt_vtx_fullSim_endcap","h_tracks_genmatched_dt_vtx_fullSim_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_genmatched_dz_vtx_fullSim_endcap = new TH1F("h_tracks_genmatched_dz_vtx_fullSim_endcap","h_tracks_genmatched_dz_vtx_fullSim_endcap",500, -1.0, 1.0);
 
 
   TH1F *h_tracks_pass3dmva_pt_barrel = new TH1F("h_tracks_pass3dmva_pt_barrel","h_tracks_pass3dmva_pt_barrel",400, 0, 20);
@@ -297,9 +307,14 @@ int main(int argc, char** argv){
   TProfile *p_tracks_kept_sumpt_vs_linedensity_endcap = new TProfile("p_tracks_kept_sumpt_vs_linedensity_endcap","p_tracks_kept_sumpt_vs_linedensity_endcap",22,-0.05,2.05);
 
 
+
+  TH1F *h_tracks_pt_withtiming_barrel = new TH1F("h_tracks_pt_withtiming_barrel","h_tracks_withtiming_pt_barrel",400,0.,20.);
+  TH1F *h_tracks_pt_withtiming_endcap = new TH1F("h_tracks_pt_withtiming_endcap","h_tracks_withtiming_pt_endcap",400,0.,20.);
+
+
   // chargedIso for rocs
-  const int NCUTSDZ = 3;
-  float dzCut[NCUTSDZ] = {0.1, 0.2, 0.3};
+  const int NCUTSDZ = 4;
+  float dzCut[NCUTSDZ] = {0.1, 0.2, 0.3, 1.0};
   TH1F *h_muon_relChIso03_dZ_barrel[NCUTSDZ];
   TH1F *h_muon_relChIso03_dZ_endcap[NCUTSDZ];
   TH1F *h_muon_relChIso03_dZ_dT3s_barrel[NCUTSDZ];
@@ -311,19 +326,13 @@ int main(int argc, char** argv){
     h_muon_relChIso03_dZ_dT3s_endcap[i] = new TH1F(Form("h_muon_relChIso03_dZ%.00f_dT3s_endcap", dzCut[i]*10) , Form("h_muon_relChIso03_dZ%.00f_dT3s_endcap", dzCut[i]*10) ,5000, 0, 5);
   }
 
-  /*TH1F *h_muon_relChIso03_dZ_barrel = new TH1F("h_muon_relChIso03_dZ_barrel","h_muon_relChIso03_dZ_barrel",5000, 0, 5); 
-  TH1F *h_muon_relChIso03_dZ_endcap = new TH1F("h_muon_relChIso03_dZ_endcap","h_muon_relChIso03_dZ_endcap",5000,0,5); 
-  TH1F *h_muon_relChIso03_dZ_dT3s_barrel = new TH1F("h_muon_relChIso03_dZ_dT3s_barrel","h_muon_relChIso03_dT3s_dZ_barrel",5000, 0, 5); 
-  TH1F *h_muon_relChIso03_dZ_dT3s_endcap = new TH1F("h_muon_relChIso03_dZ_dT3s_endcap","h_muon_relChIso03_dT3s_dZ_endcap",5000,0,5); 
-  */
-
-  const int NCUTSMVA = 21;
+  const int NCUTSMVA = 13;
   TH1F *h_muon_relChIso03_mva3D_barrel[NCUTSMVA];
   TH1F *h_muon_relChIso03_mva3D_endcap[NCUTSMVA];
   TH1F *h_muon_relChIso03_mva4D_barrel[NCUTSMVA];
   TH1F *h_muon_relChIso03_mva4D_endcap[NCUTSMVA];
-  float mvaCut3D[NCUTSMVA] = {0.7228171, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.725, 0.75, 0.775, 0.80, 0.825, 0.85, 0.875, 0.90, 0.925, 0.95};
-  float mvaCut4D[NCUTSMVA] = {0.7534892, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.725, 0.75, 0.775, 0.80, 0.825, 0.85, 0.875, 0.90, 0.925, 0.95};
+  float mvaCut3D[NCUTSMVA] = {0.7228171, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.80, 0.85, 0.90};
+  float mvaCut4D[NCUTSMVA] = {0.7534892, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.80, 0.85, 0.90};
   for (int i = 0; i < NCUTSMVA; i++){
     h_muon_relChIso03_mva3D_barrel[i] = new TH1F(Form("h_muon_relChIso03_mva3D_%.03f_barrel", mvaCut3D[i]) , Form("h_muon_relChIso03_mva3D_%.03f_barrel", mvaCut3D[i]) ,5000, 0, 5);
     h_muon_relChIso03_mva3D_endcap[i] = new TH1F(Form("h_muon_relChIso03_mva3D_%.03f_endcap", mvaCut3D[i]) , Form("h_muon_relChIso03_mva3D_%.03f_endcap", mvaCut3D[i]) ,5000, 0, 5);
@@ -348,7 +357,6 @@ int main(int argc, char** argv){
   TRandom *gRandom2  = new TRandom();
 
   int maxEntries = chain->GetEntries();
-  //  maxEntries = 500000;
   for (int ientry = 0; ientry< maxEntries; ientry++) {
     
     chain -> GetEntry(ientry);
@@ -455,15 +463,17 @@ int main(int argc, char** argv){
 	float dzsim = track_dz4D->at(itk) + vtx4D_z - vtxGen_z;
 	float trackTime = track_tFastSim->at(itk);
 	// -- extra-smearing not needed beacuase it's already added at ntuple prod.
-	//if (trackTime!=-999)  {
-	  //	  float extra_smearing = sqrt( timeResolution*timeResolution - 0.030*0.030); // smear up to match 40 ps time resolution
-	  //trackTime= trackTime + gRandom->Gaus(0, extra_smearing );
-	//	}
+	if (trackTime!=-999)  {
+	  float extra_smearing = sqrt( timeResolution*timeResolution - 0.035*0.035); // smear up to match 40 ps time resolution
+	  trackTime= trackTime + gRandom->Gaus(0, extra_smearing );
+	}
 
 	float dt    = trackTime - vtx4D_t;
 	float dtsim = trackTime - vtxGen_t*1000000000.;
+	float dtFullSim = track_t->at(itk) - vtxGen_t*1000000000.;
 
 	dt = dtsim;
+	dz = dzsim;
 	
 	// --- dz, dt bix cuts with timing FastSim
 	if (fabs(dxy) < maxDxy) {
@@ -473,10 +483,12 @@ int main(int argc, char** argv){
 	    // -- barrel
 	    if (isBarrel && fabs(dz) < dzCut[icut]){
 	      
-	      if (icut == 0){ 
+	      if (icut == 1){ // dz = 2 mm 
 		h_tracks_dz_vtx_barrel -> Fill(dz);
+		if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_dz_vtx_barrel->Fill(dz);	
 		if ( trackTime!= -999){
 		  h_tracks_dt_vtx_barrel->Fill(dt);
+		  h_tracks_pt_withtiming_barrel -> Fill(track_pt->at(itk));
 		  if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_dt_vtx_barrel->Fill(dt);
 		  h2_tracks_dzvtx_dtvtx_barrel->Fill(dz, dt);
 		}
@@ -488,7 +500,7 @@ int main(int argc, char** argv){
 
 	      // -- removed tracks
 	      if ( useTrackTime && trackTime != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
-		if (icut == 0){
+		if (icut == 1){
 		  h_tracks_removed_pt_barrel -> Fill( track_pt->at(itk) );
 		  p_tracks_removed_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
 		}
@@ -497,7 +509,7 @@ int main(int argc, char** argv){
 	      }
 	      // -- kept tracks
 	      else{
-		if (icut == 0){
+		if (icut == 1){
 		  h_tracks_kept_pt_barrel -> Fill( track_pt->at(itk) );
 		  p_tracks_kept_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
 		}
@@ -507,10 +519,12 @@ int main(int argc, char** argv){
 	    }// end if barrel
 	    // -- endcap
 	    if (!isBarrel && fabs(dz) < dzCut[icut]){
-	      if (icut == 0){ 
+	      if (icut == 2){ 
 		h_tracks_dz_vtx_endcap -> Fill(dz);
+		if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_dz_vtx_endcap->Fill(dz);
 		if ( trackTime!= -999){
 		  h_tracks_dt_vtx_endcap->Fill(dt);
+		  h_tracks_pt_withtiming_endcap-> Fill(track_pt->at(itk));
 		  if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_dt_vtx_endcap->Fill(dt);
 		  h2_tracks_dzvtx_dtvtx_endcap->Fill(dz, dt);
 		}
@@ -522,7 +536,7 @@ int main(int argc, char** argv){
 	      
 	      // -- removed tracks
 	      if ( useTrackTime && trackTime != -999 && fabs(dt) > float(nsigma) * timeResolution ) {
-		if (icut == 0){
+		if (icut == 2){
 		  h_tracks_removed_pt_endcap -> Fill( track_pt->at(itk) );
 		  p_tracks_removed_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
 		}
@@ -531,7 +545,7 @@ int main(int argc, char** argv){
 	      }
 	      // -- kept tracks
 	      else{
-		if (icut == 0){
+		if (icut == 2){
 		  h_tracks_kept_pt_endcap -> Fill( track_pt->at(itk) );
 		  p_tracks_kept_pt_vs_linedensity_endcap -> Fill( linedensity, track_pt->at(itk) );
 		}
@@ -575,6 +589,19 @@ int main(int argc, char** argv){
 	  sumpt_mva4d_weighted+=track_pt->at(itk)*track_puid4dmva->at(itk);
 	} 
 
+	if (dz3D < 1.0 && dz4D < 1.0){
+	  if (track_isMatchedToGenParticle->at(itk)){
+	    if (isBarrel){
+	      h_tracks_genmatched_dz_vtx_fullSim_barrel ->Fill(dz);
+	      h_tracks_genmatched_dt_vtx_fullSim_barrel ->Fill(dtFullSim);
+	    } 
+	    else{
+	      h_tracks_genmatched_dz_vtx_fullSim_endcap ->Fill(dz);
+	      h_tracks_genmatched_dt_vtx_fullSim_endcap ->Fill(dtFullSim);
+	    }
+	  }
+	}
+
 	// 3D MVA
 	for (int icut = 0; icut < NCUTSMVA; icut++){
 	  //if ( dz3D < 1.0  && track_puid3dmva->at(itk) > 0.7228171 ){
@@ -583,17 +610,17 @@ int main(int argc, char** argv){
 	    ntracks_mva3d_kept[icut]++;
 	    sumpt_mva3d_kept[icut]+=track_pt->at(itk);
 	    if (isBarrel){
-	      if (icut == 0){
-		h_tracks_pass3dmva_dz_vtx_barrel ->Fill(dz);
-		h_tracks_pass3dmva_dt_vtx_barrel ->Fill(dt);
+	      if (icut == 2){
+		h_tracks_pass3dmva_dz_vtx_fullSim_barrel ->Fill(dz);
+		h_tracks_pass3dmva_dt_vtx_fullSim_barrel ->Fill(dtFullSim);
 		h_tracks_pass3dmva_pt_barrel->Fill(track_pt->at(itk));
 		h_tracks_pass3dmva_eta_barrel->Fill(track_eta->at(itk));
 	      }
 	    }
 	    else{
-	      if (icut==0){
-		h_tracks_pass3dmva_dz_vtx_endcap ->Fill(dz);
-		h_tracks_pass3dmva_dt_vtx_endcap ->Fill(dt);
+	      if (icut == 2){
+		h_tracks_pass3dmva_dz_vtx_fullSim_endcap ->Fill(dz);
+		h_tracks_pass3dmva_dt_vtx_fullSim_endcap ->Fill(dtFullSim);
 		h_tracks_pass3dmva_pt_endcap->Fill(track_pt->at(itk));
 		h_tracks_pass3dmva_eta_endcap->Fill(track_eta->at(itk));
 	      }
@@ -610,17 +637,17 @@ int main(int argc, char** argv){
 	    ntracks_mva4d_kept[icut]++;
 	    sumpt_mva4d_kept[icut]+=track_pt->at(itk);
 	    if (isBarrel){
-	      if (icut==0){
-		h_tracks_pass4dmva_dz_vtx_barrel ->Fill(dz);
-		h_tracks_pass4dmva_dt_vtx_barrel ->Fill(dt);
+	      if (icut == 2){
+		h_tracks_pass4dmva_dz_vtx_fullSim_barrel ->Fill(dz);
+		h_tracks_pass4dmva_dt_vtx_fullSim_barrel ->Fill(dtFullSim);
 		h_tracks_pass4dmva_pt_barrel->Fill(track_pt->at(itk));
 		h_tracks_pass4dmva_eta_barrel->Fill(track_eta->at(itk));
 	      }
 	    }
 	    else{
-	      if (icut==0){
-		h_tracks_pass4dmva_dz_vtx_endcap ->Fill(dz);
-		h_tracks_pass4dmva_dt_vtx_endcap ->Fill(dt);
+	      if (icut == 2){
+		h_tracks_pass4dmva_dz_vtx_fullSim_endcap ->Fill(dz);
+		h_tracks_pass4dmva_dt_vtx_fullSim_endcap ->Fill(dtFullSim);
 		h_tracks_pass4dmva_pt_endcap->Fill(track_pt->at(itk));
 		h_tracks_pass4dmva_eta_endcap->Fill(track_eta->at(itk));
 	      }
@@ -635,22 +662,22 @@ int main(int argc, char** argv){
  
       if (isBarrel){
 	// -- all tracks in isolation cone
-	h_tracks_n_barrel -> Fill( ntracks_dz[0] );
-	h_tracks_sumpt_barrel -> Fill( sumpt_dz[0] );
-	p_tracks_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz[0] );
-	p_tracks_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz[0] );
+	h_tracks_n_barrel -> Fill( ntracks_dz[1] );
+	h_tracks_sumpt_barrel -> Fill( sumpt_dz[1] );
+	p_tracks_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz[1] );
+	p_tracks_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz[1] );
 
 	// -- tracks removed from isolation cone
-	h_tracks_removed_n_barrel -> Fill( ntracks_dz_removed[0] );
-	h_tracks_removed_sumpt_barrel -> Fill( sumpt_dz_removed[0] );
-	p_tracks_removed_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz_removed[0] );
-	p_tracks_removed_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz_removed[0] );
+	h_tracks_removed_n_barrel -> Fill( ntracks_dz_removed[1] );
+	h_tracks_removed_sumpt_barrel -> Fill( sumpt_dz_removed[1] );
+	p_tracks_removed_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz_removed[1] );
+	p_tracks_removed_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz_removed[1] );
 
 	// -- tracks kept from isolation cone
-	h_tracks_kept_n_barrel -> Fill( ntracks_dz_kept[0] );
-	h_tracks_kept_sumpt_barrel -> Fill( sumpt_dz_kept[0] );
-	p_tracks_kept_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz_kept[0] );
-	p_tracks_kept_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz_kept[0] );
+	h_tracks_kept_n_barrel -> Fill( ntracks_dz_kept[1] );
+	h_tracks_kept_sumpt_barrel -> Fill( sumpt_dz_kept[1] );
+	p_tracks_kept_n_vs_linedensity_barrel -> Fill( linedensity, ntracks_dz_kept[1] );
+	p_tracks_kept_sumpt_vs_linedensity_barrel -> Fill( linedensity, sumpt_dz_kept[1] );
 
 	// -- rel chIso
 	for (int icut = 0; icut < NCUTSDZ; icut++){
@@ -668,20 +695,20 @@ int main(int argc, char** argv){
 
       }
       else{
-	h_tracks_n_endcap -> Fill( ntracks_dz[0] );
-	h_tracks_sumpt_endcap -> Fill( sumpt_dz[0] );
-	p_tracks_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz[0] );
-	p_tracks_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz[0] );
+	h_tracks_n_endcap -> Fill( ntracks_dz[2] );
+	h_tracks_sumpt_endcap -> Fill( sumpt_dz[2] );
+	p_tracks_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz[2] );
+	p_tracks_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz[2] );
 
-	h_tracks_removed_n_endcap -> Fill( ntracks_dz_removed[0] );
-	h_tracks_removed_sumpt_endcap -> Fill( sumpt_dz_removed[0]);
-	p_tracks_removed_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz_removed[0] );
-	p_tracks_removed_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz_removed[0] );
+	h_tracks_removed_n_endcap -> Fill( ntracks_dz_removed[2] );
+	h_tracks_removed_sumpt_endcap -> Fill( sumpt_dz_removed[2]);
+	p_tracks_removed_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz_removed[2] );
+	p_tracks_removed_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz_removed[2] );
 
-	h_tracks_kept_n_endcap -> Fill( ntracks_dz_kept[0] );
-	h_tracks_kept_sumpt_endcap -> Fill( sumpt_dz_kept[0] );
-	p_tracks_kept_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz_kept[0] );
-	p_tracks_kept_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz_kept[0] );
+	h_tracks_kept_n_endcap -> Fill( ntracks_dz_kept[2] );
+	h_tracks_kept_sumpt_endcap -> Fill( sumpt_dz_kept[2] );
+	p_tracks_kept_n_vs_linedensity_endcap -> Fill( linedensity, ntracks_dz_kept[2] );
+	p_tracks_kept_sumpt_vs_linedensity_endcap -> Fill( linedensity, sumpt_dz_kept[2] );
 
 	// -- rel chIso
 	for (int icut = 0; icut < NCUTSDZ; icut++){
@@ -751,6 +778,9 @@ int main(int argc, char** argv){
   h2_tracks_dzvtx_dtvtx_barrel-> Write();
   h2_tracks_dzvtx_dtvtx_endcap-> Write();
 
+  h_tracks_genmatched_dz_vtx_barrel->Write();
+  h_tracks_genmatched_dz_vtx_endcap->Write();
+
   h_tracks_genmatched_dt_vtx_barrel->Write();
   h_tracks_genmatched_dt_vtx_endcap->Write();
 
@@ -804,6 +834,9 @@ int main(int argc, char** argv){
   p_tracks_kept_sumpt_vs_linedensity_endcap -> Write();
 
 
+  h_tracks_pt_withtiming_barrel -> Write();
+  h_tracks_pt_withtiming_endcap -> Write();
+
 
   for (int icut = 0; icut < NCUTSDZ; icut++){
     h_muon_relChIso03_dZ_barrel[icut] -> Write();
@@ -841,17 +874,30 @@ int main(int argc, char** argv){
   }
 
 
-  h_tracks_pass3dmva_dz_vtx_barrel->Write();
-  h_tracks_pass3dmva_dz_vtx_endcap->Write();
+  h_tracks_pass3dmva_dz_vtx_fullSim_barrel->Write();
+  h_tracks_pass3dmva_dz_vtx_fullSim_endcap->Write();
 
-  h_tracks_pass3dmva_dt_vtx_barrel->Write();
-  h_tracks_pass3dmva_dt_vtx_endcap->Write();
+  h_tracks_pass3dmva_dt_vtx_fullSim_barrel->Write();
+  h_tracks_pass3dmva_dt_vtx_fullSim_endcap->Write();
 
-  h_tracks_pass4dmva_dz_vtx_barrel->Write();
-  h_tracks_pass4dmva_dz_vtx_endcap->Write();
+  h_tracks_pass4dmva_dz_vtx_fullSim_barrel->Write();
+  h_tracks_pass4dmva_dz_vtx_fullSim_endcap->Write();
 
-  h_tracks_pass4dmva_dt_vtx_barrel->Write();
-  h_tracks_pass4dmva_dt_vtx_endcap->Write();
+  h_tracks_pass4dmva_dt_vtx_fullSim_barrel->Write();
+  h_tracks_pass4dmva_dt_vtx_fullSim_endcap->Write();
+
+
+  h_tracks_genmatched_dz_vtx_fullSim_barrel->Write();
+  h_tracks_genmatched_dz_vtx_fullSim_endcap->Write();
+
+  h_tracks_genmatched_dt_vtx_fullSim_barrel->Write();
+  h_tracks_genmatched_dt_vtx_fullSim_endcap->Write();
+
+  h_tracks_genmatched_dz_vtx_fullSim_barrel->Write();
+  h_tracks_genmatched_dz_vtx_fullSim_endcap->Write();
+
+  h_tracks_genmatched_dt_vtx_fullSim_barrel->Write();
+  h_tracks_genmatched_dt_vtx_fullSim_endcap->Write();
 
 
 

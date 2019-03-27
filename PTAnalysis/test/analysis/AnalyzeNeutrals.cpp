@@ -102,6 +102,7 @@ int main(int argc, char** argv){
   vector<float> *neutrPfCand_dRcluster;
   vector<float> *neutrPfCand_dRmu;
   vector<int> *neutrPfCand_muIndex;
+  vector<int> *neutrPfCand_isMatchedToGenParticle;
   
   muon_pt = 0;
   muon_eta = 0;
@@ -127,6 +128,7 @@ int main(int argc, char** argv){
   neutrPfCand_cluster_R = 0;
   neutrPfCand_dRmu = 0;
   neutrPfCand_muIndex = 0;
+  neutrPfCand_isMatchedToGenParticle = 0;
 
   chain->SetBranchStatus("*",0);
   chain->SetBranchStatus("npu",1);                    chain->SetBranchAddress("npu",            &npu);
@@ -162,6 +164,7 @@ int main(int argc, char** argv){
   chain->SetBranchStatus("neutrPfCand_dRcluster",1);        chain->SetBranchAddress("neutrPfCand_dRcluster", &neutrPfCand_dRcluster);
   chain->SetBranchStatus("neutrPfCand_dRmu",1);             chain->SetBranchAddress("neutrPfCand_dRmu",      &neutrPfCand_dRmu);
   chain->SetBranchStatus("neutrPfCand_muIndex",1);          chain->SetBranchAddress("neutrPfCand_muIndex",   &neutrPfCand_muIndex);
+  chain->SetBranchStatus("neutrPfCand_isMatchedToGenParticle",1);          chain->SetBranchAddress("neutrPfCand_isMatchedToGenParticle",   &neutrPfCand_isMatchedToGenParticle);
 
   TH1F *hsimvtx_z = new TH1F("hsimvtx_z","hsimvtx_z", 500,-25,25);
   TH1F *hsimvtx_t = new TH1F("hsimvtx_t","hsimvtx_t", 1000,-1,1);
@@ -172,11 +175,20 @@ int main(int argc, char** argv){
   TH1F *h_neutrals_dt_vtx_barrel = new TH1F("h_neutrals_dt_vtx_barrel","h_neutrals_dt_vtx_barrel",5000, -5.0, 20.0);
   TH1F *h_neutrals_dt_vtx_endcap = new TH1F("h_neutrals_dt_vtx_endcap","h_neutrals_dt_vtx_endcap",5000, -5.0, 20.0);
 
+  TH1F *h_neutrals_genmatched_dt_vtx_barrel = new TH1F("h_neutrals_genmatched_dt_vtx_barrel","h_neutrals_genmatched_dt_vtx_barrel",5000, -5.0, 20.0);
+  TH1F *h_neutrals_genmatched_dt_vtx_endcap = new TH1F("h_neutrals_genmatched_dt_vtx_endcap","h_neutrals_genmatched_dt_vtx_endcap",5000, -5.0, 20.0);
+
   TH1F *h_neutrals_matchingToMtd_barrel = new TH1F("h_neutrals_matchingToMtd_barrel","h_neutrals_matchingToMtd_barrel",2, -0.5, 1.5);
   TH1F *h_neutrals_matchingToMtd_endcap = new TH1F("h_neutrals_matchingToMtd_endcap","h_neutrals_matchingToMtd_endcap",2, -0.5, 1.5);
 
+  TH1F *h_neutrals_genmatched_matchingToMtd_barrel = new TH1F("h_neutrals_genmatched_matchingToMtd_barrel","h_neutrals_genmatched_matchingToMtd_barrel",2, -0.5, 1.5);
+  TH1F *h_neutrals_genmatched_matchingToMtd_endcap = new TH1F("h_neutrals_genmatched_matchingToMtd_endcap","h_neutrals_genmatched_matchingToMtd_endcap",2, -0.5, 1.5);
+
   TH1F *h_neutrals_dRcluster_barrel = new TH1F("h_neutrals_dRcluster_barrel","h_neutrals_dRcluster_barrel",100, 0., 0.2);
   TH1F *h_neutrals_dRcluster_endcap = new TH1F("h_neutrals_dRcluster_endcap","h_neutrals_dRcluster_endcap",100, 0., 0.2);
+
+  TH1F *h_neutrals_genmatched_dRcluster_barrel = new TH1F("h_neutrals_genmatched_dRcluster_barrel","h_neutrals_genmatched_dRcluster_barrel",100, 0., 0.2);
+  TH1F *h_neutrals_genmatched_dRcluster_endcap = new TH1F("h_neutrals_genmatched_dRcluster_endcap","h_neutrals_genmatched_dRcluster_endcap",100, 0., 0.2);
 
 
   // -- to debug tracks in cone 
@@ -291,12 +303,18 @@ int main(int argc, char** argv){
 	// -- barrel
 	if (isBarrel){
 	  h_neutrals_dRcluster_barrel->Fill( drclus );
+	  if ( neutrPfCand_isMatchedToGenParticle->at(icand) ) h_neutrals_genmatched_dRcluster_barrel->Fill( drclus );
 	  if (neutrPfCand_cluster_t->at(icand) != -999){
 	    h_neutrals_matchingToMtd_barrel->Fill(1.);
 	    h_neutrals_dt_vtx_barrel->Fill(dt);
+	    if ( neutrPfCand_isMatchedToGenParticle->at(icand) ) {
+	      h_neutrals_genmatched_matchingToMtd_barrel->Fill(1.);
+	      h_neutrals_genmatched_dt_vtx_barrel ->Fill(dt);
+	    }
 	  }
 	  else{
 	    h_neutrals_matchingToMtd_barrel->Fill(0.);
+	    if ( neutrPfCand_isMatchedToGenParticle->at(icand) ) h_neutrals_genmatched_matchingToMtd_barrel->Fill(0.);
 	  }
 	  // -- all neutrals
 	  h_neutrals_pt_barrel -> Fill( pt );
@@ -321,13 +339,19 @@ int main(int argc, char** argv){
 	// endcap
 	else{
 	  h_neutrals_dRcluster_endcap->Fill( drclus );
-	  if (neutrPfCand_cluster_t->at(icand) != -999){
-	    h_neutrals_matchingToMtd_endcap->Fill(1.);
-	    h_neutrals_dt_vtx_endcap->Fill(dt);
-	  }
-	  else{
-	    h_neutrals_matchingToMtd_endcap->Fill(0.);
-	  }
+          if ( neutrPfCand_isMatchedToGenParticle->at(icand) ) h_neutrals_genmatched_dRcluster_endcap->Fill( drclus );
+          if (neutrPfCand_cluster_t->at(icand) != -999){
+            h_neutrals_matchingToMtd_endcap->Fill(1.);
+            h_neutrals_dt_vtx_endcap->Fill(dt);
+            if ( neutrPfCand_isMatchedToGenParticle->at(icand) ) {
+              h_neutrals_genmatched_matchingToMtd_endcap->Fill(1.);
+              h_neutrals_genmatched_dt_vtx_endcap ->Fill(dt);
+            }
+          }
+          else{
+            h_neutrals_matchingToMtd_endcap->Fill(0.);
+            if ( neutrPfCand_isMatchedToGenParticle->at(icand) ) h_neutrals_genmatched_matchingToMtd_endcap->Fill(0.);
+          }
 	  // -- all neutrals
 	  h_neutrals_pt_endcap -> Fill( pt );
 	  p_neutrals_pt_vs_linedensity_endcap -> Fill( linedensity, pt );
@@ -396,7 +420,7 @@ int main(int argc, char** argv){
   }//end loop over events
   
   // -- dt track in muon iso cone
-  TF1 *fitfun_barrel = new TF1("fitfun_barrel","gaus(0)+gaus(3)", -10, 10);
+  /*  TF1 *fitfun_barrel = new TF1("fitfun_barrel","gaus(0)+gaus(3)", -10, 10);
   fitfun_barrel->SetParameter(1, 0.);
   fitfun_barrel->SetParameter(2, 0.030);
   fitfun_barrel->SetParameter(4, 0.);
@@ -413,7 +437,7 @@ int main(int argc, char** argv){
   fitfun_endcap->SetNpx(1000);
   h_neutrals_dt_vtx_endcap->Scale(1./h_muon_pt_endcap->GetSumOfWeights());
   h_neutrals_dt_vtx_endcap->Fit("fitfun_endcap","QR");
-  
+  */
   
   
   // -- save histograms in output file
@@ -438,6 +462,15 @@ int main(int argc, char** argv){
 
   h_neutrals_dt_vtx_barrel->Write();
   h_neutrals_dt_vtx_endcap->Write();
+
+  h_neutrals_genmatched_matchingToMtd_barrel->Write();
+  h_neutrals_genmatched_matchingToMtd_endcap->Write();
+
+  h_neutrals_genmatched_dRcluster_barrel->Write();
+  h_neutrals_genmatched_dRcluster_endcap->Write();
+
+  h_neutrals_genmatched_dt_vtx_barrel->Write();
+  h_neutrals_genmatched_dt_vtx_endcap->Write();
   
   h_neutrals_pt_barrel ->Write();
   h_neutrals_removed_pt_barrel ->Write();

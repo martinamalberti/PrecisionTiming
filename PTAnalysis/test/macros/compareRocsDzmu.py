@@ -67,9 +67,9 @@ for ireg,reg in enumerate(regions):
     c[reg].SetGridy()
 
     for idz,dz in enumerate(dzs):
-        f[dz] = ROOT.TFile.Open('30ps_PU200_TTbar/roc_30ps_PU200.root')
+        f[dz] = ROOT.TFile.Open('93X/30ps_PU200_TTbar_minTkPtCut/roc_30ps_PU200.root')
         if (pu == 'noPU'):
-            f[dz] = ROOT.TFile.Open('30ps_noPU_TTbar/roc_30ps_noPU.root')
+            f[dz] = ROOT.TFile.Open('93X/30ps_noPU_TTbar_minTkPtCut/roc_30ps_noPU.root')
 
         gname = 'g_roc_relChIso03_dZmu%s_%s'%(dz,reg)
         gname_dT = 'g_roc_relChIso03_dZmu%s_dTmu_%s'%(dz,reg)

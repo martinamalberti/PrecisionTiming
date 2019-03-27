@@ -18,7 +18,7 @@ config.Data.unitsPerJob = 300
 #config.Data.splitting = 'FileBased'
 #config.Data.unitsPerJob = 30
 config.Data.outLFNDirBase = '/store/user/%s/MTD/1040mtd5/' % (getUsernameFromSiteDB())
-config.Data.publication = True
+config.Data.publication = False
 config.Data.outputDatasetTag = 'test_DYToLL_noPU_muIso'
 config.Data.allowNonValidInputDataset = True
 

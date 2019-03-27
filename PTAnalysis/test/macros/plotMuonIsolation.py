@@ -10,24 +10,19 @@ import time
 
 import ROOT
 
-ROOT.gStyle.SetOptTitle(0)
+import CMS_lumi, tdrstyle
 
+CMS_lumi.writeExtraText = True
+iPeriod = 0
+iPos = 0
+
+#set the tdr style
+tdrstyle.setTDRStyle()
 ROOT.gStyle.SetOptStat(0)
-#ROOT.gStyle.SetStatX(0.6);
-#ROOT.gStyle.SetStatY(0.6);
-#ROOT.gStyle.SetStatW(0.3);
-#ROOT.gStyle.SetStatH(0.3);
-
 ROOT.gStyle.SetOptFit(0)
-ROOT.gStyle.SetFitFormat("4.4g")
 
-ROOT.gStyle.SetLabelSize(0.04,'X')
-ROOT.gStyle.SetLabelSize(0.04,'Y')
-ROOT.gStyle.SetTitleSize(0.04,'X')
-ROOT.gStyle.SetTitleSize(0.04,'Y')
-ROOT.gStyle.SetTitleOffset(1.0,'X')
-ROOT.gStyle.SetTitleOffset(1.0,'Y')
-#ROOT.gStyle.SetTextFont(42)
+ROOT.gStyle.SetOptTitle(0)
+ROOT.gStyle.SetOptStat(0)
 ROOT.gStyle.SetPadTickX(1)
 ROOT.gStyle.SetPadTickY(1)
 
@@ -66,9 +61,10 @@ def makeEff(h, heff):
 
 
 
-#conesDR = ['02','03','04','05']
 conesDR = ['03']
 
+#release = '10_4_0_mtd5'
+release = '93X'
 
 resolution = int(sys.argv[1])
 pu = sys.argv[2]
@@ -76,32 +72,31 @@ bkgProc = sys.argv[3]
 suffix = sys.argv[4]
 
 if (pu == 'noPU'):
-    fSig = '../output_muIso_DYToLL_noPU_%dps_prompt.root '%resolution
-    fBkg = '../output_muIso_%s_noPU_%dps_fake.root' %(bkgProc,resolution)
-    #fSig = '../10_4_0_mtd3/output_muIso_DYToLL_noPU_%dps_prompt_1040mtd3.root '%resolution
-    #fBkg = '../10_4_0_mtd3/output_muIso_%s_noPU_%dps_fake_1040mtd3.root' %(bkgProc,resolution)
+    fSig = '../'+release+'//output_muIso_DYToLL_noPU_%dps_prompt_minTkPtCut.root '%resolution
+    fBkg = '../'+release+'/output_muIso_%s_noPU_%dps_fake_minTkPtCut.root' %(bkgProc,resolution)
+    #fSig = '../'+release+'//output_muIso_DYToLL_noPU_%dps_prompt_minTkPtCut_muonPt10-20.root '%resolution
+    #fBkg = '../'+release+'/output_muIso_%s_noPU_%dps_fake_minTkPtCut_muonPt10-20.root' %(bkgProc,resolution)
 else:
-    fSig = '../output_muIso_DYToLL_%dps_prompt.root '%resolution
-    fBkg = '../output_muIso_%s_%dps_fake.root'  %(bkgProc,resolution)
-    #fSig = '../output_muIso_DYToLL_%dps_prompt_eff90.root '%resolution
-    #fBkg = '../output_muIso_%s_%dps_fake_eff90.root'  %(bkgProc,resolution)
-    #fSig = '../output_muIso_DYToLL_%dps_prompt_ZTClosestVtx.root '%resolution
-    #fBkg = '../output_muIso_%s_%dps_fake_ZTClosestVtx.root'  %(bkgProc,resolution)
+    #fSig = '../'+release+'/output_muIso_DYToLL_%dps_prompt_minTkPtCut.root '%resolution
+    #fBkg = '../'+release+'/output_muIso_%s_%dps_fake_minTkPtCut.root'  %(bkgProc,resolution)
+    fSig = '../'+release+'/output_muIso_DYToLL_%dps_prompt_minTkPtCut_btlEff85_etlEff90.root '%resolution
+    fBkg = '../'+release+'/output_muIso_%s_%dps_fake_minTkPtCut_btlEff85_etlEff90.root'  %(bkgProc,resolution)
+
 
     
     
 print fSig
 print fBkg
 
-tl = ROOT.TLatex( 0.70, 0.84,'<PU> = %s'%pu.replace('PU',''))
+tl = ROOT.TLatex( 0.65, 0.84,'<PU> = %s'%pu.replace('PU',''))
 if (pu == 'noPU'):
-    tl = ROOT.TLatex( 0.70, 0.84,'<PU> = 0')
+    tl = ROOT.TLatex( 0.65, 0.84,'<PU> = 0')
 tl.SetNDC()
 tl.SetTextSize(0.035)
 
-tl2 = ROOT.TLatex( 0.70, 0.78,'Z#rightarrow#mu#mu, t#bar{t}')
+tl2 = ROOT.TLatex( 0.65, 0.78,'Z#rightarrow#mu#mu, t#bar{t}')
 if ('QCD' in fBkg):
-    tl2 = ROOT.TLatex( 0.70, 0.78,'Z#rightarrow#mu#mu, QCD')
+    tl2 = ROOT.TLatex( 0.65, 0.78,'Z#rightarrow#mu#mu, QCD')
 tl2.SetNDC()
 tl2.SetTextSize(0.035)
 
@@ -148,12 +143,12 @@ for proc in 'sig', 'bkg':
     h_vtx_dt4D_pull[proc] = f[proc].Get('h_vtx_dt4D_pull')
 
     
-leg1 = ROOT.TLegend(0.15, 0.7, 0.45, 0.89)
+leg1 = ROOT.TLegend(0.15, 0.7, 0.35, 0.92)
 leg1.SetBorderSize(0)
 
 for ih,h in  enumerate([h_pt, h_eta, h_phi, h_chIsoRatio,  h_chIsoRatio_barrel, h_chIsoRatio_endcap, h_vtx_dz3D, h_vtx_dz4D, h_vtx_dt4D]):
     cname = h['sig'].GetName().replace('h_','')
-    c[cname] = ROOT.TCanvas(cname,cname,500,500)
+    c[cname] = ROOT.TCanvas(cname,cname)
     if ('relChIso' in cname or 'vtx' in cname):
         c[cname].SetLogy()
     h['sig'].SetLineColor(ROOT.kBlue)
@@ -171,6 +166,7 @@ for ih,h in  enumerate([h_pt, h_eta, h_phi, h_chIsoRatio,  h_chIsoRatio_barrel, 
         leg1.Draw('same')
     tl.Draw()
     #tl2.Draw()
+    CMS_lumi.CMS_lumi(c[cname], iPeriod, iPos)
 
     if ('relChIso' in cname):
         bin = h['sig'].FindBin(1)
@@ -192,7 +188,7 @@ for ih,h in  enumerate([h_vtx_dz3D_pull, h_vtx_dz4D_pull, h_vtx_dt4D_pull]):
     cname = h['sig'].GetName().replace('h_','')
     ROOT.gStyle.SetOptStat(1)
     ROOT.gStyle.SetOptFit(1)
-    c[cname] = ROOT.TCanvas(cname,cname,500,500)
+    c[cname] = ROOT.TCanvas(cname,cname)
     c[cname].SetLogy()
     h['sig'].GetYaxis().SetRangeUser(1.0,h['sig'].GetMaximum()*5.0)
     h['sig'].SetLineColor(ROOT.kBlue)
@@ -225,7 +221,7 @@ for ih,h in  enumerate([h_vtx_dz3D_pull, h_vtx_dz4D_pull, h_vtx_dt4D_pull]):
     leg1.Draw('same')
     tl.Draw()
     #tl2.Draw()
-
+    CMS_lumi.CMS_lumi(c[cname], iPeriod, iPos)
     
 
 ROOT.gStyle.SetOptStat(0)
@@ -237,10 +233,14 @@ for ir,dr in enumerate(conesDR):
     chIsoNames[dr] = ['relChIso%s_dZ05_simVtx'%dr,
                       'relChIso%s_dZ1_simVtx'%dr,
                       'relChIso%s_dZ2_simVtx'%dr,
+                      'relChIso%s_dZ3_simVtx'%dr,
+                      'relChIso%s_dZ10_simVtx'%dr,
                       'relChIso%s_dZ05'%dr,
                       'relChIso%s_dZ1'%dr,
                       'relChIso%s_dZ2'%dr,
-                      #'relChIso%s_reldZ'%dr,
+                      'relChIso%s_dZ3'%dr,
+                      'relChIso%s_dZ10'%dr,
+                      ##'relChIso%s_reldZ'%dr,
                       'relChIso%s_dZmu05'%dr,
                       'relChIso%s_dZmu1'%dr,
                       'relChIso%s_dZmu2'%dr,
@@ -328,7 +328,7 @@ c_roc_barrel = {}
 c_roc_endcap = {}
 
 
-leg2 = ROOT.TLegend(0.15,0.7, 0.5, 0.89)
+leg2 = ROOT.TLegend(0.15,0.7, 0.45, 0.92)
 leg2.SetBorderSize(0)
 
 
@@ -443,7 +443,7 @@ for ir,dr in enumerate(conesDR):
 
             
             #draw ROCs
-            c_roc[dr][name][tcut] = ROOT.TCanvas('roc_%s_dT%s'%(name,tcut),'roc_%s_dT%s'%(name,tcut),500,500)
+            c_roc[dr][name][tcut] = ROOT.TCanvas('roc_%s_dT%s'%(name,tcut),'roc_%s_dT%s'%(name,tcut))
             c_roc[dr][name][tcut].SetGridx()
             c_roc[dr][name][tcut].SetGridy()
             c_roc[dr][name][tcut].SetTickx()
@@ -472,11 +472,12 @@ for ir,dr in enumerate(conesDR):
             leg2.Draw('same')
             tl.Draw()
             tl2.Draw()
+            CMS_lumi.CMS_lumi(c_roc[dr][name][tcut], iPeriod, iPos)
             #raw_input('ok?')
 
 
 
-            c_roc_barrel[dr][name][tcut] = ROOT.TCanvas('roc_%s_dT%s_barrel'%(name,tcut),'roc_%s_dT%s_barrel'%(name,tcut),500,500)
+            c_roc_barrel[dr][name][tcut] = ROOT.TCanvas('roc_%s_dT%s_barrel'%(name,tcut),'roc_%s_dT%s_barrel'%(name,tcut))
             c_roc_barrel[dr][name][tcut].SetGridx()
             c_roc_barrel[dr][name][tcut].SetGridy()
             c_roc_barrel[dr][name][tcut].SetTickx()
@@ -500,10 +501,11 @@ for ir,dr in enumerate(conesDR):
             leg2.Draw('same')
             tl.Draw()
             tl2.Draw()
+            CMS_lumi.CMS_lumi(c_roc_barrel[dr][name][tcut], iPeriod, iPos)
             #raw_input('ok?')
 
             
-            c_roc_endcap[dr][name][tcut] = ROOT.TCanvas('roc_%s_dT%s_endcap'%(name,tcut),'roc_%s_dT%s_endcap'%(name,tcut),500,500)
+            c_roc_endcap[dr][name][tcut] = ROOT.TCanvas('roc_%s_dT%s_endcap'%(name,tcut),'roc_%s_dT%s_endcap'%(name,tcut))
             c_roc_endcap[dr][name][tcut].SetGridx()
             c_roc_endcap[dr][name][tcut].SetGridy()
             c_roc_endcap[dr][name][tcut].SetTickx()
@@ -527,6 +529,7 @@ for ir,dr in enumerate(conesDR):
             leg2.Draw('same')
             tl.Draw()
             tl2.Draw()
+            CMS_lumi.CMS_lumi(c_roc_endcap[dr][name][tcut], iPeriod, iPos)
             #raw_input('ok?')
 
             
@@ -541,7 +544,7 @@ c_eff_endcap= {}
 
 color = {'sig':ROOT.kBlue, 'bkg':ROOT.kRed}
 
-leg3 = ROOT.TLegend(0.15, 0.7, 0.65, 0.89)
+leg3 = ROOT.TLegend(0.15, 0.7, 0.50, 0.92)
 leg3.SetBorderSize(0)
 
 nre = 1
@@ -594,7 +597,7 @@ for ir,dr in enumerate(conesDR):
 
 
         #BTL+ETL        
-        c_chIso[dr][name] = ROOT.TCanvas('muon_%s'%name,'muon_%s'%name,500,500)
+        c_chIso[dr][name] = ROOT.TCanvas('muon_%s'%name,'muon_%s'%name)
         print  c_chIso[dr][name].GetName()
         c_chIso[dr][name].SetLogy()
         h_chIso[dr][name]['sig'].GetXaxis().SetRangeUser(0,1.2)    
@@ -609,10 +612,11 @@ for ir,dr in enumerate(conesDR):
             leg3.AddEntry(h_chIso_dT[dr][name]['bkg'][tcut],'non-prompt muons (%s), with MTD (#sigma_{t} = %d ps)'%(textProc,resolution), 'L')
         leg3.Draw('same')
         tl.Draw()
+        CMS_lumi.CMS_lumi(c_chIso[dr][name], iPeriod, iPos)
         #tl2.Draw()
 
         #BTL only
-        c_chIso_barrel[dr][name] = ROOT.TCanvas('muon_%s_barrel'%name,'muon_%s_barrel'%name,500,500)
+        c_chIso_barrel[dr][name] = ROOT.TCanvas('muon_%s_barrel'%name,'muon_%s_barrel'%name)
         c_chIso_barrel[dr][name].SetLogy()
         h_chIso_barrel[dr][name]['sig'].GetXaxis().SetRangeUser(0,1.1)    
         h_chIso_barrel[dr][name]['sig'].DrawNormalized()
@@ -621,10 +625,11 @@ for ir,dr in enumerate(conesDR):
         h_chIso_dT_barrel[dr][name]['bkg'][tcut].DrawNormalized('histo same')
         leg3.Draw('same')
         tl.Draw()
+        CMS_lumi.CMS_lumi(c_chIso_barrel[dr][name], iPeriod, iPos)
         #tl2.Draw()
         
         #ETL only
-        c_chIso_endcap[dr][name] = ROOT.TCanvas('muon_%s_endcap'%name,'muon_%s_endcap'%name,500,500)
+        c_chIso_endcap[dr][name] = ROOT.TCanvas('muon_%s_endcap'%name,'muon_%s_endcap'%name)
         c_chIso_endcap[dr][name].SetLogy()
         h_chIso_endcap[dr][name]['sig'].GetXaxis().SetRangeUser(0,1.1)    
         h_chIso_endcap[dr][name]['sig'].DrawNormalized()
@@ -633,9 +638,10 @@ for ir,dr in enumerate(conesDR):
         h_chIso_dT_endcap[dr][name]['bkg'][tcut].DrawNormalized('histo same')
         leg3.Draw('same')
         tl.Draw()
+        CMS_lumi.CMS_lumi(c_chIso_endcap[dr][name], iPeriod, iPos)
         #tl2.Draw()
 
-        c_eff[dr][name] = ROOT.TCanvas('efficiency_%s'%name,'eff_%s'%name,500,500)
+        c_eff[dr][name] = ROOT.TCanvas('efficiency_%s'%name,'eff_%s'%name)
         c_eff[dr][name].SetLogy()
         c_eff[dr][name].SetGridx()
         c_eff[dr][name].SetGridy()
@@ -649,12 +655,13 @@ for ir,dr in enumerate(conesDR):
         h_eff_chIso_dT[dr][name]['bkg'][tcut].Draw('h same')
         leg3.Draw('same')
         tl.Draw()
+        CMS_lumi.CMS_lumi(c_eff[dr][name], iPeriod, iPos)
         #tl2.Draw()
 
         
     
 #save plots
-dirname = '%dps_%s_%s'%(resolution, pu, bkgProc)
+dirname = release+'/%dps_%s_%s'%(resolution, pu, bkgProc)
 if (suffix != ''):
     dirname = dirname+'_'+suffix
 dirname = dirname+'/'

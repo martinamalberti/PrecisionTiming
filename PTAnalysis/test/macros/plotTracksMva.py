@@ -14,12 +14,8 @@ import CMS_lumi, tdrstyle
 CMS_lumi.writeExtraText = True
 iPeriod = 0
 iPos = 0
-
 #set the tdr style
 tdrstyle.setTDRStyle()
-ROOT.gStyle.SetOptStat(0)
-ROOT.gStyle.SetOptFit(0)
-
 
 
 def makeRoc(hsig, hbkg, graph):
@@ -48,45 +44,44 @@ def makeRoc(hsig, hbkg, graph):
 
 # ==== MAIN  =====
 
-release = '93X'
-#release = '10_4_0_mtd5'
+#release = '93X'
+release = '10_4_0_mtd5'
 
 
 pu = sys.argv[1]
 bkgProc = sys.argv[2]
 
-#fSig = '../'+release+'/testTracks_DYToLL_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt.root'
-#fBkg = '../'+release+'/testTracks_%s_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt.root'%bkgProc
-fSig = '../'+release+'/testTracks_DYToLL_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_fix.root'
-fBkg = '../'+release+'/testTracks_%s_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_fix.root'%bkgProc
+fSig = '../'+release+'/testTracksMva_DYToLL_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt.root'
+fBkg = '../'+release+'/testTracksMva_%s_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt.root'%bkgProc
 
 
 if (pu == 'noPU'):
-    fSig = '../'+release+'/testTracks_DYToLL_noPU_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt.root'
-    fBkg = '../'+release+'/testTracks_%s_noPU_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt.root'%bkgProc
+    fSig = '../'+release+'/testTracksMva_DYToLL_noPU_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt.root'
+    fBkg = '../'+release+'/testTracksMva_DYToLL_noPU_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt.root'
+    #fBkg = '../'+release+'/testTracks_%s_noPU_dT3sigma_minTrackPt.root'%bkgProc
     #fSig = '../'+release+'/testTracks_DYToLL_noPU_dT3sigma_minMuonPt10_maxMuonPt15_minTrackPt.root'
     #fBkg = '../'+release+'/testTracks_%s_noPU_dT3sigma_minMuonPt10_maxMuonPt15_minTrackPt.root'%bkgProc
     
     
-plotdir = release+'/tracksInCone_%s_%s'%(pu,bkgProc)
+plotdir = release+'/tracksPuidMva_%s_%s'%(pu,bkgProc)
 if ('minTrackPt' in fSig):
     plotdir = plotdir+'_minTrackPt'
     
 os.system('mkdir %s'%plotdir)
 shutil.copy('index.php', plotdir)
     
-tl = ROOT.TLatex( 0.65, 0.86,'<PU> = 200')
+tl = ROOT.TLatex( 0.70, 0.84,'<PU> = 200')
 if ('noPU' in fSig):
-    tl = ROOT.TLatex( 0.65, 0.86,'<PU> = 0')
+    tl = ROOT.TLatex( 0.70, 0.84,'<PU> = 0')
 tl.SetNDC()
 tl.SetTextSize(0.035)
 
 tl2 = {}
-tl2['barrel'] = ROOT.TLatex( 0.65, 0.82,'barrel muons')
+tl2['barrel'] = ROOT.TLatex( 0.69, 0.78,'barrel muons')
 tl2['barrel'] .SetNDC()
 tl2['barrel'] .SetTextSize(0.030)
 
-tl2['endcap'] = ROOT.TLatex( 0.65, 0.82,'endcap muons')
+tl2['endcap'] = ROOT.TLatex( 0.68, 0.78,'endcap muons')
 tl2['endcap'] .SetNDC()
 tl2['endcap'] .SetTextSize(0.030)
 
@@ -97,6 +92,7 @@ tl3['prompt'] .SetTextSize(0.030)
 tl3['fake'] = ROOT.TLatex( 0.65, 0.78,'t#bar{t}')
 tl3['fake'] .SetNDC()
 tl3['fake'] .SetTextSize(0.030)
+
 
 f = {}
 f['prompt'] = ROOT.TFile.Open(fSig)
@@ -162,8 +158,6 @@ for d in ['barrel','endcap']:
     for proc in ['prompt', 'fake']:
         h_tracks_dz_vtx[d][proc]        =  f[proc].Get('h_tracks_dz_vtx_'+d)
         h_tracks_dt_vtx[d][proc]        =  f[proc].Get('h_tracks_dt_vtx_'+d)
-        h_tracks_dz_mu[d][proc]         =  f[proc].Get('h_tracks_dz_mu_'+d)
-        h_tracks_dt_mu[d][proc]         =  f[proc].Get('h_tracks_dt_mu_'+d)
         h2_tracks_dzvtx_dtvtx[d][proc] = f[proc].Get('h2_tracks_dzvtx_dtvtx_'+d)
 
         h_tracks_pt[d][proc]    = f[proc].Get('h_tracks_pt_'+d)
@@ -221,7 +215,7 @@ c = {}
 
 # compare prompt and non-prompt
 for id,d in enumerate(['barrel', 'endcap']):
-    for ih,h in  enumerate([h_tracks_dz_vtx[d], h_tracks_dz_mu[d],
+    for ih,h in  enumerate([h_tracks_dz_vtx[d],
                             h_tracks_pt[d], h_tracks_n[d], h_tracks_sumpt[d],
                             h_tracks_removed_pt[d], h_tracks_removed_n[d], h_tracks_removed_sumpt[d],
                             h_tracks_kept_pt[d], h_tracks_kept_n[d], h_tracks_kept_sumpt[d],
@@ -291,11 +285,11 @@ for id, d in enumerate(['barrel', 'endcap']):
     
         c_tracks_pt[d][proc] = ROOT.TCanvas('tracks_pt_%s_%s'%(proc,d),'tracks_pt_%s_%s'%(proc,d))
         c_tracks_n[d][proc] = ROOT.TCanvas('tracks_n_%s_%s'%(proc,d), 'tracks_n_%s_%s'%(proc,d))
-        c_tracks_sumpt[d][proc] = ROOT.TCanvas('tracks_sumpt_%s_%s'%(proc,d),'tracks_sumpt_%s_%s'%(proc,d))
+        c_tracks_sumpt[d][proc] = ROOT.TCanvas('tracks_sumpt_%s_%s'%(proc,d),'tracks_sumpt_%s_%s'%(proc,d),500,500 )
 
         c_tracks_pt_vs_linedensity[d][proc] = ROOT.TCanvas('tracks_pt_vs_linedensity_%s_%s'%(proc,d),'tracks_pt_vs_linedensity_%s_%s'%(proc,d))
         c_tracks_n_vs_linedensity[d][proc] = ROOT.TCanvas('tracks_n_vs_linedensity_%s_%s'%(proc,d), 'tracks_n_vs_linedensity_%s_%s'%(proc,d))
-        c_tracks_sumpt_vs_linedensity[d][proc] = ROOT.TCanvas('tracks_sumpt_vs_linedensity_%s_%s'%(proc,d),'tracks_vs_linedensity_sumpt_%s_%s'%(proc,d) )
+        c_tracks_sumpt_vs_linedensity[d][proc] = ROOT.TCanvas('tracks_sumpt_vs_linedensity_%s_%s'%(proc,d),'tracks_vs_linedensity_sumpt_%s_%s'%(proc,d),500,500 )
         
         c_tracks_pt[d][proc].cd()
         h_tracks_pt[d][proc].GetXaxis().SetRangeUser(0.0, 10.)
@@ -312,7 +306,7 @@ for id, d in enumerate(['barrel', 'endcap']):
         tl.Draw()
         tl2[d].Draw()
         CMS_lumi.CMS_lumi(c_tracks_pt[d][proc], iPeriod, iPos)
-        
+         
         c_tracks_n[d][proc].cd()
         h_tracks_n[d][proc].GetXaxis().SetRangeUser(0,10)
         h_tracks_n[d][proc].GetYaxis().SetRangeUser(0.0001,h_tracks_n[d][proc].GetMaximum()*1.2)
@@ -323,7 +317,7 @@ for id, d in enumerate(['barrel', 'endcap']):
         tl.Draw()
         tl2[d].Draw()
         CMS_lumi.CMS_lumi(c_tracks_n[d][proc], iPeriod, iPos)
-        
+         
         c_tracks_sumpt[d][proc].cd()
         c_tracks_sumpt[d][proc].SetLogy()
         h_tracks_sumpt[d][proc].GetXaxis().SetRangeUser(0.0, 50.)
@@ -335,6 +329,7 @@ for id, d in enumerate(['barrel', 'endcap']):
         tl.Draw()
         tl2[d].Draw()
         CMS_lumi.CMS_lumi(c_tracks_sumpt[d][proc], iPeriod, iPos)
+         
         
         c_tracks_pt_vs_linedensity[d][proc].cd()
         p_tracks_pt[d][proc].GetYaxis().SetRangeUser(0.0001,p_tracks_pt[d][proc].GetMaximum()*1.2)
@@ -362,9 +357,7 @@ for id, d in enumerate(['barrel', 'endcap']):
         CMS_lumi.CMS_lumi(c_tracks_n_vs_linedensity[d][proc], iPeriod, iPos)
         
         c_tracks_sumpt_vs_linedensity[d][proc].cd()
-        c_tracks_sumpt_vs_linedensity[d][proc].SetLogy()
-        #p_tracks_sumpt[d][proc].GetYaxis().SetRangeUser(0.001,p_tracks_sumpt[d][proc].GetMaximum()*100)
-        p_tracks_sumpt[d][proc].GetYaxis().SetRangeUser(0.01,10000)
+        p_tracks_sumpt[d][proc].GetYaxis().SetRangeUser(0.0001,p_tracks_sumpt[d][proc].GetMaximum()*1.2)
         p_tracks_sumpt[d][proc].Draw()
         p_tracks_removed_sumpt[d][proc].SetMarkerStyle(24)
         p_tracks_removed_sumpt[d][proc].Draw('same')
@@ -389,80 +382,6 @@ for id,d in enumerate(['barrel', 'endcap']):
  
 
 
-cc  = {}
-fitfun2 = {}
-fpv = {}
-fpu = {}
-
-tpu = {}
-tpv = {}
-
-
-for d in 'barrel','endcap':
-    cc[d] = {}
-    fitfun2[d] = {}
-    fpv[d] = {}
-    fpu[d] = {}
-    tpu[d] = {}
-    tpv[d] = {}
-    for proc in ['prompt','fake']:
-        cname = h_tracks_dt_mu[d]['prompt'].GetName().replace('h_','') + '_' + proc
-        cc[d][proc]= ROOT.TCanvas(cname,cname)
-        h_tracks_dt_mu[d][proc].GetYaxis().SetRangeUser(0.0000001,h_tracks_dt_mu[d][proc].GetMaximum()*1.5)
-        h_tracks_dt_mu[d][proc].GetXaxis().SetTitle('t_{track} - t_{#mu} (ns)')
-        fitfun2[d][proc] = h_tracks_dt_mu[d][proc].GetFunction('fitfun2_%s'%d)
-        fitfun2[d][proc].SetLineColor(ROOT.kGreen+1)
-        h_tracks_dt_mu[d][proc].Fit( fitfun2[d][proc],'QRMS')
-        h_tracks_dt_mu[d][proc].Draw()
-        
-        fpv[d][proc] = ROOT.TF1('fpv_%s_%s'%(proc,d),'gaus(0)',-10,10)
-        fpv[d][proc].SetParameters(fitfun2[d][proc].GetParameter(0), fitfun2[d][proc].GetParameter(1), fitfun2[d][proc].GetParameter(2))
-        
-        fpu[d][proc] = ROOT.TF1('fpu_%s_%s'%(proc,d),'gaus(0)',-10,10)
-        fpu[d][proc].SetParameters(fitfun2[d][proc].GetParameter(3), fitfun2[d][proc].GetParameter(4), fitfun2[d][proc].GetParameter(5))
-        fpu[d][proc].SetLineColor(2)
-        fpu[d][proc].Draw('same')
-
-        sigmat_pv = fitfun2[d][proc].GetParameter(2)*1000.
-        sigmat_pu = fitfun2[d][proc].GetParameter(5)*1000.
-
-        sigmat_pv_err = fitfun2[d][proc].GetParError(2)*1000.
-        sigmat_pu_err = fitfun2[d][proc].GetParError(5)*1000.
-        
-        ntracks_pv = fpv[d][proc].Integral(-10,10)/h_tracks_dt_mu[d][proc].GetBinWidth(1)
-        ntracks_pu = fpu[d][proc].Integral(-10,10)/h_tracks_dt_mu[d][proc].GetBinWidth(1)
-
-        ntracks_pv_err = fpv[d][proc].IntegralError(-10,10)/h_tracks_dt_mu[d][proc].GetBinWidth(1)
-        ntracks_pu_err = fpu[d][proc].IntegralError(-10,10)/h_tracks_dt_mu[d][proc].GetBinWidth(1)
-
-        print 'sigma_t PV tracks : %.01f +/- %.01f'%(sigmat_pv, sigmat_pv_err)
-        print 'sigma_t PU tracks : %.01f +/- %.01f'%(sigmat_pu, sigmat_pu_err)
-        
-        print 'Number of PV tracks per muon : %.02f +/- %.02f'%(ntracks_pv, ntracks_pv_err )
-        print 'Number of PU tracks per muon : %.02f +/- %.02f'%(ntracks_pu, ntracks_pu_err) 
-    
-        
-        tpv[d][proc] = ROOT.TLatex( 0.15, 0.85, '#splitline{PV tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pv, ntracks_pv))
-        tpv[d][proc].SetTextColor(ROOT.kGreen+1)
-        tpv[d][proc].SetNDC()
-        tpv[d][proc].SetTextSize(0.030)
-        
-        tpu[d][proc] = ROOT.TLatex( 0.15, 0.75, '#splitline{PU tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pu, ntracks_pu))
-        tpu[d][proc].SetTextColor(2)
-        tpu[d][proc].SetNDC()
-        tpu[d][proc].SetTextSize(0.030)
-        
-        tpu[d][proc].Draw()
-        tpv[d][proc].Draw()
-        tl.Draw()
-        tl2[d].Draw()
-        tl3[proc].Draw()
-        CMS_lumi.CMS_lumi(cc[d][proc], iPeriod, iPos)
-        #raw_input('ok?')
-
-
-
-
 # dt wrt vtx
 ccc  = {}
 fitfun = {}
@@ -480,7 +399,7 @@ for d in 'barrel','endcap':
     ttpv[d] = {}
     for proc in ['prompt','fake']:
         cname = h_tracks_dt_vtx[d]['prompt'].GetName().replace('h_','') + '_' + proc
-        ccc[d][proc]= ROOT.TCanvas(cname,cname)
+        ccc[d][proc]= ROOT.TCanvas(cname,cname) 
         ccc[d][proc].SetLogy()
         ROOT.gStyle.SetOptFit(0)
         h_tracks_dt_vtx[d][proc].GetYaxis().SetRangeUser(0.00001,h_tracks_dt_vtx[d][proc].GetMaximum()*1.5)
@@ -523,9 +442,9 @@ for d in 'barrel','endcap':
         sigmat_pv_err = fitfun[d][proc].GetParError(2)*1000.
         sigmat_pu_err = fitfun[d][proc].GetParError(5)*1000.
         
-        #ntracks_pv = ffpv[d][proc].Integral(-10,10)/h_tracks_dt_vtx[d][proc].GetBinWidth(1)
+        ntracks_pv = ffpv[d][proc].Integral(-10,10)/h_tracks_dt_vtx[d][proc].GetBinWidth(1)
         ntracks_pu = ffpu[d][proc].Integral(-10,10)/h_tracks_dt_vtx[d][proc].GetBinWidth(1)
-        ntracks_pv = h_tracks_dt_vtx[d][proc].Integral() - ntracks_pu
+        #ntracks_pv = h_tracks_dt_vtx[d][proc].Integral() - ntracks_pu
 
         ntracks_pv_err = ffpv[d][proc].IntegralError(-10,10)/h_tracks_dt_vtx[d][proc].GetBinWidth(1)
         ntracks_pu_err = ffpu[d][proc].IntegralError(-10,10)/h_tracks_dt_vtx[d][proc].GetBinWidth(1)
@@ -537,12 +456,12 @@ for d in 'barrel','endcap':
         print 'Number of PU tracks per muon : %.02f +/- %.02f'%(ntracks_pu, ntracks_pu_err) 
     
         
-        ttpv[d][proc] = ROOT.TLatex( 0.15, 0.85, '#splitline{PV tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pv, ntracks_pv))
+        ttpv[d][proc] = ROOT.TLatex( 0.15, 0.82, '#splitline{PV tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pv, ntracks_pv))
         ttpv[d][proc].SetTextColor(ROOT.kGreen+1)
         ttpv[d][proc].SetNDC()
         ttpv[d][proc].SetTextSize(0.030)
         
-        ttpu[d][proc] = ROOT.TLatex( 0.15, 0.75, '#splitline{PU tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pu, ntracks_pu))
+        ttpu[d][proc] = ROOT.TLatex( 0.15, 0.72, '#splitline{PU tracks}{#sigma_{t} = %.0f ps, <n/ev> = %.02f}'%(sigmat_pu, ntracks_pu))
         #if (  ntracks_pu < 0.01 or sigmat_pu < 0 ) :
         #    ttpu[d][proc] = ROOT.TLatex( 0.12, 0.72, '#splitline{PU tracks}{#sigma_{t} = n.a. ps, <n/ev> = 0}')
 
@@ -554,9 +473,8 @@ for d in 'barrel','endcap':
         ttpv[d][proc].Draw()
         tl.Draw()
         tl2[d].Draw()
-        tl3[proc].Draw() 
+        tl3[proc].Draw()
         CMS_lumi.CMS_lumi(ccc[d][proc], iPeriod, iPos)
-
         #raw_input('ok?')
 
 
@@ -567,143 +485,87 @@ for d in 'barrel','endcap':
 h_relChIso03_dZ1 = {}
 h_relChIso03_dZ1_dT3s = {}
 
-h_rawChIso03_dZ1 = {}
-h_rawChIso03_dZ1_dT3s = {}
-
 g_roc_relChIso03_dZ1 = {}
 g_roc_relChIso03_dZ1_dT3s = {}
 
-g_roc_rawChIso03_dZ1 = {}
-g_roc_rawChIso03_dZ1_dT3s = {}
-
 c_roc_relChIso03_dZ1_dT3s = {}
-c_roc_rawChIso03_dZ1_dT3s = {}
+
+h_relChIso03_mva3d= {}
+h_relChIso03_mva4d = {}
+
+g_roc_relChIso03_mva3d = {}
+g_roc_relChIso03_mva4d = {}
+
+c_roc_relChIso03_mva = {}
 
 leg4 = {}
 for id, d in enumerate(['barrel','endcap']):
     h_relChIso03_dZ1[d] = {}
     h_relChIso03_dZ1_dT3s[d] = {}
-    h_rawChIso03_dZ1[d] = {}
-    h_rawChIso03_dZ1_dT3s[d] = {}
+    h_relChIso03_mva3d[d] = {}
+    h_relChIso03_mva4d[d] = {}
     for proc in ['prompt','fake']:
-        h_relChIso03_dZ1[d][proc] = f[proc].Get('h_muon_relChIso03_dZ1_%s'%d)
-        h_relChIso03_dZ1_dT3s[d][proc] = f[proc].Get('h_muon_relChIso03_dZ1_dT3s_%s'%d)
-        h_rawChIso03_dZ1[d][proc] = f[proc].Get('h_muon_rawChIso03_dZ1_%s'%d)
-        h_rawChIso03_dZ1_dT3s[d][proc] = f[proc].Get('h_muon_rawChIso03_dZ1_dT3s_%s'%d)
-        
+        h_relChIso03_dZ1[d][proc] = f[proc].Get('h_muon_relChIso03_dZ_%s'%d)
+        h_relChIso03_dZ1_dT3s[d][proc] = f[proc].Get('h_muon_relChIso03_dZ_dT3s_%s'%d)
+        h_relChIso03_mva3d[d][proc] = f[proc].Get('h_muon_relChIso03_mva3D_%s'%d)
+        h_relChIso03_mva4d[d][proc] = f[proc].Get('h_muon_relChIso03_mva4D_%s'%d)
+                 
     g_roc_relChIso03_dZ1[d] = ROOT.TGraphErrors()
     g_roc_relChIso03_dZ1[d].SetName('g_roc_relChIso03_dZ1_%s'%d)
     g_roc_relChIso03_dZ1_dT3s[d] = ROOT.TGraphErrors()
     g_roc_relChIso03_dZ1_dT3s[d].SetName('g_roc_relChIso03_dZ1_dT3s_%s'%d)
 
-    g_roc_rawChIso03_dZ1[d] = ROOT.TGraphErrors()
-    g_roc_rawChIso03_dZ1[d].SetName('g_roc_rawChIso03_dZ1_%s'%d)
-    g_roc_rawChIso03_dZ1_dT3s[d] = ROOT.TGraphErrors()
-    g_roc_rawChIso03_dZ1_dT3s[d].SetName('g_roc_rawChIso03_dZ1_dT3s_%s'%d)
-
+    g_roc_relChIso03_mva3d[d] = ROOT.TGraphErrors()
+    g_roc_relChIso03_mva3d[d].SetName('g_roc_relChIso03_mva3d_%s'%d)
+    g_roc_relChIso03_mva4d[d] = ROOT.TGraphErrors()
+    g_roc_relChIso03_mva4d[d].SetName('g_roc_relChIso03_mva4d_%s'%d)
+ 
     makeRoc(h_relChIso03_dZ1[d]['prompt'], h_relChIso03_dZ1[d]['fake'], g_roc_relChIso03_dZ1[d] )
     makeRoc(h_relChIso03_dZ1_dT3s[d]['prompt'], h_relChIso03_dZ1_dT3s[d]['fake'],g_roc_relChIso03_dZ1_dT3s[d] )
 
-    print h_rawChIso03_dZ1[d]['prompt'].GetEntries()
-    makeRoc(h_rawChIso03_dZ1[d]['prompt'], h_rawChIso03_dZ1[d]['fake'], g_roc_rawChIso03_dZ1[d] )
-    makeRoc(h_rawChIso03_dZ1_dT3s[d]['prompt'], h_rawChIso03_dZ1_dT3s[d]['fake'],g_roc_rawChIso03_dZ1_dT3s[d] )
-
-    c_roc_relChIso03_dZ1_dT3s[d] = ROOT.TCanvas('roc_relChIso03_dZ1_dT3s_%s'%d, 'roc_relChIso03_dZ1_dT3s_%s'%d, 500, 500)
+    makeRoc(h_relChIso03_mva3d[d]['prompt'], h_relChIso03_mva3d[d]['fake'], g_roc_relChIso03_mva3d[d] )
+    makeRoc(h_relChIso03_mva4d[d]['prompt'], h_relChIso03_mva4d[d]['fake'], g_roc_relChIso03_mva4d[d] )
+        
+ 
+    c_roc_relChIso03_dZ1_dT3s[d] = ROOT.TCanvas('roc_relChIso03_dZ1_dT3s_%s'%d, 'roc_relChIso03_dZ1_dT3s_%s'%d)
     c_roc_relChIso03_dZ1_dT3s[d].SetGridx()
     c_roc_relChIso03_dZ1_dT3s[d].SetGridy()
-    g_roc_relChIso03_dZ1[d].GetXaxis().SetRangeUser(0.8,1.01)
+    g_roc_relChIso03_dZ1[d].GetXaxis().SetRangeUser(0.85,1.01)
     g_roc_relChIso03_dZ1[d].GetYaxis().SetRangeUser(0.0,0.1)
-    g_roc_relChIso03_dZ1[d].GetXaxis().SetTitle("#epsilon_{prompt}")
-    g_roc_relChIso03_dZ1[d].GetYaxis().SetTitle("#epsilon_{fake}")
+    g_roc_relChIso03_dZ1[d].GetXaxis().SetTitle("Prompt efficiency")
+    g_roc_relChIso03_dZ1[d].GetYaxis().SetTitle("Non-prompt efficiency")
     g_roc_relChIso03_dZ1[d].SetLineColor(ROOT.kBlue)
     g_roc_relChIso03_dZ1[d].SetFillColorAlpha(ROOT.kBlue,0.35)
     g_roc_relChIso03_dZ1[d].SetFillStyle(1001)
     g_roc_relChIso03_dZ1_dT3s[d].SetLineColor(ROOT.kRed)
     g_roc_relChIso03_dZ1_dT3s[d].SetFillColorAlpha(ROOT.kRed,0.35)
     g_roc_relChIso03_dZ1_dT3s[d].SetFillStyle(1001)
-    g_roc_relChIso03_dZ1[d].Draw(' A L E3')
+    g_roc_relChIso03_dZ1[d].Draw('A L E3')
     g_roc_relChIso03_dZ1_dT3s[d].Draw('L E3 same')
-    leg4[d] = ROOT.TLegend(0.15, 0.7, 0.45, 0.89)
+    g_roc_relChIso03_mva3d[d].SetLineColor(ROOT.kGreen+2)
+    g_roc_relChIso03_mva3d[d].SetFillColorAlpha(ROOT.kGreen+2,0.35)
+    g_roc_relChIso03_mva3d[d].SetFillStyle(1001)
+    g_roc_relChIso03_mva4d[d].SetLineColor(ROOT.kMagenta+2)
+    g_roc_relChIso03_mva4d[d].SetFillColorAlpha(ROOT.kMagenta+2,0.35)
+    g_roc_relChIso03_mva4d[d].SetFillStyle(1001)
+    g_roc_relChIso03_mva3d[d].SetLineStyle(2)
+    g_roc_relChIso03_mva4d[d].SetLineStyle(2)
+    g_roc_relChIso03_mva3d[d].Draw('L E3 same')
+    g_roc_relChIso03_mva4d[d].Draw('L E3 same')
+    leg4[d] = ROOT.TLegend(0.15, 0.7, 0.55, 0.92)
     leg4[d].SetBorderSize(0)
-    leg4[d].AddEntry( g_roc_relChIso03_dZ1[d],'no MTD','L')
-    leg4[d].AddEntry( g_roc_relChIso03_dZ1_dT3s[d],'MTD, #sigma_{t} = 30 ps','L')
-    leg4[d].Draw()
+    leg4[d].AddEntry( g_roc_relChIso03_mva3d[d],'no MTD, 3DMVA','L')
+    leg4[d].AddEntry( g_roc_relChIso03_mva4d[d],'MTD, 4DMVA (#sigma_{t} = 35 ps)','L')
+    leg4[d].AddEntry( g_roc_relChIso03_dZ1[d],'no MTD, dz < 1 mm','L')
+    leg4[d].AddEntry( g_roc_relChIso03_dZ1_dT3s[d],'MTD, dz < 1 mm, dt < 3#sigma_{t} (#sigma_{t} = 35 ps)','L')
     tl.Draw()
     tl2[d].Draw()
-
-    c_roc_rawChIso03_dZ1_dT3s[d] = ROOT.TCanvas('roc_rawChIso03_dZ1_dT3s_%s'%d, 'roc_rawChIso03_dZ1_dT3s_%s'%d, 500, 500)
-    c_roc_rawChIso03_dZ1_dT3s[d].SetGridx()
-    c_roc_rawChIso03_dZ1_dT3s[d].SetGridy()
-    g_roc_rawChIso03_dZ1[d].GetXaxis().SetRangeUser(0.8,1.01)
-    g_roc_rawChIso03_dZ1[d].GetYaxis().SetRangeUser(0.0,0.1)
-    g_roc_rawChIso03_dZ1[d].GetXaxis().SetTitle("#epsilon_{prompt}")
-    g_roc_rawChIso03_dZ1[d].GetYaxis().SetTitle("#epsilon_{fake}")
-    g_roc_rawChIso03_dZ1[d].SetLineColor(ROOT.kBlue)
-    g_roc_rawChIso03_dZ1_dT3s[d].SetLineColor(ROOT.kRed)
-    g_roc_rawChIso03_dZ1[d].Draw()
-    g_roc_rawChIso03_dZ1_dT3s[d].Draw('same')
     leg4[d].Draw()
+    CMS_lumi.CMS_lumi(c_roc_relChIso03_dZ1_dT3s[d], iPeriod, iPos)
     
     #raw_input('ok?')
 
 
-# efficiency plots
-tt = {}
-p_muonEff_relChIso03_dZ1_vs_pt = {}
-p_muonEff_relChIso03_dZ1_dT3s_vs_pt = {}
-
-c_eff_vs_pt = {}
-nRe = 2
-
-for d in ['barrel','endcap']:
-    p_muonEff_relChIso03_dZ1_vs_pt[d] = {}
-    p_muonEff_relChIso03_dZ1_dT3s_vs_pt[d] = {}
-    for proc in ['prompt','fake']:
-        p_muonEff_relChIso03_dZ1_vs_pt[d][proc] = f[proc].Get('p_muonEff_relChIso03_dZ1_vs_pt_%s'%d)
-        p_muonEff_relChIso03_dZ1_dT3s_vs_pt[d][proc] = f[proc].Get('p_muonEff_relChIso03_dZ1_dT3s_vs_pt_%s'%d)
-        p_muonEff_relChIso03_dZ1_vs_pt[d][proc].SetMarkerStyle(20)
-        p_muonEff_relChIso03_dZ1_dT3s_vs_pt[d][proc].SetMarkerStyle(20)
-        p_muonEff_relChIso03_dZ1_vs_pt[d][proc].Rebin(nRe)
-        p_muonEff_relChIso03_dZ1_dT3s_vs_pt[d][proc].Rebin(nRe)
-        
-    c_eff_vs_pt[d] = ROOT.TCanvas('eff_vs_pt_%s'%d, 'eff_vs_pt_%s'%d) 
-    c_eff_vs_pt[d].Divide(1,2)
-    c_eff_vs_pt[d].cd(1)
-    c_eff_vs_pt[d].cd(1).SetGridx()
-    c_eff_vs_pt[d].cd(1).SetGridy()
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['prompt'].SetLineColor(ROOT.kBlue)
-    p_muonEff_relChIso03_dZ1_dT3s_vs_pt[d]['prompt'].SetLineColor(ROOT.kRed)
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['prompt'].SetMarkerColor(ROOT.kBlue)
-    p_muonEff_relChIso03_dZ1_dT3s_vs_pt[d]['prompt'].SetMarkerColor(ROOT.kRed)
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['prompt'].GetXaxis().SetRangeUser(0.,60.)
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['prompt'].GetYaxis().SetRangeUser(0.70,1.1)
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['prompt'].GetYaxis().SetTitle('prompt efficiency')
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['prompt'].Draw()
-    p_muonEff_relChIso03_dZ1_dT3s_vs_pt[d]['prompt'].Draw('same')
-    tl.Draw()
-    tl2[d].Draw()
-    tt[d] = ROOT.TLatex(0.2, 0.8, 'relChIso < 0.05')
-    tt[d].SetNDC()
-    tt[d].SetTextSize(0.050)
-    tt[d].Draw()
-    
-    c_eff_vs_pt[d].cd(2)
-    c_eff_vs_pt[d].cd(2).SetGridy()
-    c_eff_vs_pt[d].cd(2).SetGridx()
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['fake'].SetLineColor(ROOT.kBlue)
-    p_muonEff_relChIso03_dZ1_dT3s_vs_pt[d]['fake'].SetLineColor(ROOT.kRed)
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['fake'].SetMarkerColor(ROOT.kBlue)
-    p_muonEff_relChIso03_dZ1_dT3s_vs_pt[d]['fake'].SetMarkerColor(ROOT.kRed)
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['fake'].GetXaxis().SetRangeUser(0.,60.)
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['fake'].GetYaxis().SetRangeUser(0.0,0.07)
-    if (d=='endcap'): p_muonEff_relChIso03_dZ1_vs_pt[d]['fake'].GetYaxis().SetRangeUser(0.0,0.10)
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['fake'].GetYaxis().SetTitle('non-prompt efficiency')
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['fake'].GetXaxis().SetTitle('muon pT (GeV)')
-    p_muonEff_relChIso03_dZ1_vs_pt[d]['fake'].Draw()
-    p_muonEff_relChIso03_dZ1_dT3s_vs_pt[d]['fake'].Draw('same')
-   
-  
-    
 # save canvases
 for cname in c:
     c[cname].SaveAs(plotdir+'/'+c[cname].GetName()+'.png')
@@ -712,16 +574,8 @@ for cname in c:
 for d in ['barrel', 'endcap']:
     c_roc_relChIso03_dZ1_dT3s[d].SaveAs(plotdir+'/'+c_roc_relChIso03_dZ1_dT3s[d].GetName()+'.png')
     c_roc_relChIso03_dZ1_dT3s[d].SaveAs(plotdir+'/'+c_roc_relChIso03_dZ1_dT3s[d].GetName()+'.pdf')
-
-    c_roc_rawChIso03_dZ1_dT3s[d].SaveAs(plotdir+'/'+c_roc_rawChIso03_dZ1_dT3s[d].GetName()+'.png')
-    c_roc_rawChIso03_dZ1_dT3s[d].SaveAs(plotdir+'/'+c_roc_rawChIso03_dZ1_dT3s[d].GetName()+'.pdf')
-
-    c_eff_vs_pt[d].SaveAs(plotdir+'/'+c_eff_vs_pt[d].GetName()+'.png')
-    c_eff_vs_pt[d].SaveAs(plotdir+'/'+c_eff_vs_pt[d].GetName()+'.pdf')
     
     for proc in ['prompt','fake']:
-        cc[d][proc].SaveAs(plotdir+'/'+cc[d][proc].GetName()+'.png')
-        cc[d][proc].SaveAs(plotdir+'/'+cc[d][proc].GetName()+'.pdf')
         ccc[d][proc].SaveAs(plotdir+'/'+ccc[d][proc].GetName()+'.png')
         ccc[d][proc].SaveAs(plotdir+'/'+ccc[d][proc].GetName()+'.pdf')
 
@@ -749,5 +603,6 @@ fout = ROOT.TFile(plotdir+'/roc_30ps_%s.root'%(pu),'recreate')
 for d in ['barrel', 'endcap']:
     g_roc_relChIso03_dZ1[d].Write()
     g_roc_relChIso03_dZ1_dT3s[d].Write()
-    g_roc_rawChIso03_dZ1[d].Write()
-    g_roc_rawChIso03_dZ1_dT3s[d].Write()
+    g_roc_relChIso03_mva3d[d].Write()
+    g_roc_relChIso03_mva4d[d].Write()
+   
