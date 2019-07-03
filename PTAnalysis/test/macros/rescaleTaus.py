@@ -75,8 +75,10 @@ g_roc_dT_scaled = ROOT.TGraph()
 
 
 f_scaling = ROOT.TFile.Open('ratioToRescaleTaus.root')
+#f_scaling = ROOT.TFile.Open('ratioToRescaleTaus_50ps.root')
 g_scaling = f_scaling.Get('ratio_fake_vs_derivative_endcap')
 
+dirname = '93X/tauRescaling_40ps/'
 
 print len(roc)
 for i in range(0,len(roc)):
@@ -128,7 +130,7 @@ g_roc.Draw('al')
 #g_roc_dT.Draw('lsame')
 g_roc_dT_scaled.Draw('lsame')
 
-leg = ROOT.TLegend(0.15, 0.70, 0.45, 0.92)
+leg = ROOT.TLegend(0.16, 0.70, 0.50, 0.92)
 leg.SetBorderSize(0)
 leg.AddEntry(g_roc,'no MTD','L')
 #leg.AddEntry(g_roc_dT,'MTD, #sigma_{t} = 30 ps, MTD #epsilon = 100%','L')
@@ -141,14 +143,16 @@ tl.SetTextSize(0.035)
 
 tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#tau#tau, QCD')
 tl2.SetNDC()
-tl2.SetTextSize(0.035)
+#tl2.SetTextSize(0.035)
 
 leg.Draw()
-tl.Draw()
+#tl.Draw()
 tl2.Draw()
 
 CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
 
 
-canvas.SaveAs(canvas.GetName()+'.pdf')
+canvas.SaveAs(dirname+canvas.GetName()+'.pdf')
+canvas.SaveAs(dirname+canvas.GetName()+'.png')
+canvas.SaveAs(dirname+canvas.GetName()+'.C')
 raw_input('ok?')

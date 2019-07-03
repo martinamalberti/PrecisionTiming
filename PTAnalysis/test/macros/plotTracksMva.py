@@ -50,24 +50,19 @@ release = '10_4_0_mtd5'
 
 pu = sys.argv[1]
 bkgProc = sys.argv[2]
+suffix = sys.argv[3]
 
 fSig = '../'+release+'/testTracksMva_DYToLL_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_noDxy.root'
 fBkg = '../'+release+'/testTracksMva_%s_PU200_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_noDxy.root'%bkgProc
 
-
 if (pu == 'noPU'):
-    fSig = '../'+release+'/testTracksMva_DYToLL_noPU_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt.root'
-    fBkg = '../'+release+'/testTracksMva_DYToLL_noPU_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt.root'
-    #fBkg = '../'+release+'/testTracks_%s_noPU_dT3sigma_minTrackPt.root'%bkgProc
-    #fSig = '../'+release+'/testTracks_DYToLL_noPU_dT3sigma_minMuonPt10_maxMuonPt15_minTrackPt.root'
-    #fBkg = '../'+release+'/testTracks_%s_noPU_dT3sigma_minMuonPt10_maxMuonPt15_minTrackPt.root'%bkgProc
+    fSig = '../'+release+'/testTracksMva_DYToLL_noPU_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_noDxy.root'
+    fBkg = '../'+release+'/testTracksMva_%s_noPU_dT3sigma_minMuonPt20_maxMuonPt9999_minTrackPt_noDxy.root'%bkgProc
+
     
     
 plotdir = release+'/tracksPuidMva_%s_%s'%(pu,bkgProc)
-if ('minTrackPt' in fSig):
-    plotdir = plotdir+'_minTrackPt'
-elif ('minTrackPt_noDxy' in fSig):
-    plotdir = plotdir+'_minTrackPt_noDxy'
+plotdir = plotdir+'_'+suffix
     
 os.system('mkdir %s'%plotdir)
 shutil.copy('index.php', plotdir)
@@ -483,57 +478,144 @@ for d in 'barrel','endcap':
 
 
 
-# make rocs
+# make roc
 h_relChIso03_dZ1 = {}
 h_relChIso03_dZ1_dT3s = {}
+h_relChIso03_dZ2 = {}
+h_relChIso03_dZ2_dT3s = {}
+h_relChIso03_dZ3 = {}
+h_relChIso03_dZ3_dT3s = {}
+h_relChIso03_dZ10 = {}
+h_relChIso03_dZ10_dT3s = {}
+h_relChIso03_mva3d= {}
+h_relChIso03_mva4d = {}
+h_relChIso03_mva3d_weighted = {}
+h_relChIso03_mva4d_weighted = {}
 
 g_roc_relChIso03_dZ1 = {}
 g_roc_relChIso03_dZ1_dT3s = {}
-
-c_roc_relChIso03_dZ1_dT3s = {}
-
-h_relChIso03_mva3d= {}
-h_relChIso03_mva4d = {}
-
+g_roc_relChIso03_dZ2 = {}
+g_roc_relChIso03_dZ2_dT3s = {}
+g_roc_relChIso03_dZ3 = {}
+g_roc_relChIso03_dZ3_dT3s = {}
+g_roc_relChIso03_dZ10 = {}
+g_roc_relChIso03_dZ10_dT3s = {}
 g_roc_relChIso03_mva3d = {}
 g_roc_relChIso03_mva4d = {}
+g_roc_relChIso03_mva3d_weighted = {}
+g_roc_relChIso03_mva4d_weighted = {}
 
+c_roc_relChIso03_dZ1_dT3s = {}
+c_roc_relChIso03_dZ2_dT3s = {}
+c_roc_relChIso03_dZ3_dT3s = {}
+c_roc_relChIso03_dZ10_dT3s = {}
 c_roc_relChIso03_mva = {}
+c_roc_relChIso03_mva_weighted = {}
 
 leg4 = {}
+leg5 = {}
+leg6 = {}
+
 for id, d in enumerate(['barrel','endcap']):
     h_relChIso03_dZ1[d] = {}
     h_relChIso03_dZ1_dT3s[d] = {}
+    h_relChIso03_dZ2[d] = {}
+    h_relChIso03_dZ2_dT3s[d] = {}
+    h_relChIso03_dZ3[d] = {}
+    h_relChIso03_dZ3_dT3s[d] = {}
+    h_relChIso03_dZ10[d] = {}
+    h_relChIso03_dZ10_dT3s[d] = {}
     h_relChIso03_mva3d[d] = {}
     h_relChIso03_mva4d[d] = {}
+    h_relChIso03_mva3d_weighted[d] = {}
+    h_relChIso03_mva4d_weighted[d] = {}
     for proc in ['prompt','fake']:
-        h_relChIso03_dZ1[d][proc] = f[proc].Get('h_muon_relChIso03_dZ_%s'%d)
-        h_relChIso03_dZ1_dT3s[d][proc] = f[proc].Get('h_muon_relChIso03_dZ_dT3s_%s'%d)
-        h_relChIso03_mva3d[d][proc] = f[proc].Get('h_muon_relChIso03_mva3D_%s'%d)
-        h_relChIso03_mva4d[d][proc] = f[proc].Get('h_muon_relChIso03_mva4D_%s'%d)
-                 
+        h_relChIso03_dZ1[d][proc] = f[proc].Get('h_muon_relChIso03_dZ1_%s'%d)
+        h_relChIso03_dZ1_dT3s[d][proc] = f[proc].Get('h_muon_relChIso03_dZ1_dT3s_%s'%d)
+        h_relChIso03_dZ2[d][proc] = f[proc].Get('h_muon_relChIso03_dZ2_%s'%d)
+        h_relChIso03_dZ2_dT3s[d][proc] = f[proc].Get('h_muon_relChIso03_dZ2_dT3s_%s'%d)
+        h_relChIso03_dZ3[d][proc] = f[proc].Get('h_muon_relChIso03_dZ3_%s'%d)
+        h_relChIso03_dZ3_dT3s[d][proc] = f[proc].Get('h_muon_relChIso03_dZ3_dT3s_%s'%d)
+        h_relChIso03_dZ10[d][proc] = f[proc].Get('h_muon_relChIso03_dZ10_%s'%d)
+        h_relChIso03_dZ10_dT3s[d][proc] = f[proc].Get('h_muon_relChIso03_dZ10_dT3s_%s'%d)
+        #h_relChIso03_mva3d[d][proc] = f[proc].Get('h_muon_relChIso03_mva3D_0.700_%s'%d)
+        #h_relChIso03_mva4d[d][proc] = f[proc].Get('h_muon_relChIso03_mva4D_0.700_%s'%d)
+        h_relChIso03_mva3d[d][proc] = f[proc].Get('h_muon_relChIso03_mva3D_0.100_%s'%d)
+        h_relChIso03_mva4d[d][proc] = f[proc].Get('h_muon_relChIso03_mva4D_0.100_%s'%d)
+        #h_relChIso03_mva3d[d][proc] = f[proc].Get('h_muon_relChIso03_mva3D_0.723_%s'%d)
+        #h_relChIso03_mva4d[d][proc] = f[proc].Get('h_muon_relChIso03_mva4D_0.753_%s'%d)
+        h_relChIso03_mva3d_weighted[d][proc] = f[proc].Get('h_muon_relChIso03_mva3D_weighted_%s'%d)
+        h_relChIso03_mva4d_weighted[d][proc] = f[proc].Get('h_muon_relChIso03_mva4D_weighted_%s'%d)
+
+        #rebin
+        nRe = 10
+        h_relChIso03_dZ1[d][proc].Rebin(nRe)
+        h_relChIso03_dZ1_dT3s[d][proc].Rebin(nRe)
+        h_relChIso03_dZ2[d][proc].Rebin(nRe)
+        h_relChIso03_dZ2_dT3s[d][proc].Rebin(nRe)
+        h_relChIso03_dZ3[d][proc].Rebin(nRe)
+        h_relChIso03_dZ3_dT3s[d][proc].Rebin(nRe)
+        h_relChIso03_dZ10[d][proc].Rebin(nRe)
+        h_relChIso03_dZ10_dT3s[d][proc].Rebin(nRe)
+        h_relChIso03_mva3d[d][proc].Rebin(nRe) 
+        h_relChIso03_mva4d[d][proc].Rebin(nRe) 
+        h_relChIso03_mva3d_weighted[d][proc].Rebin(nRe)
+        h_relChIso03_mva4d_weighted[d][proc].Rebin(nRe)
+        
     g_roc_relChIso03_dZ1[d] = ROOT.TGraphErrors()
     g_roc_relChIso03_dZ1[d].SetName('g_roc_relChIso03_dZ1_%s'%d)
     g_roc_relChIso03_dZ1_dT3s[d] = ROOT.TGraphErrors()
     g_roc_relChIso03_dZ1_dT3s[d].SetName('g_roc_relChIso03_dZ1_dT3s_%s'%d)
 
+    g_roc_relChIso03_dZ2[d] = ROOT.TGraphErrors()
+    g_roc_relChIso03_dZ2[d].SetName('g_roc_relChIso03_dZ2_%s'%d)
+    g_roc_relChIso03_dZ2_dT3s[d] = ROOT.TGraphErrors()
+    g_roc_relChIso03_dZ2_dT3s[d].SetName('g_roc_relChIso03_dZ2_dT3s_%s'%d)
+    
+    g_roc_relChIso03_dZ3[d] = ROOT.TGraphErrors()
+    g_roc_relChIso03_dZ3[d].SetName('g_roc_relChIso03_dZ3_%s'%d)
+    g_roc_relChIso03_dZ3_dT3s[d] = ROOT.TGraphErrors()
+    g_roc_relChIso03_dZ3_dT3s[d].SetName('g_roc_relChIso03_dZ3_dT3s_%s'%d)
+
+    g_roc_relChIso03_dZ10[d] = ROOT.TGraphErrors()
+    g_roc_relChIso03_dZ10[d].SetName('g_roc_relChIso03_dZ10_%s'%d)
+    g_roc_relChIso03_dZ10_dT3s[d] = ROOT.TGraphErrors()
+    g_roc_relChIso03_dZ10_dT3s[d].SetName('g_roc_relChIso03_dZ10_dT3s_%s'%d)
+
     g_roc_relChIso03_mva3d[d] = ROOT.TGraphErrors()
     g_roc_relChIso03_mva3d[d].SetName('g_roc_relChIso03_mva3d_%s'%d)
     g_roc_relChIso03_mva4d[d] = ROOT.TGraphErrors()
     g_roc_relChIso03_mva4d[d].SetName('g_roc_relChIso03_mva4d_%s'%d)
+
+    g_roc_relChIso03_mva3d_weighted[d] = ROOT.TGraphErrors()
+    g_roc_relChIso03_mva3d_weighted[d].SetName('g_roc_relChIso03_mva3d_weighted_%s'%d)
+    g_roc_relChIso03_mva4d_weighted[d] = ROOT.TGraphErrors()
+    g_roc_relChIso03_mva4d_weighted[d].SetName('g_roc_relChIso03_mva4d_weighted_%s'%d)
  
     makeRoc(h_relChIso03_dZ1[d]['prompt'], h_relChIso03_dZ1[d]['fake'], g_roc_relChIso03_dZ1[d] )
     makeRoc(h_relChIso03_dZ1_dT3s[d]['prompt'], h_relChIso03_dZ1_dT3s[d]['fake'],g_roc_relChIso03_dZ1_dT3s[d] )
 
+    makeRoc(h_relChIso03_dZ2[d]['prompt'], h_relChIso03_dZ2[d]['fake'], g_roc_relChIso03_dZ2[d] )
+    makeRoc(h_relChIso03_dZ2_dT3s[d]['prompt'], h_relChIso03_dZ2_dT3s[d]['fake'],g_roc_relChIso03_dZ2_dT3s[d] )
+
+    makeRoc(h_relChIso03_dZ3[d]['prompt'], h_relChIso03_dZ3[d]['fake'], g_roc_relChIso03_dZ3[d] )
+    makeRoc(h_relChIso03_dZ3_dT3s[d]['prompt'], h_relChIso03_dZ3_dT3s[d]['fake'],g_roc_relChIso03_dZ3_dT3s[d] )
+
+    makeRoc(h_relChIso03_dZ10[d]['prompt'], h_relChIso03_dZ10[d]['fake'], g_roc_relChIso03_dZ10[d] )
+    makeRoc(h_relChIso03_dZ10_dT3s[d]['prompt'], h_relChIso03_dZ10_dT3s[d]['fake'],g_roc_relChIso03_dZ10_dT3s[d] )
+
     makeRoc(h_relChIso03_mva3d[d]['prompt'], h_relChIso03_mva3d[d]['fake'], g_roc_relChIso03_mva3d[d] )
     makeRoc(h_relChIso03_mva4d[d]['prompt'], h_relChIso03_mva4d[d]['fake'], g_roc_relChIso03_mva4d[d] )
+
+    makeRoc(h_relChIso03_mva3d_weighted[d]['prompt'], h_relChIso03_mva3d_weighted[d]['fake'], g_roc_relChIso03_mva3d_weighted[d] )
+    makeRoc(h_relChIso03_mva4d_weighted[d]['prompt'], h_relChIso03_mva4d_weighted[d]['fake'], g_roc_relChIso03_mva4d_weighted[d] )
         
  
     c_roc_relChIso03_dZ1_dT3s[d] = ROOT.TCanvas('roc_relChIso03_dZ1_dT3s_%s'%d, 'roc_relChIso03_dZ1_dT3s_%s'%d)
     c_roc_relChIso03_dZ1_dT3s[d].SetGridx()
     c_roc_relChIso03_dZ1_dT3s[d].SetGridy()
     g_roc_relChIso03_dZ1[d].GetXaxis().SetRangeUser(0.85,1.01)
-    g_roc_relChIso03_dZ1[d].GetYaxis().SetRangeUser(0.0,0.1)
+    g_roc_relChIso03_dZ1[d].GetYaxis().SetRangeUser(0.0,0.035)
     g_roc_relChIso03_dZ1[d].GetXaxis().SetTitle("Prompt efficiency")
     g_roc_relChIso03_dZ1[d].GetYaxis().SetTitle("Non-prompt efficiency")
     g_roc_relChIso03_dZ1[d].SetLineColor(ROOT.kBlue)
@@ -554,6 +636,16 @@ for id, d in enumerate(['barrel','endcap']):
     g_roc_relChIso03_mva4d[d].SetLineStyle(2)
     g_roc_relChIso03_mva3d[d].Draw('L E3 same')
     g_roc_relChIso03_mva4d[d].Draw('L E3 same')
+    g_roc_relChIso03_mva3d_weighted[d].SetLineColor(ROOT.kGreen)
+    g_roc_relChIso03_mva3d_weighted[d].SetFillColorAlpha(ROOT.kGreen,0.35)
+    g_roc_relChIso03_mva3d_weighted[d].SetFillStyle(1001)
+    g_roc_relChIso03_mva4d_weighted[d].SetLineColor(ROOT.kMagenta)
+    g_roc_relChIso03_mva4d_weighted[d].SetFillColorAlpha(ROOT.kMagenta,0.35)
+    g_roc_relChIso03_mva4d_weighted[d].SetFillStyle(1001)
+    g_roc_relChIso03_mva3d_weighted[d].SetLineStyle(1)
+    g_roc_relChIso03_mva4d_weighted[d].SetLineStyle(1)
+    #g_roc_relChIso03_mva3d_weighted[d].Draw('L E3 same')
+    #g_roc_relChIso03_mva4d_weighted[d].Draw('L E3 same')
     leg4[d] = ROOT.TLegend(0.15, 0.7, 0.55, 0.92)
     leg4[d].SetBorderSize(0)
     leg4[d].AddEntry( g_roc_relChIso03_mva3d[d],'no MTD, 3DMVA','L')
@@ -564,6 +656,68 @@ for id, d in enumerate(['barrel','endcap']):
     tl2[d].Draw()
     leg4[d].Draw()
     CMS_lumi.CMS_lumi(c_roc_relChIso03_dZ1_dT3s[d], iPeriod, iPos)
+
+
+    c_roc_relChIso03_dZ2_dT3s[d] = ROOT.TCanvas('roc_relChIso03_dZ2_dT3s_%s'%d, 'roc_relChIso03_dZ2_dT3s_%s'%d)
+    c_roc_relChIso03_dZ2_dT3s[d].SetGridx()
+    c_roc_relChIso03_dZ2_dT3s[d].SetGridy()
+    g_roc_relChIso03_dZ2[d].GetXaxis().SetRangeUser(0.85,1.01)
+    g_roc_relChIso03_dZ2[d].GetYaxis().SetRangeUser(0.0,0.035)
+    g_roc_relChIso03_dZ2[d].GetXaxis().SetTitle("Prompt efficiency")
+    g_roc_relChIso03_dZ2[d].GetYaxis().SetTitle("Non-prompt efficiency")
+    g_roc_relChIso03_dZ2[d].SetLineColor(ROOT.kBlue)
+    g_roc_relChIso03_dZ2[d].SetFillColorAlpha(ROOT.kBlue,0.35)
+    g_roc_relChIso03_dZ2[d].SetFillStyle(1001)
+    g_roc_relChIso03_dZ2_dT3s[d].SetLineColor(ROOT.kRed)
+    g_roc_relChIso03_dZ2_dT3s[d].SetFillColorAlpha(ROOT.kRed,0.35)
+    g_roc_relChIso03_dZ2_dT3s[d].SetFillStyle(1001)
+    g_roc_relChIso03_dZ2[d].Draw('A L E3')
+    g_roc_relChIso03_dZ2_dT3s[d].Draw('L E3 same')
+    g_roc_relChIso03_mva3d[d].Draw('L E3 same')
+    g_roc_relChIso03_mva4d[d].Draw('L E3 same')
+    #g_roc_relChIso03_mva3d_weighted[d].Draw('L E3 same')
+    #g_roc_relChIso03_mva4d_weighted[d].Draw('L E3 same')
+    leg5[d] = ROOT.TLegend(0.15, 0.7, 0.55, 0.92)
+    leg5[d].SetBorderSize(0)
+    leg5[d].AddEntry( g_roc_relChIso03_mva3d[d],'no MTD, 3DMVA','L')
+    leg5[d].AddEntry( g_roc_relChIso03_mva4d[d],'MTD, 4DMVA (#sigma_{t} = 35 ps)','L')
+    leg5[d].AddEntry( g_roc_relChIso03_dZ1[d],'no MTD, dz < 2 mm','L')
+    leg5[d].AddEntry( g_roc_relChIso03_dZ1_dT3s[d],'MTD, dz < 2 mm, dt < 3#sigma_{t} (#sigma_{t} = 35 ps)','L')
+    tl.Draw()
+    tl2[d].Draw()
+    leg5[d].Draw()
+    CMS_lumi.CMS_lumi(c_roc_relChIso03_dZ2_dT3s[d], iPeriod, iPos)
+
+    
+    c_roc_relChIso03_dZ3_dT3s[d] = ROOT.TCanvas('roc_relChIso03_dZ3_dT3s_%s'%d, 'roc_relChIso03_dZ3_dT3s_%s'%d)
+    c_roc_relChIso03_dZ3_dT3s[d].SetGridx()
+    c_roc_relChIso03_dZ3_dT3s[d].SetGridy()
+    g_roc_relChIso03_dZ3[d].GetXaxis().SetRangeUser(0.85,1.01)
+    g_roc_relChIso03_dZ3[d].GetYaxis().SetRangeUser(0.0,0.035)
+    g_roc_relChIso03_dZ3[d].GetXaxis().SetTitle("Prompt efficiency")
+    g_roc_relChIso03_dZ3[d].GetYaxis().SetTitle("Non-prompt efficiency")
+    g_roc_relChIso03_dZ3[d].SetLineColor(ROOT.kBlue)
+    g_roc_relChIso03_dZ3[d].SetFillColorAlpha(ROOT.kBlue,0.35)
+    g_roc_relChIso03_dZ3[d].SetFillStyle(1001)
+    g_roc_relChIso03_dZ3_dT3s[d].SetLineColor(ROOT.kRed)
+    g_roc_relChIso03_dZ3_dT3s[d].SetFillColorAlpha(ROOT.kRed,0.35)
+    g_roc_relChIso03_dZ3_dT3s[d].SetFillStyle(1001)
+    g_roc_relChIso03_dZ3[d].Draw('A L E3')
+    g_roc_relChIso03_dZ3_dT3s[d].Draw('L E3 same')
+    g_roc_relChIso03_mva3d[d].Draw('L E3 same')
+    g_roc_relChIso03_mva4d[d].Draw('L E3 same')
+    #g_roc_relChIso03_mva3d_weighted[d].Draw('L E3 same')
+    #g_roc_relChIso03_mva4d_weighted[d].Draw('L E3 same')
+    leg6[d] = ROOT.TLegend(0.15, 0.7, 0.55, 0.92)
+    leg6[d].SetBorderSize(0)
+    leg6[d].AddEntry( g_roc_relChIso03_mva3d[d],'no MTD, 3DMVA','L')
+    leg6[d].AddEntry( g_roc_relChIso03_mva4d[d],'MTD, 4DMVA (#sigma_{t} = 35 ps)','L')
+    leg6[d].AddEntry( g_roc_relChIso03_dZ1[d],'no MTD, dz < 3 mm','L')
+    leg6[d].AddEntry( g_roc_relChIso03_dZ1_dT3s[d],'MTD, dz < 3 mm, dt < 3#sigma_{t} (#sigma_{t} = 35 ps)','L')
+    tl.Draw()
+    tl2[d].Draw()
+    leg6[d].Draw()
+    CMS_lumi.CMS_lumi(c_roc_relChIso03_dZ3_dT3s[d], iPeriod, iPos)
     
     #raw_input('ok?')
 
@@ -576,6 +730,10 @@ for cname in c:
 for d in ['barrel', 'endcap']:
     c_roc_relChIso03_dZ1_dT3s[d].SaveAs(plotdir+'/'+c_roc_relChIso03_dZ1_dT3s[d].GetName()+'.png')
     c_roc_relChIso03_dZ1_dT3s[d].SaveAs(plotdir+'/'+c_roc_relChIso03_dZ1_dT3s[d].GetName()+'.pdf')
+    c_roc_relChIso03_dZ2_dT3s[d].SaveAs(plotdir+'/'+c_roc_relChIso03_dZ2_dT3s[d].GetName()+'.png')
+    c_roc_relChIso03_dZ2_dT3s[d].SaveAs(plotdir+'/'+c_roc_relChIso03_dZ2_dT3s[d].GetName()+'.pdf')
+    c_roc_relChIso03_dZ3_dT3s[d].SaveAs(plotdir+'/'+c_roc_relChIso03_dZ3_dT3s[d].GetName()+'.png')
+    c_roc_relChIso03_dZ3_dT3s[d].SaveAs(plotdir+'/'+c_roc_relChIso03_dZ3_dT3s[d].GetName()+'.pdf')
     
     for proc in ['prompt','fake']:
         ccc[d][proc].SaveAs(plotdir+'/'+ccc[d][proc].GetName()+'.png')
@@ -601,10 +759,18 @@ for d in ['barrel', 'endcap']:
 
 
 
-fout = ROOT.TFile(plotdir+'/roc_30ps_%s.root'%(pu),'recreate')
+fout = ROOT.TFile(plotdir+'/roc_35ps_%s.root'%(pu),'recreate')
 for d in ['barrel', 'endcap']:
     g_roc_relChIso03_dZ1[d].Write()
     g_roc_relChIso03_dZ1_dT3s[d].Write()
+    g_roc_relChIso03_dZ2[d].Write()
+    g_roc_relChIso03_dZ2_dT3s[d].Write()
+    g_roc_relChIso03_dZ3[d].Write()
+    g_roc_relChIso03_dZ3_dT3s[d].Write()
+    g_roc_relChIso03_dZ10[d].Write()
+    g_roc_relChIso03_dZ10_dT3s[d].Write()
     g_roc_relChIso03_mva3d[d].Write()
     g_roc_relChIso03_mva4d[d].Write()
+    g_roc_relChIso03_mva3d_weighted[d].Write()
+    g_roc_relChIso03_mva4d_weighted[d].Write()
    

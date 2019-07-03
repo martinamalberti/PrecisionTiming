@@ -75,8 +75,8 @@ if (pu == 'noPU'):
     fSig = '../'+release+'/output_muIso_DYToLL_noPU_%dps_prompt_minTkPtCut_btlEff85_etlEff90_noDxy_TEST.root '%resolution
     fBkg = '../'+release+'/output_muIso_%s_noPU_%dps_fake_minTkPtCut_btlEff85_etlEff90_noDxy_TEST.root' %(bkgProc,resolution)
 else:
-    fSig = '../'+release+'/output_muIso_DYToLL_%dps_prompt_minTkPtCut_btlEff85_etlEff90_noDxy.root '%resolution
-    fBkg = '../'+release+'/output_muIso_%s_%dps_fake_minTkPtCut_btlEff85_etlEff90_noDxy.root'  %(bkgProc,resolution)
+    fSig = '../'+release+'/output_muIso_DYToLL_%dps_prompt_minTkPtCut_btlEff85_etlEff90_noDxy_muonPt10-20.root '%resolution
+    fBkg = '../'+release+'/output_muIso_%s_%dps_fake_minTkPtCut_btlEff85_etlEff90_noDxy_muonPt10-20.root'  %(bkgProc,resolution)
     #fSig = '../'+release+'/output_muIso_DYToLL_%dps_prompt_minTkPtCut_btlEff100_etlEff100_noDxy.root '%resolution
     #fBkg = '../'+release+'/output_muIso_%s_%dps_fake_minTkPtCut_btlEff100_etlEff100_noDxy.root'  %(bkgProc,resolution)
 

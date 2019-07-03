@@ -66,12 +66,12 @@ tl = ROOT.TLatex( 0.65, 0.88,'<PU> = 200')
 if (pu == 'noPU'):
     tl = ROOT.TLatex( 0.65, 0.88,'noPU')
 tl.SetNDC()
-tl.SetTextSize(0.035)
+#tl.SetTextSize(0.035)
 
 tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, t#bar{t}')
 #tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, QCD')
 tl2.SetNDC()
-tl2.SetTextSize(0.035)
+#tl2.SetTextSize(0.035)
 
 tt = {}
 tt[''] = ROOT.TLatex( 0.15, 0.16, '|#eta|<2.8')
@@ -79,15 +79,17 @@ tt['barrel'] = ROOT.TLatex( 0.15, 0.16, '|#eta|<1.5')
 tt['endcap'] = ROOT.TLatex( 0.15, 0.16, '1.5 < |#eta| < 2.8')
 for reg in regions:
     tt[reg].SetNDC()
-    tt[reg].SetTextSize(0.035)
+    #tt[reg].SetTextSize(0.035)
 
 leg = {}
 
 for ireg,reg in enumerate(regions):
     roc[reg] = {}
     roc_dT[reg] = {}
-    leg[reg] = ROOT.TLegend(0.15, 0.65, 0.50, 0.92)
+    leg[reg] = ROOT.TLegend(0.15, 0.63, 0.77, 0.92)
     leg[reg].SetBorderSize(0)
+    leg[reg].SetFillStyle(0)
+    leg[reg].SetMargin(0.15)
     
     c[reg] = ROOT.TCanvas('roc_comparison_dz_%s_%s'%(reg,pu),'roc_comparison_dz_%s_%s'%(reg,pu))
     if (reg == ''):
@@ -142,12 +144,13 @@ for ireg,reg in enumerate(regions):
         #roc_dT[reg][dz].Draw('C E3 same')
             
 
-        leg[reg].AddEntry(roc[reg][dz],'no MTD - |#Deltaz| < %.01f mm'%dzvals[dz],'L')
+        if (dz == '05'): leg[reg].AddEntry(roc[reg][dz],'no MTD - |#Deltaz| < %.01f mm'%dzvals[dz],'L')
+        else: leg[reg].AddEntry(roc[reg][dz],'no MTD - |#Deltaz| < %.0f mm'%dzvals[dz],'L')
         #leg[reg].AddEntry(roc_dT[reg][dz],'with MTD - |#Deltaz| < %.01f mm'%dzvals[dz],'L')
 
     leg[reg].Draw()
     tt[reg].Draw()    
-    tl.Draw()
+    #tl.Draw()
     tl2.Draw()
     CMS_lumi.CMS_lumi(c[reg], iPeriod, iPos)
     

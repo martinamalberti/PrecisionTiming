@@ -18,7 +18,7 @@ iPos = 0
 
 #set the tdr style
 tdrstyle.setTDRStyle()
-
+ROOT.gROOT.ForceStyle();
 
 
 
@@ -86,22 +86,24 @@ for i,res in enumerate(resol):
 
 
 #plot
-leg = ROOT.TLegend(0.15, 0.70, 0.45, 0.92)
+leg = ROOT.TLegend(0.16, 0.70, 0.50, 0.92)
 leg.SetBorderSize(0)
 
-tsig  = ROOT.TLatex( 0.60, 0.86,'<PU> = 200, Z#rightarrow#mu#mu')
-tbkg  = ROOT.TLatex( 0.60, 0.86,'<PU> = 200, t#bar{t}')
-tcut  = ROOT.TLatex( 0.60, 0.82,'rel chIso < 0.08')
+#tsig  = ROOT.TLatex( 0.60, 0.86,'<PU> = 200, Z#rightarrow#mu#mu')
+#tbkg  = ROOT.TLatex( 0.60, 0.86,'<PU> = 200, t#bar{t}')
+tsig  = ROOT.TLatex( 0.57, 0.86,'Z#rightarrow#mu#mu')
+tbkg  = ROOT.TLatex( 0.57, 0.86,'t#bar{t}')
+tcut  = ROOT.TLatex( 0.57, 0.82,'rel chIso < 0.08')
 for tt in tsig, tbkg, tcut:
     tt.SetNDC()
-    tt.SetTextSize(0.035)
+    #tt.SetTextSize(0.035)
 
 tt = {}
-tt['barrel'] = ROOT.TLatex( 0.15, 0.16, '|#eta|<1.5')
-tt['endcap'] = ROOT.TLatex( 0.15, 0.16, '1.5 < |#eta| < 2.8')
+tt['barrel'] = ROOT.TLatex( 0.16, 0.16, '|#eta|<1.5')
+tt['endcap'] = ROOT.TLatex( 0.16, 0.16, '1.5 < |#eta| < 2.8')
 for reg in 'barrel','endcap':
     tt[reg].SetNDC()
-    tt[reg].SetTextSize(0.035)
+    #tt[reg].SetTextSize(0.035)
     
 c_barrel_prompt = ROOT.TCanvas('eff_prompt_vs_linedensity_barrel','eff_prompt_vs_linedensity_barrel')
 c_barrel_prompt.SetGridx()

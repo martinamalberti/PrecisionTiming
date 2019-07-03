@@ -22,11 +22,12 @@ tdrstyle.setTDRStyle()
 
 release = '93X'
 
+resol = 50
 
-inputDir = '93X/40ps_PU200_TTbar_minTkPtCut_noDxy/'
+inputDir = '93X/%dps_PU200_TTbar_minTkPtCut_noDxy/'%resol
 inputDirRef = '93X/30ps_PU200_TTbar_minTkPtCut_eff100_noDxy/'
 
-f = ROOT.TFile.Open( inputDir+'/roc_40ps_PU200.root' )
+f = ROOT.TFile.Open( inputDir+'/roc_%dps_PU200.root'%resol )
 f_ref  = ROOT.TFile.Open( inputDirRef+'/roc_30ps_PU200.root' )
 
 
@@ -34,7 +35,7 @@ canvasWithRatios = True
 minEffPrompt = 0.80
 maxEffFake = 0.05
 
-dirname = release+'/RocsComparisonToIdealMTD/'
+dirname = release+'/RocsComparisonToIdealMTD_%dps/'%resol
 os.system('mkdir %s'%dirname)
 shutil.copy('index.php', dirname)
 
@@ -236,7 +237,7 @@ for ireg,reg in enumerate(regions):
     
     raw_input('ok?')
 
-outfile = ROOT.TFile('ratioToRescaleTaus.root','recreate')
+outfile = ROOT.TFile('ratioToRescaleTaus_%dps.root'%resol,'recreate')
 for reg in 'barrel', 'endcap':
     g_doubleratio_prompt[reg].Write()
     g_doubleratio_fake[reg].Write()

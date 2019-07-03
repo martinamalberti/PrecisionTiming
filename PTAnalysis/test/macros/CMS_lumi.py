@@ -10,20 +10,21 @@ cmsText     = "CMS";
 cmsTextFont   = 61  
 
 writeExtraText = False
-extraText   = " Phase-2 Simulation"
+extraText   = "   Phase-2 Simulation"
 extraTextFont = 52 
 
 lumiTextSize     = 0.8
 lumiTextOffset   = 0.2
 
-cmsTextSize      = 0.9
+cmsTextSize      = 1.07
 cmsTextOffset    = 0.1
 
 relPosX    = 0.045
 relPosY    = 0.035
 relExtraDY = 1.2
 
-extraOverCmsTextSize  = 0.76
+#extraOverCmsTextSize  = 0.76
+extraOverCmsTextSize  = 0.90
 
 lumi_13TeV = "20.1 fb^{-1}"
 lumi_8TeV  = "19.7 fb^{-1}" 

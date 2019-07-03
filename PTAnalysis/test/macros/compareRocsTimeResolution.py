@@ -23,29 +23,30 @@ tdrstyle.setTDRStyle()
 release = '93X'
 
 
-inputDir = '93X/30ps_PU200_TTbar_minTkPtCut_noDxy/'
+inputDir = '93X/30ps_PU200_TTbar_minTkPtCut_noDxy_muonPt40-9999/'
 inputDirNoPU = '93X/30ps_noPU_TTbar_minTkPtCut_noDxy/'
 
-resolutions = ['30', '40', '50', '60']
+#resolutions = ['30', '40', '50', '60']
 #resolutions = ['40', '30']
 #resolutions = ['40']
+resolutions = ['50']
 
 canvasWithRatios = False
 minEffPrompt = 0.80
 maxEffFake = 0.035
 
-dirname = release+'/RocsComparisonTimeResolution_noDxy/'
+dirname = release+'/RocsComparisonTimeResolution50ps_noDxy_muonPt40-9999/'
 os.system('mkdir %s'%dirname)
 shutil.copy('index.php', dirname)
 
 tl = ROOT.TLatex( 0.65, 0.88,'<PU> = 200')
 tl.SetNDC()
-tl.SetTextSize(0.035)
+#tl.SetTextSize(0.035)
 
 tl2 = ROOT.TLatex( 0.65, 0.84,'Z#rightarrow#mu#mu, t#bar{t}')
 #tl2 = ROOT.TLatex( 0.70, 0.78,'Z#rightarrow#mu#mu, QCD')
 tl2.SetNDC()
-tl2.SetTextSize(0.035)
+#tl2.SetTextSize(0.035)
 
 f = {}
 roc = {}
@@ -74,7 +75,7 @@ tt['barrel'] = ROOT.TLatex( 0.15, 0.16, '|#eta|<1.5')
 tt['endcap'] = ROOT.TLatex( 0.15, 0.16, '1.5 < |#eta| < 2.8')
 for reg in regions:
     tt[reg].SetNDC()
-    tt[reg].SetTextSize(0.035)
+    #tt[reg].SetTextSize(0.035)
 
     
 gdummy = ROOT.TGraph()
@@ -89,7 +90,7 @@ for ireg,reg in enumerate(regions):
     roc_NoPU[reg] = {}
     roc[reg] = {}
     roc_dT[reg] = {}
-    leg[reg] = ROOT.TLegend(0.15, 0.70, 0.45, 0.92)
+    leg[reg] = ROOT.TLegend(0.15, 0.70, 0.50, 0.92)
     leg[reg].SetBorderSize(0)
     
     c[reg] = ROOT.TCanvas('muonIso_roc_comparison_%s'%reg,'muonIso_roc_comparison_%s'%reg)
@@ -232,7 +233,7 @@ for ireg,reg in enumerate(regions):
 
     tt[reg].Draw()    
     leg[reg].Draw()
-    tl.Draw()
+    #tl.Draw()
     tl2.Draw()
     CMS_lumi.CMS_lumi(c[reg], iPeriod, iPos)
     c[reg].Update()
