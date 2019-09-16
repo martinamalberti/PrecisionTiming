@@ -4,19 +4,14 @@ process = cms.Process("Analysis")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 100 )
 
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
-        # DYToLL noPU
-        #'/store/mc/PhaseIITDRFall17DR/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/GEN-SIM-RECO/noPU_93X_upgrade2023_realistic_v2-v1/00000/FCBF611C-93AD-E711-9881-F02FA78BA978.root'
-        #DYToLL PU200 
-        '/store/mc/PhaseIITDRFall17DR/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2-v1/00002/FEF5CD96-78B3-E711-B58F-0CC47AA53D82.root',
-        #'/store/mc/PhaseIITDRFall17DR/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2-v1/00002/FEDEF707-56B1-E711-8C47-0025905A60DE.root'
-        # TTbar PU200
-        #'/store/mc/PhaseIITDRFall17DR/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/GEN-SIM-RECO/PU200_93X_upgrade2023_realistic_v2-v1/00000/001F23C8-C5B9-E711-BA08-0090FAA57D64.root'
+        # TTbar PU200 small BS
+        "/store/relval/CMSSW_10_6_0_patch2/RelValTTbar14TeVBSz2p3/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v3_2023D41PU200-v1/20003/A8405CDA-0657-3C44-82BD-E75A78DDC74F.root"
         )
 )
 
@@ -27,6 +22,8 @@ process.analysis = cms.EDAnalyzer(
     PileUpTag    = cms.InputTag("addPileupInfo"), 
     muonsTag   = cms.untracked.InputTag("muons", "", "RECO"),
     PFCandidateTag = cms.InputTag("particleFlow", "", "RECO"),
+    TrackFastSimTimeValueMapTag = cms.InputTag("trackTimeValueMapProducer", "generalTracksConfigurableFlatResolutionModel", "RECO"),
+    TrackFastSimTimeErrValueMapTag = cms.InputTag("trackTimeValueMapProducer", "generalTracksConfigurableFlatResolutionModelResolution", "RECO"),
     genPartTag = cms.untracked.InputTag("genParticles", "", "HLT"),
     genVtxTag = cms.untracked.InputTag("g4SimHits", "", "SIM"),
     genXYZTag = cms.untracked.InputTag("genParticles", "xyz0", "HLT"),

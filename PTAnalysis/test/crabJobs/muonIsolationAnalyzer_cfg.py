@@ -22,6 +22,8 @@ process.analysis = cms.EDAnalyzer(
     PileUpTag    = cms.InputTag("addPileupInfo"), 
     muonsTag   = cms.untracked.InputTag("muons", "", "RECO"),
     PFCandidateTag = cms.InputTag("particleFlow", "", "RECO"),
+    TrackFastSimTimeValueMapTag = cms.InputTag("trackTimeValueMapProducer", "generalTracksConfigurableFlatResolutionModel", "RECO"),
+    TrackFastSimTimeErrValueMapTag = cms.InputTag("trackTimeValueMapProducer", "generalTracksConfigurableFlatResolutionModelResolution", "RECO"),
     genPartTag = cms.untracked.InputTag("genParticles", "", "HLT"),
     genVtxTag = cms.untracked.InputTag("g4SimHits", "", "SIM"),
     genXYZTag = cms.untracked.InputTag("genParticles", "xyz0", "HLT"),
@@ -38,10 +40,10 @@ process.analysis = cms.EDAnalyzer(
     etlMinTrackPt = cms.untracked.double(0.4),
     useVertexClosestToGenZ = cms.untracked.bool(True),
     useVertexClosestToGenZT = cms.untracked.bool(False),
-    btlEfficiency = cms.untracked.double(1.0),
-    etlEfficiency = cms.untracked.double(1.0)
-    #btlEfficiency = cms.untracked.double(0.85),
-    #etlEfficiency = cms.untracked.double(0.90)
+    #btlEfficiency = cms.untracked.double(1.0),
+    #etlEfficiency = cms.untracked.double(1.0)
+    btlEfficiency = cms.untracked.double(0.85),
+    etlEfficiency = cms.untracked.double(0.90)
 )
 
 # Output TFile

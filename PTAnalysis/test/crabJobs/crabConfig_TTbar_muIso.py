@@ -10,16 +10,12 @@ config.JobType.pluginName = 'Analysis'
 # Name of the CMSSW configuration file
 config.JobType.psetName = 'muonIsolationAnalyzer_cfg.py'
 
-config.Data.inputDataset = '/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/PhaseIITDRFall17DR-PU200_93X_upgrade2023_realistic_v2-v1/GEN-SIM-RECO'
+config.Data.inputDataset = '/RelValTTbar14TeVBSz2p3/CMSSW_10_6_0_patch2-PU25ns_106X_upgrade2023_realistic_v3_2023D41PU200-v1/GEN-SIM-RECO'
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'Automatic'
-config.Data.unitsPerJob = 60
-#config.Data.splitting = 'FileBased'
-#config.Data.unitsPerJob = 30
-config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+#config.Data.unitsPerJob = 180
+config.Data.outLFNDirBase = '/store/user/%s/MTD/MuIsoBS2p3/' % (getUsernameFromSiteDB())
 config.Data.publication = True
-#config.Data.outputDatasetTag = 'test_TTbar_muIso'
-#config.Data.outputDatasetTag = 'test_TTbar_muIso_minPt'
-config.Data.outputDatasetTag = 'test_TTbar_muIso_btlEff100_etlEff100_noDxy'
+config.Data.outputDatasetTag = 'test_TTbar_muIso'
 
 config.Site.storageSite = 'T2_CH_CERN'

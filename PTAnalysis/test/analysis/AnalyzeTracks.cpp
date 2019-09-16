@@ -40,13 +40,15 @@ int main(int argc, char** argv){
 
   float minMuonPt = 20.;
   float maxMuonPt = 9999.;
-  float maxDzBtl = 0.2;
-  float maxDzEtl = 0.3;
-  float maxDxy = 9999.; // was 0.02
+  //float maxDzBtl = 0.2;
+  //float maxDzEtl = 0.3;
+  float maxDzBtl = 1.0;
+  float maxDzEtl = 1.0;
+  float maxDxy = 9999.; 
   float maxDzMu  = 0.5;
   float btlMinTrackPt = 0.7;
   float etlMinTrackPt = 0.4;
-  
+  float zRMS = 23.;  
   string process = argv[1];
   bool prompt = false;
 
@@ -55,13 +57,13 @@ int main(int argc, char** argv){
   // -- get TChain
   TChain* chain = new TChain("analysis/tree_30ps","tree");
   if (process.find("DYToLL") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_muIso_minPt/190208_131558/0000/muonIsolation*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/MuIsoBS2p3/RelValTTbar14TeVBSz2p3/test_TTbar_muIso/190910_074610/0000/muonIsolation*.root");
     if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/DYToLL-M-50_0J_14TeV-madgraphMLM-pythia8/test_DYToLL_noPU_muIso_minPt/190208_131709/0000/muonIsolation*.root");
     prompt = true;
   }
   
   if (process.find("TTbar") != std::string::npos) {
-    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_muIso_minPt/190208_131612/0000/muonIsolation*.root");
+    if (pu.find("PU200") != std::string::npos) chain->Add("/eos/cms/store/user/malberti/MTD/MuIsoBS2p3/RelValTTbar14TeVBSz2p3/test_TTbar_muIso/190910_074610/0000/muonIsolation*.root");
     if (pu.find("noPU")  != std::string::npos) chain->Add("/eos/cms/store/user/malberti/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8/test_TTbar_noPU_muIso/190111_164224/0000/muonIsolation*.root");
     prompt = false;
   }
@@ -187,20 +189,20 @@ int main(int argc, char** argv){
   TH1F *h_vtx_dz4D_sim = new TH1F("h_vtx_dz4D_sim","h_vtx_dz4D_sim",1000, -0.2, 0.2);
   TH1F *h_vtx_dt4D_sim = new TH1F("h_vtx_dt4D_sim","h_vtx_dt4D_sim",10000, -1.0, 1.0);
 
-  TH1F *h_tracks_genmatched_dxy_vtx_barrel = new TH1F("h_tracks_genmatched_dxy_vtx_barrel","h_tracks_genmatched_dxy_vtx_barrel",500, -1.0, 1.0);
-  TH1F *h_tracks_genmatched_dxy_vtx_endcap = new TH1F("h_tracks_genmatched_dxy_vtx_endcap","h_tracks_genmatched_dxy_vtx_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_genmatched_dxy_vtx_barrel = new TH1F("h_tracks_genmatched_dxy_vtx_barrel","h_tracks_genmatched_dxy_vtx_barrel",2000, -1.0, 1.0);
+  TH1F *h_tracks_genmatched_dxy_vtx_endcap = new TH1F("h_tracks_genmatched_dxy_vtx_endcap","h_tracks_genmatched_dxy_vtx_endcap",2000, -1.0, 1.0);
   
-  TH1F *h_tracks_dt_vtx_barrel = new TH1F("h_tracks_dt_vtx_barrel","h_tracks_dt_vtx_barrel",500, -1.0, 1.0);
-  TH1F *h_tracks_dz_vtx_barrel = new TH1F("h_tracks_dz_vtx_barrel","h_tracks_dz_vtx_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_dt_vtx_barrel = new TH1F("h_tracks_dt_vtx_barrel","h_tracks_dt_vtx_barrel",2000, -1.0, 1.0);
+  TH1F *h_tracks_dz_vtx_barrel = new TH1F("h_tracks_dz_vtx_barrel","h_tracks_dz_vtx_barrel",2000, -1.0, 1.0);
   
-  TH1F *h_tracks_dt_mu_barrel = new TH1F("h_tracks_dt_mu_barrel","h_tracks_dt_mu_barrel",500, -1.0, 1.0);
-  TH1F *h_tracks_dz_mu_barrel = new TH1F("h_tracks_dz_mu_barrel","h_tracks_dz_mu_barrel",500, -1.0, 1.0);
+  TH1F *h_tracks_dt_mu_barrel = new TH1F("h_tracks_dt_mu_barrel","h_tracks_dt_mu_barrel",2000, -1.0, 1.0);
+  TH1F *h_tracks_dz_mu_barrel = new TH1F("h_tracks_dz_mu_barrel","h_tracks_dz_mu_barrel",2000, -1.0, 1.0);
 
-  TH1F *h_tracks_dt_vtx_endcap = new TH1F("h_tracks_dt_vtx_endcap","h_tracks_dt_vtx_endcap",500, -1.0, 1.0);
-  TH1F *h_tracks_dz_vtx_endcap = new TH1F("h_tracks_dz_vtx_endcap","h_tracks_dz_vtx_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_dt_vtx_endcap = new TH1F("h_tracks_dt_vtx_endcap","h_tracks_dt_vtx_endcap",2000, -1.0, 1.0);
+  TH1F *h_tracks_dz_vtx_endcap = new TH1F("h_tracks_dz_vtx_endcap","h_tracks_dz_vtx_endcap",2000, -1.0, 1.0);
   
-  TH1F *h_tracks_dt_mu_endcap = new TH1F("h_tracks_dt_mu_endcap","h_tracks_dt_mu_endcap",500, -1.0, 1.0);
-  TH1F *h_tracks_dz_mu_endcap = new TH1F("h_tracks_dz_mu_endcap","h_tracks_dz_mu_endcap",500, -1.0, 1.0);
+  TH1F *h_tracks_dt_mu_endcap = new TH1F("h_tracks_dt_mu_endcap","h_tracks_dt_mu_endcap",2000, -1.0, 1.0);
+  TH1F *h_tracks_dz_mu_endcap = new TH1F("h_tracks_dz_mu_endcap","h_tracks_dz_mu_endcap",2000, -1.0, 1.0);
   
   TH2F *h2_tracks_dzvtx_dtvtx_barrel = new TH2F("h2_tracks_dzvtx_dtvtx_barrel","h2_tracks_dzvtx_dtvtx_barrel",1000,-1,1, 1000, -1, 1);
   TH2F *h2_tracks_dzvtx_dtvtx_endcap = new TH2F("h2_tracks_dzvtx_dtvtx_endcap","h2_tracks_dzvtx_dtvtx_endcap",1000,-1,1, 1000, -1, 1);
@@ -210,6 +212,13 @@ int main(int argc, char** argv){
 
   TH2F *h2_tracks_genmatched_dz_vs_dxy_barrel = new TH2F("h2_tracks_genmatched_dz_vs_dxy_barrel","h2_tracks_genmatched_dz_vs_dxy_barrel",1000, -1.0, 1.0, 1000, -1.0, 1.0);
   TH2F *h2_tracks_genmatched_dz_vs_dxy_endcap = new TH2F("h2_tracks_genmatched_dz_vs_dxy_endcap","h2_tracks_genmatched_dz_vs_dxy_endcap",1000, -1.0, 1.0, 1000, -1.0, 1.0);
+
+
+  TH1F *h_tracks_genmatched_dt_vtx_barrel = new TH1F("h_tracks_genmatched_dt_vtx_barrel","h_tracks_genmatched_dt_vtx_barrel",2000, -1.0, 1.0);
+  TH1F *h_tracks_genmatched_dz_vtx_barrel = new TH1F("h_tracks_genmatched_dz_vtx_barrel","h_tracks_genmatched_dz_vtx_barrel",2000, -1.0, 1.0);
+
+  TH1F *h_tracks_genmatched_dt_vtx_endcap = new TH1F("h_tracks_genmatched_dt_vtx_endcap","h_tracks_genmatched_dt_vtx_endcap",2000, -1.0, 1.0);
+  TH1F *h_tracks_genmatched_dz_vtx_endcap = new TH1F("h_tracks_genmatched_dz_vtx_endcap","h_tracks_genmatched_dz_vtx_endcap",2000, -1.0, 1.0);
 
   // -- to debug tracks in cone 
   TH1F *h_tracks_pt_barrel = new TH1F("h_tracks_pt_barrel","h_tracks_pt_barrel",400,0.,20.);
@@ -299,7 +308,9 @@ int main(int argc, char** argv){
     hsimvtx_z  -> Fill(vtxGen_z);    
     hsimvtx_t  -> Fill(vtxGen_t*1000000000.);    
     
-    float linedensity = npu*TMath::Gaus(fabs(10.*vtxGen_z), 0, 42., 1);
+    float linedensity = npu*TMath::Gaus(fabs(10.*vtxGen_z), 0, zRMS, 1);
+
+    if (linedensity > 2 ) continue;
 
     for (unsigned int imu = 0; imu < muon_pt->size(); imu++){
       if (muon_pt->at(imu) < minMuonPt ) continue;
@@ -375,11 +386,13 @@ int main(int argc, char** argv){
 	// -- barrel
 	if (isBarrel && fabs(dz) < maxDzBtl && fabs(dxy) < maxDxy) {
 	  h_tracks_dz_vtx_barrel -> Fill(dz);
+	  if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_dz_vtx_barrel ->Fill(dz);
 	  if (track_t->at(itk) != -999){
 	    h_tracks_dt_vtx_barrel->Fill(dt);
 	    h2_tracks_dzvtx_dtvtx_barrel->Fill(dz, dt);
+	    if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_dt_vtx_barrel ->Fill(dt);
 	  }
-	    
+	  
 	  // -- all tracks
 	  h_tracks_pt_barrel -> Fill( track_pt->at(itk) );
 	  p_tracks_pt_vs_linedensity_barrel -> Fill( linedensity, track_pt->at(itk) );
@@ -404,9 +417,11 @@ int main(int argc, char** argv){
 	// -- endcap
 	if (!isBarrel && fabs(dz) < maxDzEtl && fabs(dxy) < maxDxy) {        
 	  h_tracks_dz_vtx_endcap -> Fill(dz);
+	  if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_dz_vtx_endcap ->Fill(dz);
 	  if (track_t->at(itk) != -999){
 	    h_tracks_dt_vtx_endcap->Fill(dt);
 	    h2_tracks_dzvtx_dtvtx_endcap->Fill(dz, dt);
+	    if (track_isMatchedToGenParticle->at(itk)) h_tracks_genmatched_dt_vtx_endcap ->Fill(dt);
 	  }
 	  // -- all tracks
 	  h_tracks_pt_endcap -> Fill( track_pt->at(itk) );
@@ -568,10 +583,7 @@ int main(int argc, char** argv){
 
   
   // -- save histograms in output file
-  std::string foutName = "testTracks_" + process + "_" + pu + "_dT"+ std::to_string(nsigma)+"sigma"+
-                         "_minMuonPt"+std::to_string(int(minMuonPt))+
-                         "_maxMuonPt"+std::to_string(int(maxMuonPt))+
-                         "_minTrackPt.root";
+  std::string foutName = "testTracks_" + process + "_" + pu + "_BS2p3.root";
 
   TFile *fout = new TFile(foutName.c_str(),"recreate");
 
@@ -612,7 +624,10 @@ int main(int argc, char** argv){
   h2_tracks_dzmu_dtmu_barrel->Write();  
   h2_tracks_dzmu_dtmu_endcap->Write();
 
-
+  h_tracks_genmatched_dz_vtx_barrel->Write();
+  h_tracks_genmatched_dt_vtx_barrel->Write();
+  h_tracks_genmatched_dz_vtx_endcap->Write();
+  h_tracks_genmatched_dt_vtx_endcap->Write();
 
   h_tracks_pt_barrel ->Write();
   h_tracks_removed_pt_barrel ->Write();

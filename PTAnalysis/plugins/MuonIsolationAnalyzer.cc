@@ -52,7 +52,9 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   genXYZToken_(consumes<genXYZ>(iConfig.getUntrackedParameter<edm::InputTag>("genXYZTag"))),    
   genT0Token_(consumes<float>(iConfig.getUntrackedParameter<edm::InputTag>("genT0Tag"))),      
   genJetsToken_(consumes<View<reco::GenJet> >(iConfig.getUntrackedParameter<InputTag>("genJetsTag"))),
-  muonsToken_(consumes<View<reco::Muon> >(iConfig.getUntrackedParameter<edm::InputTag>("muonsTag")))
+  muonsToken_(consumes<View<reco::Muon> >(iConfig.getUntrackedParameter<edm::InputTag>("muonsTag"))),
+  trackFastSimTimeToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackFastSimTimeValueMapTag" ) ) ),
+  trackFastSimTimeErrToken_( consumes<ValueMap<float> >( iConfig.getParameter<InputTag>( "TrackFastSimTimeErrValueMapTag" ) ) )
 {
   timeResolutions_ = iConfig.getUntrackedParameter<vector<double> >("timeResolutions");
   mtd5sample_      = iConfig.getUntrackedParameter<bool>("mtd5sample");
@@ -160,6 +162,14 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByToken(genJetsToken_, GenJetCollectionH);
   const edm::View<reco::GenJet>& genJets = *GenJetCollectionH;
   
+  // -- get the trackTimeValueMap
+  Handle<ValueMap<float> > trackFastSimTimeValueMap;
+  iEvent.getByToken( trackFastSimTimeToken_, trackFastSimTimeValueMap );
+
+  // -- get the trackTimeErrValueMap
+  Handle<ValueMap<float> > trackFastSimTimeErrValueMap;
+  iEvent.getByToken( trackFastSimTimeErrToken_, trackFastSimTimeErrValueMap );
+
   // -- initialize output tree
   initEventStructure();
 
@@ -400,7 +410,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       reco::TrackRef trackRef = pfcand.trackRef();
       if ( trackRef.isNull() ) continue;
       if ( !(trackRef->quality(reco::TrackBase::highPurity)) ) continue;
-      if ( trackRef == muon.track() ) muonTime = pfcand.time();
+      //      if ( trackRef == muon.track() ) muonTime = pfcand.time();
+      if ( trackRef == muon.track() ) muonTime = (*trackFastSimTimeValueMap)[trackRef];
       if ( trackRef == muon.track() ) continue;
 
       //-- use tracks with pT above thtreshold
@@ -423,6 +434,9 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       float dxymu = std::abs( trackRef->dxy(vtx4D.position()) - muon.track()->dxy(vtx4D.position()) );
 
       float dr  = deltaR(muon.eta(), muon.phi(), pfcand.eta(), pfcand.phi());
+
+      float pfcandtime = (*trackFastSimTimeValueMap)[trackRef];
+      float pfcandtimeErr = (*trackFastSimTimeErrValueMap)[trackRef] ;
 
       // --- no timing 
       if (dr > minDr_ && dr < isoConeDR_){
@@ -458,8 +472,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
 	  double targetTimeResol = timeResolutions_[iRes];
 	  double defaultTimeResol  = 0.;
-	  if ( pfcand.isTimeValid() ) {
-	    defaultTimeResol  = double(pfcand.timeError()); 
+	  if ( pfcandtimeErr!=-1 ) {
+	    defaultTimeResol  = double(pfcandtimeErr); 
 	    if (mtd5sample_) defaultTimeResol = 0.035;
 	  }	  
 	  double extra_resol = 0.;
@@ -468,7 +482,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  double dt = 0.;
 	  double dtmu = 0.;
 	  time[iRes] = -999.;
-	  if ( pfcand.isTimeValid() && !isnan( pfcand.time() )) {
+	  if ( pfcandtimeErr!=-1 && !isnan( pfcandtime )) {
 	    // -- emulate BTL and ETL efficiency
 	    bool keepTrack = true;
 	    double rndEff = gRandom2->Uniform(0.,1.); 
@@ -479,7 +493,7 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	      double rnd   = gRandom->Gaus(0., extra_resol);
 	      double rndmu = gRandom->Gaus(0., extra_resol);
 	      //cout << "target time resol = "<< targetTimeResol << "  extra_resol = "<< extra_resol << "  rnd = " << rnd <<endl;
-	      time[iRes] = pfcand.time() + rnd;
+	      time[iRes] = pfcandtime + rnd;
 	      dtsim = std::abs(time[iRes] - genPV.position().t()*1000000000.);
 	      dt    = std::abs(time[iRes] - vtx4D.t());
 	      if ( muonTime > -999. && !isnan(muonTime) ){
