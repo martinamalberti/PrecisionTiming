@@ -68,12 +68,13 @@ int main(int argc, char** argv){
   // ---- ETL resolution and efficiency
   // -- 2 layers: 35 ps with 90%, 1 layer 50 ps with 90%x85% efficiency
   float timeResolutionETL2 = 0.035;
-  float effETL2 = 0.90;
+  float effETL2 = 0.90; // 100% geometric efficiency x 90% efficiency due to nuclear interactions
   float timeResolutionETL1 = 0.050;
-  float effETL1 = 0.90 * 0.85;
+  float effETL1 = 0.90 * 0.85; // 85% geometric efficiency x 90% efficiency due to nuclear interactions   
 
+  // -- for 1.5 layers option: 2 disks at R < 60 cm + 1 disk at R > 60 cm, with 35 ps everywhere
   float timeResolutionETL1opt = 0.035;
-  float minTkEtaETLsmall = 2.3; // this correspons to an ETL radius of 60 cm instead of 127 cm
+  float minTkEtaETL15 = 2.3; // this correspons to an ETL radius of 60 cm instead of 127 cm
 
   int nsigma = 3;
 
@@ -221,22 +222,18 @@ int main(int argc, char** argv){
   TH1F *h_muon_relChIso03_dZ2 = new TH1F("h_muon_relChIso03_dZ2","h_muon_relChIso03_dZ2",5000,0,5); 
   // -- HGCal alone
   TH1F *h_muon_relChIso03_dZ2_HGCal = new TH1F("h_muon_relChIso03_dZ2_HGCal","h_muon_relChIso03_dZ2_HGCal",5000, 0, 5); 
-  // -- 2 layer MTD (40 ps 90% efficiency) 
+  // -- 2 layer MTD (35 ps 90% efficiency) 
   TH1F *h_muon_relChIso03_dZ2_ETL2 = new TH1F("h_muon_relChIso03_dZ2_ETL2","h_muon_relChIso03_dZ2_ETL2",5000, 0, 5);
   // -- 1 layer MTD (50 ps 85*90% efficiency) 
   TH1F *h_muon_relChIso03_dZ2_ETL1 = new TH1F("h_muon_relChIso03_dZ2_ETL1","h_muon_relChIso03_dZ2_ETL1",5000, 0, 5);
-  // -- 2 layer MTD, smalle radius (40 ps 90% efficiency 60 cm radius --> eta 2.3-3.0) 
-  TH1F *h_muon_relChIso03_dZ2_ETL2small = new TH1F("h_muon_relChIso03_dZ2_ETL2small","h_muon_relChIso03_dZ2_ETL2small",5000, 0, 5);
-  // -- 1 layer MTD (35 ps 85*90% efficiency) 
-  TH1F *h_muon_relChIso03_dZ2_ETL1opt = new TH1F("h_muon_relChIso03_dZ2_ETL1opt","h_muon_relChIso03_dZ2_ETL1opt",5000, 0, 5);
+  // -- 2 layer MTD, smalle radius (35 ps 90% efficiency 60 cm radius --> eta 2.3-3.0) 
+  TH1F *h_muon_relChIso03_dZ2_ETL15 = new TH1F("h_muon_relChIso03_dZ2_ETL15","h_muon_relChIso03_dZ2_ETL15",5000, 0, 5);
   // -- HGCal (+) 1 layer MTD (50 ps 90*85% efficiency) 
   TH1F *h_muon_relChIso03_dZ2_HGCal_ETL1 = new TH1F("h_muon_relChIso03_dZ2_HGCal_ETL1","h_muon_relChIso03_dZ2_HGCal_ETL1",5000, 0, 5);
-  // -- HGCal (+) 2 layers MTD (40 ps 90% efficiency) 
+  // -- HGCal (+) 2 layers MTD (35 ps 90% efficiency) 
   TH1F *h_muon_relChIso03_dZ2_HGCal_ETL2 = new TH1F("h_muon_relChIso03_dZ2_HGCal_ETL2","h_muon_relChIso03_dZ2_HGCal_ETL2",5000, 0, 5);
-  // -- HGCal (+) 1 layer MTD (35 ps 90*85% efficiency) 
-  TH1F *h_muon_relChIso03_dZ2_HGCal_ETL1opt = new TH1F("h_muon_relChIso03_dZ2_HGCal_ETL1opt","h_muon_relChIso03_dZ2_HGCal_ETL1opt",5000, 0, 5);
-  // -- HGCal (+) 2 layers MTD small radius(40 ps 90% efficiency) 
-  TH1F *h_muon_relChIso03_dZ2_HGCal_ETL2small = new TH1F("h_muon_relChIso03_dZ2_HGCal_ETL2small","h_muon_relChIso03_dZ2_HGCal_ETL2small",5000, 0, 5);
+  // -- HGCal (+) 2 layers MTD small radius(35 ps 90% efficiency) 
+  TH1F *h_muon_relChIso03_dZ2_HGCal_ETL15 = new TH1F("h_muon_relChIso03_dZ2_HGCal_ETL15","h_muon_relChIso03_dZ2_HGCal_ETL15",5000, 0, 5);
 
 
   // eff vs line density
@@ -244,25 +241,21 @@ int main(int argc, char** argv){
   TProfile *p_efficiency_relChIso03_dZ2_HGCal_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_vs_linedensity","p_efficiency_relChIso03_dZ2_HGCal_vs_linedensity", 21, -0.05, 2.05);
   TProfile *p_efficiency_relChIso03_dZ2_ETL2_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_ETL2_vs_linedensity","p_efficiency_relChIso03_dZ2_ETL2_vs_linedensity", 21, -0.05, 2.05);
   TProfile *p_efficiency_relChIso03_dZ2_ETL1_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_ETL1_vs_linedensity","p_efficiency_relChIso03_dZ2_ETL1_vs_linedensity", 21, -0.05, 2.05);
-  TProfile *p_efficiency_relChIso03_dZ2_ETL2small_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_ETL2small_vs_linedensity","p_efficiency_relChIso03_dZ2_ETL2small_vs_linedensity", 21, -0.05, 2.05);
-  TProfile *p_efficiency_relChIso03_dZ2_ETL1opt_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_ETL1opt_vs_linedensity","p_efficiency_relChIso03_dZ2_ETL1opt_vs_linedensity", 21, -0.05, 2.05);
+  TProfile *p_efficiency_relChIso03_dZ2_ETL15_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_ETL15_vs_linedensity","p_efficiency_relChIso03_dZ2_ETL15_vs_linedensity", 21, -0.05, 2.05);
   TProfile *p_efficiency_relChIso03_dZ2_HGCal_ETL1_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_ETL1_vs_linedensity","p_efficiency_relChIso03_dZ2_HGCal_ETL1_vs_linedensity", 21, -0.05, 2.05);
   TProfile *p_efficiency_relChIso03_dZ2_HGCal_ETL2_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_ETL2_vs_linedensity","p_efficiency_relChIso03_dZ2_HGCal_ETL2_vs_linedensity", 21, -0.05, 2.05);
-  TProfile *p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_linedensity","p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_linedensity", 21, -0.05, 2.05);
-  TProfile *p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_linedensity","p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_linedensity", 21, -0.05, 2.05);
+  TProfile *p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_linedensity = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_linedensity","p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_linedensity", 21, -0.05, 2.05);
 
   // eff vs pT
   TProfile *p_efficiency_relChIso03_dZ2_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_vs_muonpt","p_efficiency_relChIso03_dZ2_vs_muonpt", 100, 0., 100.);
   TProfile *p_efficiency_relChIso03_dZ2_HGCal_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_vs_muonpt","p_efficiency_relChIso03_dZ2_HGCal_vs_muonpt", 100, 0., 100.);
   TProfile *p_efficiency_relChIso03_dZ2_ETL1_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_ETL1_vs_muonpt","p_efficiency_relChIso03_dZ2_ETL1_vs_muonpt", 100, 0., 100.);
   TProfile *p_efficiency_relChIso03_dZ2_ETL2_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_ETL2_vs_muonpt","p_efficiency_relChIso03_dZ2_ETL2_vs_muonpt", 100, 0., 100.);
-  TProfile *p_efficiency_relChIso03_dZ2_ETL1opt_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_ETL1opt_vs_muonpt","p_efficiency_relChIso03_dZ2_ETL1opt_vs_muonpt", 100, 0., 100.);
-  TProfile *p_efficiency_relChIso03_dZ2_ETL2small_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_ETL2small_vs_muonpt","p_efficiency_relChIso03_dZ2_ETL2small_vs_muonpt", 100, 0., 100.);
+  TProfile *p_efficiency_relChIso03_dZ2_ETL15_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_ETL15_vs_muonpt","p_efficiency_relChIso03_dZ2_ETL15_vs_muonpt", 100, 0., 100.);
   TProfile *p_efficiency_relChIso03_dZ2_HGCal_ETL1_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_ETL1_vs_muonpt","p_efficiency_relChIso03_dZ2_HGCal_ETL1_vs_muonpt", 100, 0., 100.);
   TProfile *p_efficiency_relChIso03_dZ2_HGCal_ETL2_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_ETL2_vs_muonpt","p_efficiency_relChIso03_dZ2_HGCal_ETL2_vs_muonpt", 100, 0., 100.);
-  TProfile *p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_muonpt","p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_muonpt", 100, 0., 100.);
-  TProfile *p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_muonpt","p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_muonpt", 100, 0., 100.);
-
+  TProfile *p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_muonpt = new TProfile("p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_muonpt","p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_muonpt", 100, 0., 100.);
+   
 
   // control plot
   TH1F *h_dt_HGCal = new TH1F("h_dt_HGCal","h_dt_HGCal", 500, -0.5, 0.5);
@@ -310,12 +303,10 @@ int main(int argc, char** argv){
       float sumpt_hgcal = 0.;
       float sumpt_hgcal_etl1 = 0.;
       float sumpt_hgcal_etl2 = 0.;
-      float sumpt_hgcal_etl1opt = 0.;
-      float sumpt_hgcal_etl2small = 0.;
+      float sumpt_hgcal_etl15 = 0.;
       float sumpt_etl2 = 0.;
       float sumpt_etl1 = 0.;
-      float sumpt_etl2small = 0.;
-      float sumpt_etl1opt = 0.;
+      float sumpt_etl15 = 0.;
       
       // start loop over tracks in isolation cone
       for (unsigned int itk = 0; itk < track_pt->size(); itk++){
@@ -335,7 +326,6 @@ int main(int argc, char** argv){
 	
 	if ( fabs(track_eta->at(itk)) < 1.5 && track_pt->at(itk) < btlMinTrackPt ) continue;
 	if ( fabs(track_eta->at(itk)) > 1.5 && track_pt->at(itk) < etlMinTrackPt ) continue;
-	//if ( fabs(track_eta->at(itk)) > 3.0 ) continue;
 
 	float dxy3D = track_dxy3D->at(itk);
 	float dxy4D = track_dxy4D->at(itk);
@@ -394,8 +384,8 @@ int main(int argc, char** argv){
 	else extra_resol =0.;
 	double rnd2 = gRandom->Gaus(0., extra_resol);
 	float tETL2 = track_t->at(itk) + rnd2;
-		
-	// -- emulate ETL 1-layer time resolution with extra smearing to emulate 35 ps time resolution
+
+	// -- emulate ETL 1-layer time resolution with extra smearing to get 35 ps
 	if (timeResolutionETL1opt > defaultTimeResolution ) extra_resol = sqrt(timeResolutionETL1opt*timeResolutionETL1opt - defaultTimeResolution *defaultTimeResolution );
 	else extra_resol =0.;
 	double rnd1opt = gRandom->Gaus(0., extra_resol);
@@ -424,17 +414,18 @@ int main(int argc, char** argv){
 	    sumpt_etl2+=track_pt->at(itk);
 	  }
 	
-	  // -- ETL 1 layer alone with optimized (35 ps) time resolution
-          if ( !trackHasETL1Time || (trackHasETL1Time && fabs( tETL1opt - t0 ) < nsigma * timeResolutionETL1opt)) {
-            sumpt_etl1opt+=track_pt->at(itk);
-          }
-
-	  // -- ETL 2 layers with smaller radius (eta 2.3-3.0)
-	  if ( !trackHasETL2Time || (trackHasETL2Time && fabs(track_eta->at(itk)) < minTkEtaETLsmall) || (trackHasETL2Time && fabs(track_eta->at(itk)) > minTkEtaETLsmall && fabs( tETL2 - t0 ) < nsigma * timeResolutionETL2)) {
-	    sumpt_etl2small+=track_pt->at(itk);
+	  // -- ETL 1.5 layers: 2 disks at smaller radius (eta 2.3-3.0), 1 disk at larger radius
+	  if (fabs(track_eta->at(itk)) > minTkEtaETL15){
+	    if ( !trackHasETL2Time ) sumpt_etl15+=track_pt->at(itk); 
+	    if (  trackHasETL2Time && fabs( tETL2 - t0 ) < nsigma * timeResolutionETL2)  sumpt_etl15+=track_pt->at(itk); 
 	  }
-
+	  else{
+	    if ( !trackHasETL1Time ) sumpt_etl15+=track_pt->at(itk); 
+	    if (  trackHasETL1Time && fabs( tETL1opt - t0 ) < nsigma * timeResolutionETL1opt) { sumpt_etl15+=track_pt->at(itk); }
+	  }
+	  
   	  
+
 	  // -- HGCal  + 1 MTD layer
 	  float tComb, timeResolutionComb;
 	  combineTimes(tHGCal, tETL1, timeResolutionHGCal, timeResolutionETL1, tComb, timeResolutionComb);
@@ -443,7 +434,7 @@ int main(int argc, char** argv){
 	  }
 	  else {
 	    extra_resol =0.;
-	    timeResolutionComb = 0.030;	  
+	    timeResolutionComb = defaultTimeResolution;	  
 	  }
 	  tComb = track_t->at(itk) + gRandom->Gaus(0., extra_resol);
 	  if ( !trackHasHGCalTime && !trackHasETL1Time) sumpt_hgcal_etl1+=track_pt->at(itk);
@@ -458,7 +449,7 @@ int main(int argc, char** argv){
 	  }
 	  else {
 	    extra_resol = 0.;
-	    timeResolutionComb = 0.030;
+	    timeResolutionComb = defaultTimeResolution;
 	  }
 	  tComb = track_t->at(itk) + gRandom->Gaus(0., extra_resol);
 	  if ( !trackHasHGCalTime && !trackHasETL2Time) sumpt_hgcal_etl2+=track_pt->at(itk);
@@ -467,39 +458,40 @@ int main(int argc, char** argv){
 	  if (  trackHasHGCalTime && trackHasETL2Time  && fabs( tComb  - t0 ) < nsigma * timeResolutionComb ) sumpt_hgcal_etl2+=track_pt->at(itk);
 	  
 
+	  // -- HGCal  + 1.5 MTD layers
+	  // -- 2 disks coverage for eta > 2.3
+	  if ( fabs(track_eta->at(itk)) >  minTkEtaETL15 ){ 
+	    combineTimes(tHGCal, tETL2, timeResolutionHGCal, timeResolutionETL2, tComb, timeResolutionComb );
+	    if (timeResolutionComb > defaultTimeResolution ) {
+	      extra_resol = sqrt(timeResolutionComb*timeResolutionComb - defaultTimeResolution *defaultTimeResolution );
+	    }
+	    else {
+	      extra_resol = 0.;
+	      timeResolutionComb = defaultTimeResolution;
+	    }
+	    tComb = track_t->at(itk) + gRandom->Gaus(0., extra_resol);
+	    if ( !trackHasHGCalTime && !trackHasETL2Time) sumpt_hgcal_etl15+=track_pt->at(itk);
+	    if ( !trackHasETL2Time  && trackHasHGCalTime && fabs( tHGCal - t0 ) < nsigma * timeResolutionHGCal) sumpt_hgcal_etl15+=track_pt->at(itk);
+	    if ( !trackHasHGCalTime && trackHasETL2Time  && fabs( tETL2  - t0 ) < nsigma * timeResolutionETL2) sumpt_hgcal_etl15+=track_pt->at(itk);
+	    if (  trackHasHGCalTime && trackHasETL2Time  && fabs( tComb  - t0 ) < nsigma * timeResolutionComb ) sumpt_hgcal_etl15+=track_pt->at(itk);
+	  }
+	  // -- 1 disk coverage for eta < 2.3  
+	  else {
+	    combineTimes(tHGCal, tETL1opt, timeResolutionHGCal, timeResolutionETL1opt, tComb, timeResolutionComb );
+	    if (timeResolutionComb > defaultTimeResolution ) {
+	      extra_resol = sqrt(timeResolutionComb*timeResolutionComb - defaultTimeResolution *defaultTimeResolution );
+	    }
+	    else {
+	      extra_resol = 0.;
+	      timeResolutionComb = defaultTimeResolution;
+	    }
+	    tComb = track_t->at(itk) + gRandom->Gaus(0., extra_resol);
+	    if ( !trackHasHGCalTime && !trackHasETL1Time) sumpt_hgcal_etl15+=track_pt->at(itk);
+	    if ( !trackHasETL1Time  && trackHasHGCalTime && fabs( tHGCal   - t0 ) < nsigma * timeResolutionHGCal) sumpt_hgcal_etl15+=track_pt->at(itk);
+	    if ( !trackHasHGCalTime && trackHasETL1Time  && fabs( tETL1opt - t0 ) < nsigma * timeResolutionETL1opt ) sumpt_hgcal_etl15+=track_pt->at(itk);
+	    if (  trackHasHGCalTime && trackHasETL1Time  && fabs( tComb    - t0 ) < nsigma * timeResolutionComb ) sumpt_hgcal_etl15+=track_pt->at(itk);
+	  }
 
-	  // -- HGCal  + 1 MTD layer optimized to 35 ps
-          combineTimes(tHGCal, tETL1opt, timeResolutionHGCal, timeResolutionETL1opt, tComb, timeResolutionComb);
-          if (timeResolutionComb > defaultTimeResolution ) {
-            extra_resol = sqrt(timeResolutionComb*timeResolutionComb - defaultTimeResolution *defaultTimeResolution );
-          }
-          else {
-            extra_resol =0.;
-            timeResolutionComb = 0.030;
-          }
-          tComb = track_t->at(itk) + gRandom->Gaus(0., extra_resol);
-          if ( !trackHasHGCalTime && !trackHasETL1Time) sumpt_hgcal_etl1opt+=track_pt->at(itk);
-          if ( !trackHasETL1Time  && trackHasHGCalTime && fabs( tHGCal - t0 ) < nsigma * timeResolutionHGCal) sumpt_hgcal_etl1opt+=track_pt->at(itk);
-          if ( !trackHasHGCalTime && trackHasETL1Time  && fabs( tETL1opt  - t0 ) < nsigma * timeResolutionETL1opt ) sumpt_hgcal_etl1opt+=track_pt->at(itk);
-          if (  trackHasHGCalTime && trackHasETL1Time  && fabs( tComb  - t0 ) < nsigma * timeResolutionComb ) sumpt_hgcal_etl1opt+=track_pt->at(itk);
-
-
-	  // -- HGCal  + 2 MTD layers at smaller radius
-          combineTimes(tHGCal, tETL2, timeResolutionHGCal, timeResolutionETL2, tComb, timeResolutionComb );
-          if (timeResolutionComb > defaultTimeResolution ) {
-            extra_resol = sqrt(timeResolutionComb*timeResolutionComb - defaultTimeResolution *defaultTimeResolution );
-          }
-          else {
-            extra_resol = 0.;
-            timeResolutionComb = 0.030;
-          }
-          tComb = track_t->at(itk) + gRandom->Gaus(0., extra_resol);
-          if ( !trackHasHGCalTime && !trackHasETL2Time) sumpt_hgcal_etl2small+=track_pt->at(itk);
-          if ( !trackHasETL2Time && trackHasHGCalTime && fabs( tHGCal - t0 ) < nsigma * timeResolutionHGCal) sumpt_hgcal_etl2small+=track_pt->at(itk);
-          if ( !trackHasHGCalTime && trackHasETL2Time && fabs(track_eta->at(itk))> minTkEtaETLsmall && fabs( tETL2  - t0 ) < nsigma * timeResolutionETL2 ) sumpt_hgcal_etl2small+=track_pt->at(itk);
-	  if ( !trackHasHGCalTime && trackHasETL2Time && fabs(track_eta->at(itk))< minTkEtaETLsmall) sumpt_hgcal_etl2small+=track_pt->at(itk);
-          if (  trackHasHGCalTime && trackHasETL2Time && fabs(track_eta->at(itk))> minTkEtaETLsmall  && fabs( tComb  - t0 ) < nsigma * timeResolutionComb ) sumpt_hgcal_etl2small+=track_pt->at(itk);
-          if (  trackHasHGCalTime && trackHasETL2Time && fabs(track_eta->at(itk))< minTkEtaETLsmall  && fabs( tHGCal - t0 ) < nsigma * timeResolutionHGCal ) sumpt_hgcal_etl2small+=track_pt->at(itk);
 
 
 	  // control plots
@@ -526,12 +518,10 @@ int main(int argc, char** argv){
 	h_muon_relChIso03_dZ2_HGCal -> Fill(sumpt_hgcal/muonpt);
 	h_muon_relChIso03_dZ2_ETL2 -> Fill(sumpt_etl2/muonpt);
 	h_muon_relChIso03_dZ2_ETL1 -> Fill(sumpt_etl1/muonpt);
-	h_muon_relChIso03_dZ2_ETL2small -> Fill(sumpt_etl2small/muonpt);
-	h_muon_relChIso03_dZ2_ETL1opt -> Fill(sumpt_etl1opt/muonpt);
+	h_muon_relChIso03_dZ2_ETL15 -> Fill(sumpt_etl15/muonpt);
 	h_muon_relChIso03_dZ2_HGCal_ETL1 -> Fill(sumpt_hgcal_etl1/muonpt);
 	h_muon_relChIso03_dZ2_HGCal_ETL2 -> Fill(sumpt_hgcal_etl2/muonpt);
-	h_muon_relChIso03_dZ2_HGCal_ETL1opt -> Fill(sumpt_hgcal_etl1opt/muonpt);
-	h_muon_relChIso03_dZ2_HGCal_ETL2small -> Fill(sumpt_hgcal_etl2small/muonpt);
+	h_muon_relChIso03_dZ2_HGCal_ETL15 -> Fill(sumpt_hgcal_etl15/muonpt);
       }
 
       
@@ -579,24 +569,13 @@ int main(int argc, char** argv){
 	}
 
 
-
-	if ( sumpt_etl1opt/muonpt < relChIsoCut){
-	  p_efficiency_relChIso03_dZ2_ETL1opt_vs_linedensity->Fill(linedensity, 1.);
-	  p_efficiency_relChIso03_dZ2_ETL1opt_vs_muonpt->Fill(muonpt, 1.);
+	if ( sumpt_etl15/muonpt < relChIsoCut){
+	  p_efficiency_relChIso03_dZ2_ETL15_vs_linedensity->Fill(linedensity, 1.);
+	  p_efficiency_relChIso03_dZ2_ETL15_vs_muonpt->Fill(muonpt, 1.);
 	}
 	else{
-	  p_efficiency_relChIso03_dZ2_ETL1opt_vs_linedensity->Fill(linedensity, 0.);
-	  p_efficiency_relChIso03_dZ2_ETL1opt_vs_muonpt->Fill(muonpt, 0.);
-	}
-
-
-	if ( sumpt_etl2small/muonpt < relChIsoCut){
-	  p_efficiency_relChIso03_dZ2_ETL2small_vs_linedensity->Fill(linedensity, 1.);
-	  p_efficiency_relChIso03_dZ2_ETL2small_vs_muonpt->Fill(muonpt, 1.);
-	}
-	else{
-	  p_efficiency_relChIso03_dZ2_ETL2small_vs_linedensity->Fill(linedensity, 0.);
-	  p_efficiency_relChIso03_dZ2_ETL2small_vs_muonpt->Fill(muonpt, 0.);
+	  p_efficiency_relChIso03_dZ2_ETL15_vs_linedensity->Fill(linedensity, 0.);
+	  p_efficiency_relChIso03_dZ2_ETL15_vs_muonpt->Fill(muonpt, 0.);
 	}
 
 
@@ -620,24 +599,14 @@ int main(int argc, char** argv){
 	  p_efficiency_relChIso03_dZ2_HGCal_ETL2_vs_muonpt->Fill(muonpt, 0.);
 	}
 
-
-	if ( sumpt_hgcal_etl1opt/muonpt < relChIsoCut){
-	  p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_linedensity->Fill(linedensity, 1.);
-	  p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_muonpt->Fill(muonpt, 1.);
-	}
-	else{
-	  p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_linedensity->Fill(linedensity, 0.);
-	  p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_muonpt->Fill(muonpt, 0.);
-	}
-
       
-	if ( sumpt_hgcal_etl2small/muonpt < relChIsoCut){
-	  p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_linedensity->Fill(linedensity, 1.);
-	  p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_muonpt->Fill(muonpt, 1.);
+	if ( sumpt_hgcal_etl15/muonpt < relChIsoCut){
+	  p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_linedensity->Fill(linedensity, 1.);
+	  p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_muonpt->Fill(muonpt, 1.);
 	}
 	else{
-	  p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_linedensity->Fill(linedensity, 0.);
-	  p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_muonpt->Fill(muonpt, 0.);
+	  p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_linedensity->Fill(linedensity, 0.);
+	  p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_muonpt->Fill(muonpt, 0.);
 	}
 
       }
@@ -659,34 +628,28 @@ int main(int argc, char** argv){
   h_muon_relChIso03_dZ2_HGCal -> Write();
   h_muon_relChIso03_dZ2_ETL1 -> Write();
   h_muon_relChIso03_dZ2_ETL2 -> Write();
-  h_muon_relChIso03_dZ2_ETL1opt -> Write();
-  h_muon_relChIso03_dZ2_ETL2small -> Write();
+  h_muon_relChIso03_dZ2_ETL15 -> Write();
   h_muon_relChIso03_dZ2_HGCal_ETL1 -> Write();
   h_muon_relChIso03_dZ2_HGCal_ETL2 -> Write();
-  h_muon_relChIso03_dZ2_HGCal_ETL1opt -> Write();
-  h_muon_relChIso03_dZ2_HGCal_ETL2small -> Write();
+  h_muon_relChIso03_dZ2_HGCal_ETL15 -> Write();
 
   p_efficiency_relChIso03_dZ2_vs_linedensity -> Write();
   p_efficiency_relChIso03_dZ2_HGCal_vs_linedensity -> Write();
   p_efficiency_relChIso03_dZ2_ETL1_vs_linedensity -> Write();
   p_efficiency_relChIso03_dZ2_ETL2_vs_linedensity -> Write();
-  p_efficiency_relChIso03_dZ2_ETL1opt_vs_linedensity -> Write();
-  p_efficiency_relChIso03_dZ2_ETL2small_vs_linedensity -> Write();
+  p_efficiency_relChIso03_dZ2_ETL15_vs_linedensity -> Write();
   p_efficiency_relChIso03_dZ2_HGCal_ETL1_vs_linedensity -> Write();
   p_efficiency_relChIso03_dZ2_HGCal_ETL2_vs_linedensity -> Write();
-  p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_linedensity -> Write();
-  p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_linedensity -> Write();
+  p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_linedensity -> Write();
 
   p_efficiency_relChIso03_dZ2_vs_muonpt -> Write();
   p_efficiency_relChIso03_dZ2_HGCal_vs_muonpt -> Write();
   p_efficiency_relChIso03_dZ2_ETL1_vs_muonpt -> Write();
   p_efficiency_relChIso03_dZ2_ETL2_vs_muonpt -> Write();
-  p_efficiency_relChIso03_dZ2_ETL1opt_vs_muonpt -> Write();
-  p_efficiency_relChIso03_dZ2_ETL2small_vs_muonpt -> Write();
+  p_efficiency_relChIso03_dZ2_ETL15_vs_muonpt -> Write();
   p_efficiency_relChIso03_dZ2_HGCal_ETL1_vs_muonpt -> Write();
   p_efficiency_relChIso03_dZ2_HGCal_ETL2_vs_muonpt -> Write();
-  p_efficiency_relChIso03_dZ2_HGCal_ETL1opt_vs_muonpt -> Write();
-  p_efficiency_relChIso03_dZ2_HGCal_ETL2small_vs_muonpt -> Write();
+  p_efficiency_relChIso03_dZ2_HGCal_ETL15_vs_muonpt -> Write();
 
 
   h_dt_HGCal -> Write();

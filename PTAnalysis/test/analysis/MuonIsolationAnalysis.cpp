@@ -927,17 +927,17 @@ int main(int argc, char** argv)
 
 
   // eff vs line density
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel", 21, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel", 21, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel", 21, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel", 21, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_barrel", 42, -0.05, 4.15);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_barrel", 42, -0.05, 4.15);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_barrel", 42, -0.05, 4.15);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel","p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_barrel", 42, -0.05, 4.15);
 
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap", 21, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap", 21, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap", 21, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap", 21, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap", 21, -0.05, 2.05);
-  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap", 21, -0.05, 2.05);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ1_simVtx_endcap", 42, -0.05, 4.15);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ2_simVtx_endcap", 42, -0.05, 4.15);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ3_simVtx_endcap", 42, -0.05, 4.15);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ1_dT3s_simVtx_endcap", 42, -0.05, 4.15);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ2_dT3s_simVtx_endcap", 42, -0.05, 4.15);
+  TProfile *p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap = new TProfile("p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap","p_relChIsoEfficiency_vs_linedensity_dZ3_dT3s_simVtx_endcap", 42, -0.05, 4.15);
 
 
   // eff vs line muon pT
