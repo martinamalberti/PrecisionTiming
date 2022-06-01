@@ -51,13 +51,12 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
   PileUpToken_( consumes<vector<PileupSummaryInfo> >( iConfig.getParameter<InputTag> ( "PileUpTag" ) ) ),
   vertexToken3D_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag3D" ) ) ),
   vertexToken4D_( consumes<View<reco::Vertex> >( iConfig.getParameter<InputTag> ( "VertexTag4D" ) ) ),
-  pfcandToken_( consumes<View<reco::PFCandidate> >( iConfig.getParameter<InputTag>( "PFCandidateTag" ) ) ),
-  genPartToken_(consumes<View<reco::GenParticle> >(iConfig.getUntrackedParameter<InputTag>("genPartTag"))),
-  genVertexToken_(consumes<vector<SimVertex> >(iConfig.getUntrackedParameter<InputTag>("genVtxTag"))),
+  pfcandToken_(consumes<std::vector<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("PFCandidateTag"))),
+  genPartToken_(consumes<edm::View<pat::PackedGenParticle>>(iConfig.getParameter<edm::InputTag>("genPartTag"))),
   genXYZToken_(consumes<genXYZ>(iConfig.getUntrackedParameter<edm::InputTag>("genXYZTag"))),    
   genT0Token_(consumes<float>(iConfig.getUntrackedParameter<edm::InputTag>("genT0Tag"))),      
   genJetsToken_(consumes<View<reco::GenJet> >(iConfig.getUntrackedParameter<InputTag>("genJetsTag"))),
-  muonsToken_(consumes<View<reco::Muon> >(iConfig.getUntrackedParameter<edm::InputTag>("muonsTag")))
+  muonsToken_(consumes<std::vector<pat::Muon>>(iConfig.getParameter<edm::InputTag>("muonsTag")))
 {
   timeResolutions_ = iConfig.getUntrackedParameter<vector<double> >("timeResolutions");
   isoConeDR_       = iConfig.getUntrackedParameter<double>("isoConeDR");
@@ -71,8 +70,13 @@ MuonIsolationAnalyzer::MuonIsolationAnalyzer(const edm::ParameterSet& iConfig):
 
   //Now do what ever initialization is needed
   for (unsigned int iRes = 0; iRes < timeResolutions_.size(); iRes++){
-    eventTree[iRes] = fs_->make<TTree>( Form("tree_%dps",int(timeResolutions_[iRes]*1000) ), Form("tree_%dps", int(timeResolutions_[iRes]*1000)) );
-    cout << iRes << "  " << timeResolutions_[iRes] << "  " << eventTree[iRes]->GetName() <<endl;
+    if (timeResolutions_[iRes] == -1){
+      cout << iRes << " --> Using default time resolution " << endl;
+      eventTree[iRes] = fs_->make<TTree>("tree", "tree");
+    }
+    else {
+      eventTree[iRes] = fs_->make<TTree>( Form("tree_%dps",int(timeResolutions_[iRes]*1000) ), Form("tree_%dps", int(timeResolutions_[iRes]*1000)) );
+    }
   }
 
 
@@ -119,24 +123,18 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    } else return;
 
   // -- get the muons
-  Handle<View<reco::Muon> > MuonCollectionH;
-  iEvent.getByToken(muonsToken_, MuonCollectionH);
-  const edm::View<reco::Muon>& muons = *MuonCollectionH;
+  edm::Handle<pat::MuonCollection> muons;
+  iEvent.getByToken(muonsToken_, muons);
 
   // -- get the PFCandidate collection
-  Handle<View<reco::PFCandidate> > PFCandidateCollectionH;
-  iEvent.getByToken(pfcandToken_, PFCandidateCollectionH);
-  const edm::View<reco::PFCandidate>& pfcands = *PFCandidateCollectionH;
+  edm::Handle<pat::PackedCandidateCollection> pfcands;
+  iEvent.getByToken(pfcandToken_, pfcands);
 
   // -- get the gen particles collection
-  Handle<View<reco::GenParticle> > GenParticleCollectionH;
-  iEvent.getByToken(genPartToken_, GenParticleCollectionH);
-  const edm::View<reco::GenParticle>& genParticles = *GenParticleCollectionH;
+  edm::Handle<edm::View<pat::PackedGenParticle>> hPackedGenParticles;
+  iEvent.getByToken(genPartToken_, hPackedGenParticles);
+  auto genParticles = hPackedGenParticles.isValid() ? hPackedGenParticles.product() : nullptr;
 
-  // -- get the gen vertex collection
-  Handle<vector<SimVertex> > GenVertexCollectionH;
-  iEvent.getByToken( genVertexToken_, GenVertexCollectionH );
-  //const vector<SimVertex>& genVertices = *GenVertexCollectionH;
 
   // -- get the genXYZ
   Handle<genXYZ> genXYZH;
@@ -168,17 +166,11 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //---get truth PV
   SimVertex genPV; 
-  if ( GenVertexCollectionH.isValid()) {
-    const vector<SimVertex>& genVertices = *GenVertexCollectionH;   
-    genPV = genVertices.at(0);
-  }
-  else{
-    auto xyz = genXYZH.product();
-    auto t = *genT0H.product();
-    auto v = math::XYZVectorD(xyz->x(), xyz->y(), xyz->z());
-    genPV = SimVertex(v, t);
-  }
-  
+  auto xyz = genXYZH.product();
+  auto t = *genT0H.product();
+  auto v = math::XYZVectorD(xyz->x(), xyz->y(), xyz->z());
+  genPV = SimVertex(v, t);
+    
   float mindz = 999999.;
   int pv_index_3D = -1;
   int pv_index_4D = -1;
@@ -226,10 +218,8 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   const int nResol = timeResolutions_.size();
 
   // --- start loop over muons
-  for(unsigned int imu=0; imu < muons.size(); imu++ ){
-
-    const reco::Muon& muon = muons[imu];
-
+  for (const pat::Muon &muon : *muons){ 
+    
     // -- minimal checks
     if (muon.track().isNull()) continue;
     if (muon.pt() < 5.) continue;
@@ -237,9 +227,9 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     muonIndex++;
 
     // -- check if prompt or fake muon
-    bool isPromptMu = isPromptMuon(muon,genParticles);
+    bool isPromptMu = isPromptMuon(muon, *genParticles);
     bool isMatchedGenJet  = isMatchedToGenJet(muon, genJets);
-    bool isFromTauDecay = isFromTau(muon,genParticles);
+    bool isFromTauDecay = isFromTau(muon, *genParticles);
 
     // -- compute charged isolations
     float chIso_dZ05_simVtx = 0.;
@@ -284,34 +274,48 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float muonTime =  0;
       
     // -- loop over charged pf candidates
-    for(unsigned icand = 0; icand < pfcands.size(); ++icand) {
-      const reco::PFCandidate& pfcand = pfcands[icand];
+    for (const pat::PackedCandidate &pfcand : *pfcands){
+      //for(unsigned icand = 0; icand < pfcands->size(); ++icand) {
+      //const reco::PFCandidate& pfcand = *pfcands[icand];
       if (pfcand.charge() == 0 ) continue;
       
       // -- skip the track if it is the muon track
-      reco::TrackRef trackRef = pfcand.trackRef();
-      if ( trackRef.isNull() ) continue;
-      if ( !(trackRef->quality(reco::TrackBase::highPurity)) ) continue;
-      if ( trackRef == muon.track() ) muonTime = pfcand.time();
-      if ( trackRef == muon.track() ) continue;
+      //reco::TrackRef trackRef = pfcand.bestTrack();
+      //if ( trackRef.isNull() ) continue;
+      //if ( !(trackRef->quality(reco::TrackBase::highPurity)) ) continue;
+      //if ( trackRef == muon.track() ) muonTime = pfcand.time();
+      //if ( trackRef == muon.track() ) continue;
+
+      if (pfcand.hasTrackDetails() == false) continue;
+      if (pfcand.trackHighPurity() == false) continue;
+      const reco::Track *track = pfcand.bestTrack();
+      if ( track == muon.bestTrack() ) muonTime = pfcand.time();
+      //if ( &track == muon.track() ) continue;
+      
 
       //-- use tracks with pT above thtreshold
       if ( pfcand.pt() < minTrackPt_) continue;
 
       // -- compute dz, dxy 
-      float dz4D  = std::abs( trackRef->dz(vtx4D.position()) );
-      float dz3D  = std::abs( trackRef->dz(vtx3D.position()) );
-      float dxy4D = std::abs( trackRef->dxy(vtx4D.position()) );
-      float dxy3D = std::abs( trackRef->dxy(vtx3D.position()) );
+      float dz4D  = std::abs( pfcand.dz(vtx4D.position()) );
+      float dz3D  = std::abs( pfcand.dz(vtx3D.position()) );
+      float dxy4D = std::abs( pfcand.dxy(vtx4D.position()) );
+      float dxy3D = std::abs( pfcand.dxy(vtx3D.position()) );
    
-      float dz4Drel = std::abs(dz4D/std::sqrt(trackRef->dzError()*trackRef->dzError() + vtx4D.zError()*vtx4D.zError()));
-      float dz3Drel = std::abs(dz3D/std::sqrt(trackRef->dzError()*trackRef->dzError() + vtx3D.zError()*vtx3D.zError()));
+      float dz4Drel = std::abs(dz4D/std::sqrt(pfcand.dzError()*pfcand.dzError() + vtx4D.zError()*vtx4D.zError()));
+      float dz3Drel = std::abs(dz3D/std::sqrt(pfcand.dzError()*pfcand.dzError() + vtx3D.zError()*vtx3D.zError()));
 
-      float dzsim   = std::abs( trackRef->vz() - genPV.position().z() ); 
-      float dxysim  = sqrt ( pow(trackRef->vx() - genPV.position().x(),2) + pow(trackRef->vy() - genPV.position().y(),2) ); 
+      //float dzsim   = std::abs( pfcand.dz(Point(v)) ); 
+      //float dxysim  = std::abs( pfcand.dxy(Point(v)) ); 
 
-      float dzmu  = std::abs( trackRef->dz(vtx4D.position()) - muon.track()->dz(vtx4D.position()) );
-      float dxymu = std::abs( trackRef->dxy(vtx4D.position()) - muon.track()->dxy(vtx4D.position()) );
+      float dzsim   = 0; 
+      float dxysim  = 0;
+
+      //float dzmu  = std::abs( pfcand.dz(vtx4D.position()) - muon.track()->dz(vtx4D.position()) );
+      //float dxymu = std::abs( pfcand.dxy(vtx4D.position()) - muon.track()->dxy(vtx4D.position()) );
+      float dzmu  =  0;
+      float dxymu  =  0;
+
 
       float dr  = deltaR(muon.eta(), muon.phi(), pfcand.eta(), pfcand.phi());
 
@@ -346,15 +350,22 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	if ( std::abs(pfcand.eta()) > 1.5 && rndEff > etlEfficiency_ ) continue; 	
 
 	for (unsigned int iRes = 0; iRes<timeResolutions_.size(); iRes++){                                                                                                    
-	  double targetTimeResol = timeResolutions_[iRes];
 	  double defaultTimeResol  = 0.;
-	  if ( pfcand.isTimeValid() ) defaultTimeResol  = double(pfcand.timeError()); 
-	  double extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol);                                                                                       
+	  double extra_resol = 0.;
+
+	  double targetTimeResol = timeResolutions_[iRes];
+	  if ( pfcand.timeError()>-1 ) defaultTimeResol  = double(pfcand.timeError()); 
+
+	  if (targetTimeResol == -1) extra_resol = 0;
+	  else {
+	    if ( targetTimeResol > defaultTimeResol) extra_resol = sqrt(targetTimeResol*targetTimeResol - defaultTimeResol*defaultTimeResol);
+	  }
+    
 	  double dtsim = 0.;
 	  double dt = 0.;
 	  double dtmu = 0.;
 	  time[iRes] = -999.;
-	  if ( pfcand.isTimeValid() ) {
+	  if ( pfcand.timeError()>-1 ) {
 	    double rnd = gRandom->Gaus(0., extra_resol);
 	    //cout << "target time resol = "<< targetTimeResol << "  extra_resol = "<< extra_resol << "  rnd = " << rnd <<endl;
 	    time[iRes] = pfcand.time() + rnd;
@@ -390,10 +401,10 @@ MuonIsolationAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  // -- save info for tracks in the isolation cone (only for DR = 0.3)
 	  if (saveTracks_ && (dz4D < 1.0 || dz3D < 1. || dzmu < 1. ) ) { // save a subset of tracks with loose dz selection
 	    evInfo[iRes].track_t.push_back(time[iRes]); 
-	    evInfo[iRes].track_dz4D.push_back(trackRef->dz( vtx4D.position() )); 
-	    evInfo[iRes].track_dz3D.push_back(trackRef->dz( vtx3D.position() )); 
-	    evInfo[iRes].track_dxy4D.push_back(trackRef->dxy( vtx4D.position() )); 
-	    evInfo[iRes].track_dxy3D.push_back(trackRef->dxy( vtx3D.position() )); 
+	    evInfo[iRes].track_dz4D.push_back(pfcand.dz( vtx4D.position() )); 
+	    evInfo[iRes].track_dz3D.push_back(pfcand.dz( vtx3D.position() )); 
+	    evInfo[iRes].track_dxy4D.push_back(pfcand.dxy( vtx4D.position() )); 
+	    evInfo[iRes].track_dxy3D.push_back(pfcand.dxy( vtx3D.position() )); 
 	    evInfo[iRes].track_pt.push_back(pfcand.pt());
 	    evInfo[iRes].track_eta.push_back(pfcand.eta());
 	    evInfo[iRes].track_phi.push_back(pfcand.phi());
@@ -662,14 +673,16 @@ MuonIsolationAnalyzer::initEventStructure()
 
 
 // --- matching to gen muon
-bool isPromptMuon(const reco::Muon& muon, const edm::View<reco::GenParticle>& genParticles)
+bool isPromptMuon(const pat::Muon& muon, const edm::View<pat::PackedGenParticle>& genParticles)
+//bool isPromptMuon(const pat::Muon& muon, const std::vector<pat::PackedGenParticle>* genParticles)
 {
   bool isPrompt = false;
 
   for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
-    const reco::GenParticle& genp = genParticles[ip];
+    const pat::PackedGenParticle& genp = genParticles.at(ip);
+    //    const reco::GenParticle& genp = genParticles[ip];
     if ( std::abs(genp.pdgId()) != 13) continue;
-    if (genp.status() != 1 || !genp.isLastCopy() ) continue; // -- from Simone
+    if (genp.status() != 1 ) continue; 
     if ( !genp.isPromptFinalState() ) continue;
     double dr = deltaR(muon,genp);
     if (dr > 0.2){ 
@@ -686,7 +699,7 @@ bool isPromptMuon(const reco::Muon& muon, const edm::View<reco::GenParticle>& ge
 
 
 // --- matching to gen jet
-bool isMatchedToGenJet(const reco::Muon& muon, const edm::View<reco::GenJet>& genJets)
+bool isMatchedToGenJet(const pat::Muon& muon, const edm::View<reco::GenJet>& genJets)
 {
   bool isMatched = false;
 
@@ -709,13 +722,14 @@ bool isMatchedToGenJet(const reco::Muon& muon, const edm::View<reco::GenJet>& ge
 
 
 // --- matching to muons from tau decays
-bool isFromTau(const reco::Muon& muon, const edm::View<reco::GenParticle>& genParticles)
+bool isFromTau(const pat::Muon& muon, const edm::View<pat::PackedGenParticle>& genParticles)
 {
   
   bool fromTau = false;
 
   for(unsigned int ip=0; ip < genParticles.size(); ip++ ){
-    const reco::GenParticle& genp = genParticles[ip];
+    const pat::PackedGenParticle& genp = genParticles.at(ip);
+    //const reco::GenParticle& genp = genParticles[ip];
     if ( std::abs(genp.pdgId()) != 13) continue;
     if ( !genp.isDirectPromptTauDecayProductFinalState() ) continue;
     double dr = deltaR(muon,genp);

@@ -38,6 +38,7 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
@@ -65,6 +66,7 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 using namespace math;
+using namespace pat;
 
 
 struct eventInfo
@@ -162,13 +164,13 @@ private:
   EDGetTokenT<vector<PileupSummaryInfo> > PileUpToken_;
   EDGetTokenT<View<reco::Vertex> > vertexToken3D_;
   EDGetTokenT<View<reco::Vertex> > vertexToken4D_;
-  EDGetTokenT<edm::View<reco::PFCandidate> >      pfcandToken_;
-  EDGetTokenT<View<reco::GenParticle> > genPartToken_;
+  EDGetTokenT<pat::PackedCandidateCollection> pfcandToken_;
+  EDGetTokenT<edm::View<pat::PackedGenParticle> > genPartToken_;  
   EDGetTokenT<vector<SimVertex> >  genVertexToken_;
   EDGetTokenT<genXYZ> genXYZToken_;
   EDGetTokenT<float>  genT0Token_;
   EDGetTokenT<View<reco::GenJet> > genJetsToken_;
-  EDGetTokenT<View<reco::Muon> > muonsToken_; 
+  EDGetTokenT<std::vector<pat::Muon>> muonsToken_;
   
   //--- outputs
   edm::Service<TFileService> fs_;
@@ -192,6 +194,6 @@ private:
 
 };
 
-bool isPromptMuon(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
-bool isMatchedToGenJet(const reco::Muon &muon, const edm::View<reco::GenJet>& genJet);
-bool isFromTau(const reco::Muon &muon, const edm::View<reco::GenParticle>& genParticles);
+bool isPromptMuon(const pat::Muon &muon, const edm::View<pat::PackedGenParticle>& genParticles);
+bool isMatchedToGenJet(const pat::Muon &muon, const edm::View<reco::GenJet>& genJet);
+bool isFromTau(const pat::Muon &muon, const edm::View<pat::PackedGenParticle>& genParticles);
